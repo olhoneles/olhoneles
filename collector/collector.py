@@ -1,11 +1,24 @@
 #!/usr/bin/python
 
+from datetime import datetime
 from logging import exception
-from urllib2 import urlopen, URLError
+from urllib2 import urlopen, URLError, HTTPError
 
 from BeautifulSoup import BeautifulSoup
+from sqlalchemy import and_
+from sqlalchemy.orm.exc import NoResultFound
 
-from models import Session, Legislator
+from models import Session, Legislator, Supplier, Expense
+
+
+def parse_money(string):
+    string = string.replace('.', '')
+    string = string.replace(',', '.')
+    return float(string)
+
+def parse_date(string):
+    return datetime.strptime(string, '%d/%m/%Y').date()
+
 
 class VerbaIndenizatoria(object):
 
@@ -42,11 +55,31 @@ class VerbaIndenizatoria(object):
 
         session.commit()
 
-    def update_data_for_id(self, id):
+    def update_data(self, year = datetime.now().year):
+        session = Session()
+        ids = [item[0] for item in session.query(Legislator.id)]
+
+        for legislator_id in ids:
+            for month in range(1, 13):
+                self.update_data_for_id(legislator_id, year, month)
+
+    def update_data_for_id(self, id, year, month):
+        session = Session()
+
+        legislator = session.query(Legislator).get(id)
+
         try:
-            url = urlopen(self.sub_uri % dict(year = 2010, legid = id, month = 1))
-        except URLError:
+            url = urlopen(self.sub_uri % dict(year = year, legid = id, month = month))
+        except HTTPError, e:
+            url = None
+            if e.getcode() != 404:
+                raise HTTPError(e)
+        except URLError, e:
+            url = None
             exception('Unable to download "%s": ')
+
+        if url is None:
+            return
 
         content = BeautifulSoup(url.read())
 
@@ -71,20 +104,46 @@ class VerbaIndenizatoria(object):
 
         # Parse the data.
         for desc, exp in expenses:
-            try:
-                description = desc.find('strong').contents[0]
-                print description
+            nature = desc.find('strong').contents[0]
 
-                exp = exp.find('table').findChild('tr').nextSibling.findNextSiblings('tr')
-                for row in exp:
-                    columns = row.findAll('td')
-                    supplier = columns[0].find('div').contents[0]
-                    print supplier
+            exp = exp.find('table').findChild('tr').nextSibling.findNextSiblings('tr')
+            for row in exp:
+                columns = row.findAll('td')
 
-            except AttributeError:
-                pass
+                try:
+                    name = columns[0].find('div').contents[0]
+                    cnpj = str(columns[1].find('div').contents[0])
+                except IndexError:
+                    continue
+
+                try:
+                    supplier = session.query(Supplier).filter(Supplier.cnpj == cnpj).one()
+                except NoResultFound:
+                    supplier = Supplier(cnpj, name)
+                    session.add(supplier)
+
+                try:
+                    docnumber = columns[2].find('div').contents[0]
+                    docdate = parse_date(columns[3].find('div').contents[0])
+                    docvalue = parse_money(columns[4].find('div').contents[0])
+                    expensed = parse_money(columns[5].find('div').contents[0])
+                except IndexError:
+                    continue
+
+                try:
+                    expense = session.query(Expense).filter(and_(Expense.number == docnumber,
+                                                                 Expense.nature == nature,
+                                                                 Expense.date == docdate,
+                                                                 Expense.legislator == legislator,
+                                                                 Expense.supplier == supplier)).one()
+                except NoResultFound:
+                    expense = Expense(docnumber, nature, docdate, docvalue,
+                                      expensed, legislator, supplier)
+                    session.add(expense)
+
+            session.commit()
 
 if __name__ == '__main__':
     vi = VerbaIndenizatoria()
     vi.update_legislators()
-    vi.update_data_for_id(12193)
+    vi.update_data()
