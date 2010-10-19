@@ -1,0 +1,27 @@
+tr.final {
+    background-color: #c7ffba;
+    font-weight: bold;
+    font-size: 12pt;
+}
+
+tr.odd {
+    background-color: #c7ffba;
+}
+
+td {
+    font-size: 11pt;
+    padding: 5px;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+td.right {
+    text-align: right;
+}
+
+th {
+    background-color: #c7ffba;
+    font-size: 16pt;
+    font-weight: bold;
+    border-bottom: 2px solid black;
+}
