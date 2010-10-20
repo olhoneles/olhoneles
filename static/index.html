@@ -2,7 +2,10 @@
 <html>
 <head>
   <title>Olho neles!</title>
+  <script type="text/javascript" src="MochiKit.js"></script>
+  <script type="text/javascript" src="PlotKit.js"></script>
   <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="jquery.number_format.js"></script>
   <script type="text/javascript" src="scripts.js"></script>
   <link type="text/css" rel="stylesheet" href="style.css">
 </head>
@@ -11,6 +14,9 @@
 
   <hr/>
 
+  <div id="graphparent" style="float: right;">
+    <canvas id="graph" height="500" width="500"></canvas>
+  </div>
   <div id="results"></div>
 </body>
 </html>

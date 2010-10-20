@@ -40,9 +40,9 @@ class DepWatchWeb(object):
 
         for expense in tmp:
             total += expense[1]
-            expenses.append((expense[0], locale.currency(expense[1])))
+            expenses.append((expense[0], expense[1]))
 
-        expenses.append(('Total', locale.currency(total)))
+        expenses.append(('Total', total))
 
         return unicode(json.dumps(expenses))
     per_nature.exposed = True
