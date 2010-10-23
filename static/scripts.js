@@ -6,11 +6,11 @@ function view(url) {
         table.appendChild(tr);
 
         var th = document.createElement('th');
-        th.innerText = 'Tipo de gasto';
+        th.innerHTML = 'Tipo de gasto';
         tr.appendChild(th);
 
         th = document.createElement('th');
-        th.innerText = 'Valor ressarcido';
+        th.innerHTML = 'Valor ressarcido';
         tr.appendChild(th);
 
         var total = 0;
@@ -43,12 +43,12 @@ function view(url) {
             }
 
             td = document.createElement('td');
-            td.innerText = data[i][0];
+            td.innerHTML = data[i][0];
             tr.appendChild(td);
 
             td = document.createElement('td');
             td.setAttribute('class', 'right');
-            td.innerText = $().number_format(data[i][1], { symbol: 'R$' });
+            td.innerHTML = $().number_format(data[i][1], { symbol: 'R$' });
             tr.appendChild(td);
         }
 
