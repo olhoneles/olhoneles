@@ -25,7 +25,7 @@ class DepWatchWeb(object):
                                      root=appdir, dir='static')
 
     def index(self):
-        return 'Hi!'
+        raise cherrypy.HTTPRedirect('/static/index.html')
     index.exposed = True
 
     def per_nature(self):
