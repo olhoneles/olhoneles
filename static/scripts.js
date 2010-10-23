@@ -13,10 +13,8 @@ function view(url) {
         th.innerHTML = 'Valor ressarcido';
         tr.appendChild(th);
 
-        var total = 0;
-        for (var i = 0; i < data.length; i++) {
-            total += data[i][1];
-        }
+        // The last row is the total.
+        var total = data[data.length - 1][1];
 
         var graph_xticks = [];
         var graph_data = [];
