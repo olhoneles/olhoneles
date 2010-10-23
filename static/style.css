@@ -2,6 +2,10 @@
     margin-left: 20px;
 }
 
+body {
+    font-family: sans;
+}
+
 tr.final {
     background-color: #c7ffba;
     font-weight: bold;
@@ -13,7 +17,7 @@ tr.odd {
 }
 
 td {
-    font-size: 11pt;
+    font-size: 10pt;
     padding: 5px;
     padding-right: 10px;
     padding-left: 10px;
