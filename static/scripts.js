@@ -46,7 +46,7 @@ function view(url) {
 
             td = document.createElement('td');
             td.setAttribute('class', 'right');
-            td.innerHTML = $().number_format(data[i][1], { symbol: 'R$' });
+            td.innerHTML = jQuery().number_format(data[i][1], { symbol: 'R$' });
             tr.appendChild(td);
         }
 
