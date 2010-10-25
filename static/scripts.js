@@ -1,16 +1,19 @@
 function view(url) {
-    $.getJSON('/' + url, function(data) {
+    $.getJSON('/' + url, function(response) {
+        var columns = response.columns
+        var data = response.data;
+
         var table = document.createElement('table');
 
         var tr = document.createElement('tr');
         table.appendChild(tr);
 
         var th = document.createElement('th');
-        th.innerHTML = 'Tipo de gasto';
+        th.innerHTML = columns[0];
         tr.appendChild(th);
 
         th = document.createElement('th');
-        th.innerHTML = 'Valor ressarcido';
+        th.innerHTML = columns[1];
         tr.appendChild(th);
 
         // The last row is the total.

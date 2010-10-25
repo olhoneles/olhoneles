@@ -62,7 +62,10 @@ class DepWatchWeb(object):
 
         expenses.append(('Total', total))
 
-        return unicode(json.dumps(expenses))
+        response = dict(columns = [u'Tipo de gasto', u'Valor ressarcido'],
+                        data = expenses)
+
+        return unicode(json.dumps(response))
     per_nature.exposed = True
 
 cherrypy.quickstart(DepWatchWeb())
