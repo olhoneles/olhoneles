@@ -22,10 +22,10 @@ import os.path
 
 import cherrypy
 from cherrypy import tools
-from sqlalchemy import func
+from sqlalchemy import func, desc
 import json
 
-from collector.models import Expense, Session
+from collector.models import Legislator, Expense, Session
 
 
 appdir = os.path.dirname(__file__)
@@ -46,26 +46,38 @@ class DepWatchWeb(object):
         raise cherrypy.HTTPRedirect('/static/index.html')
     index.exposed = True
 
+    def _make_response(self, columns, data, show_graph = True):
+        expenses = []
+        total = 0
+
+        for expense in data:
+            total += expense[1]
+            expenses.append((expense[0], expense[1]))
+
+        expenses.append(('Total', total))
+
+        response = dict(show_graph = show_graph,
+                        columns = columns,
+                        data = expenses)
+
+        return unicode(json.dumps(response))
+
+    def per_legislator(self):
+        session = Session()
+
+        expenses = session.query(Legislator.name,
+                                 func.sum(Expense.expensed)).join('expenses').group_by(Legislator.name).order_by(desc(2)).all()
+
+        return self._make_response([u'Deputad@', u'Valor ressarcido'], expenses, show_graph = False)
+    per_legislator.exposed = True
+
     def per_nature(self):
         session = Session()
 
         expenses = session.query(Expense.nature,
                                  func.sum(Expense.expensed)).group_by(Expense.nature).all()
 
-        tmp = expenses
-        expenses = []
-        total = 0
-
-        for expense in tmp:
-            total += expense[1]
-            expenses.append((expense[0], expense[1]))
-
-        expenses.append(('Total', total))
-
-        response = dict(columns = [u'Tipo de gasto', u'Valor ressarcido'],
-                        data = expenses)
-
-        return unicode(json.dumps(response))
+        return self._make_response([u'Tipo de gasto', u'Valor ressarcido'], expenses)
     per_nature.exposed = True
 
 cherrypy.quickstart(DepWatchWeb())
