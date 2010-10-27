@@ -57,6 +57,7 @@ class VerbaIndenizatoria(object):
         for item in options:
             legislators.append(dict(id = int(item['matr']),
                                     name = item['name'],
+                                    party = item.string[len(item['name'])+2:-1],
                                     )
                                )
 
@@ -67,7 +68,7 @@ class VerbaIndenizatoria(object):
         # Add legislators that do not exist yet
         for l in legislators:
             if l['id'] not in existing_ids:
-                session.add(Legislator(l['id'], l['name']))
+                session.add(Legislator(l['id'], l['name'], l['party']))
 
         session.commit()
 

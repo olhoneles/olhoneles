@@ -23,17 +23,15 @@ function view(url) {
         var tr = document.createElement('tr');
         table.appendChild(tr);
 
-        var th = document.createElement('th');
-        th.innerHTML = columns[0];
-        tr.appendChild(th);
-
-        th = document.createElement('th');
-        th.innerHTML = columns[1];
-        tr.appendChild(th);
+	for (i=0; i<columns.length; i++) {
+            var th = document.createElement('th');
+            th.innerHTML = columns[i];
+            tr.appendChild(th);
+	}
 
         if (show_graph) {
             // The last row is the total.
-            var total = data[data.length - 1][1];
+            var total = data[data.length - 1][data[data.length - 1].length - 1];
             var graph_xticks = [];
             var graph_data = [];
             var graph_counter = 0;
@@ -52,24 +50,28 @@ function view(url) {
 
             if (show_graph) {
                 if ((i + 1) != data.length) {
-                    if ((data[i][1] / total) > 0.05) {
+                    if ((data[i][columns.length - 1] / total) > 0.05) {
                         graph_xticks[graph_counter] = {v: graph_counter, label: data[i][0]};
-                        graph_data[graph_counter] = [graph_counter, data[i][1]];
+                        graph_data[graph_counter] = [graph_counter, data[i][columns.length - 1]];
                         graph_counter++;
                     } else { // Track too small to show slices.
-                        other += data[i][1];
+                        other += data[i][columns.length - 1];
                     }
                 }
             }
 
-            td = document.createElement('td');
-            td.innerHTML = data[i][0];
-            tr.appendChild(td);
+	    for (j = 0; j<columns.length; j++) {
+		td = document.createElement('td');
+		td.innerHTML = data[i][j];
 
-            td = document.createElement('td');
-            td.setAttribute('class', 'right');
-            td.innerHTML = jQuery().number_format(data[i][1], { symbol: 'R$' });
-            tr.appendChild(td);
+		if (j+1 == columns.length) {
+		    td.setAttribute('class', 'right');
+		    td.innerHTML = jQuery().number_format(td.innerHTML, { symbol: 'R$' });
+		}
+
+		tr.appendChild(td);
+	    }
+
         }
 
         var results_pane = document.getElementById('results');
