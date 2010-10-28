@@ -84,10 +84,10 @@ class DepWatchWeb(object):
     def per_party(self):
         session = Session()
 
-        expenses = session.query(Legislator.party,
+        expenses = session.query(Legislator.party, func.count(func.distinct (Legislator.name)),
                                  func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party).order_by(desc(2)).all()
 
-        return self._make_response([u'Partido', u'Valor ressarcido'], expenses)
+        return self._make_response([u'Partido', u'Deputad@s', u'Valor ressarcido'], expenses)
     per_party.exposed = True
 
     def per_nature(self):
