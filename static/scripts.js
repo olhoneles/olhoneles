@@ -1,3 +1,17 @@
+function normalizeMoney(value)
+{
+    var x = value.replace(/R\$ /g, '').replace(/\./g, '').replace(/,/g, '')
+    return parseInt(x);
+}
+
+jQuery.fn.dataTableExt.oSort['money-asc'] = function(a, b) {
+    return normalizeMoney(a) - normalizeMoney(b);
+};
+
+jQuery.fn.dataTableExt.oSort['money-desc'] = function(a, b) {
+    return normalizeMoney(b) - normalizeMoney(a);
+};
+
 function view(url) {
     $.getJSON('/' + url, function(response) {
         var columns = response.columns
@@ -127,8 +141,20 @@ function view(url) {
         }
 
         // dataTable!
+        aoColumns = []
+        for (var j = 0; j < columns.length; j++) {
+            var coltype = columns[j]['type'];
+
+            if (coltype == 'money') {
+                aoColumns[j] = { sType: 'money' };
+            } else {
+                aoColumns[j] = null;
+            }
+        }
+
         jQuery('#resultstable').dataTable({
-            bPaginate: false
+            bPaginate: false,
+            aoColumns: aoColumns
         });
 
         // Graph.
