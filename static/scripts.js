@@ -20,9 +20,13 @@ function view(url) {
 
         // Now let's start building the new data display.
         var table = document.createElement('table');
+        table.setAttribute('id', 'resultstable');
+
+        var thead = document.createElement('thead');
+        table.appendChild(thead)
 
         var tr = document.createElement('tr');
-        table.appendChild(tr);
+        thead.appendChild(tr);
 
         // First of all, the titles.
         for (var i = 0; i < columns.length; i++) {
@@ -44,42 +48,33 @@ function view(url) {
             var other = 0;
         }
 
-        for (var i = 0; i < data.length; i++) {
+        var tbody = document.createElement('tbody');
+        table.appendChild(tbody);
+
+        // We leave the last one out, and deal with it afterwards!
+        for (var i = 0; i < data.length - 1; i++) {
             tr = document.createElement('tr');
-            table.appendChild(tr);
+            tbody.appendChild(tr);
 
-            is_last = (i + 1) == data.length;
-
-            if (is_last) {
-                tr.setAttribute('class', 'final');
-            } else if (i % 2 != 0) {
+            if (i % 2 != 0) {
                 tr.setAttribute('class', 'odd');
             }
 
             if (show_graph) {
-                if (!is_last) {
-                    if ((data[i][graph_column] / total) > 0.05) {
-                        graph_xticks[graph_counter] = {v: graph_counter, label: data[i][0]};
-                        graph_data[graph_counter] = [graph_counter, data[i][graph_column]];
-                        graph_counter++;
-                    } else { // Track too small to show slices.
-                        other += data[i][graph_column];
-                    }
+                if ((data[i][graph_column] / total) > 0.05) {
+                    graph_xticks[graph_counter] = {v: graph_counter, label: data[i][0]};
+                    graph_data[graph_counter] = [graph_counter, data[i][graph_column]];
+                    graph_counter++;
+                } else { // Track too small to show slices.
+                    other += data[i][graph_column];
                 }
             }
 
             for (var j = 0; j < columns.length; j++) {
-                var skip_total = columns[j].skip_total;
                 var coltype = columns[j]['type'];
                 var colindex = columns[j]['index'];
 
                 td = document.createElement('td');
-
-                if (is_last && skip_total) {
-                    td.setAttribute('class', 'empty');
-                    tr.appendChild(td);
-                    continue;
-                }
 
                 if (coltype == 'money') {
                     td.setAttribute('class', 'right');
@@ -93,12 +88,48 @@ function view(url) {
 
         }
 
+        var tfoot = document.createElement('tfoot');
+        table.appendChild(tfoot);
+
+        var tr = document.createElement('tr');
+        tr.setAttribute('class', 'final');
+        tfoot.appendChild(tr);
+
+        for (var j = 0; j < columns.length; j++) {
+            var last_line = data[data.length - 1];
+            var skip_total = columns[j].skip_total;
+            var coltype = columns[j]['type'];
+            var colindex = columns[j]['index'];
+
+            td = document.createElement('td');
+
+            if (skip_total) {
+                td.setAttribute('class', 'empty');
+                tr.appendChild(td);
+                continue;
+            }
+
+            if (coltype == 'money') {
+                td.setAttribute('class', 'right');
+                td.innerHTML = jQuery().number_format(data[i][colindex], { symbol: 'R$' });
+            } else {
+                td.innerHTML = data[i][colindex];
+            }
+
+            tr.appendChild(td);
+        }
+
         var results_pane = document.getElementById('results');
         if (results_pane.firstChild != null) {
             results_pane.replaceChild(table, results_pane.firstChild);
         } else {
             results_pane.appendChild(table);
         }
+
+        // dataTable!
+        jQuery('#resultstable').dataTable({
+            bPaginate: false
+        });
 
         // Graph.
 
