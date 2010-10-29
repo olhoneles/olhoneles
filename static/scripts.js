@@ -3,6 +3,7 @@ function view(url) {
         var columns = response.columns
         var data = response.data;
         var show_graph = response.show_graph;
+        var graph_column = response.graph_column;
 
         var canvas = document.getElementById('graph');
 
@@ -23,15 +24,20 @@ function view(url) {
         var tr = document.createElement('tr');
         table.appendChild(tr);
 
-	for (i=0; i<columns.length; i++) {
-            var th = document.createElement('th');
-            th.innerHTML = columns[i];
-            tr.appendChild(th);
-	}
+        // First of all, the titles.
+        for (var i = 0; i < columns.length; i++) {
+            var col_label = columns[i]['label'];
 
+            var th = document.createElement('th');
+            th.innerHTML = col_label;
+            tr.appendChild(th);
+        }
+
+        // If we display a graph, we need to collect some information
+        // to help us, and build the list of numbers to plot.
         if (show_graph) {
             // The last row is the total.
-            var total = data[data.length - 1][data[data.length - 1].length - 1];
+            var total = data[data.length - 1][graph_column];
             var graph_xticks = [];
             var graph_data = [];
             var graph_counter = 0;
@@ -50,27 +56,31 @@ function view(url) {
 
             if (show_graph) {
                 if ((i + 1) != data.length) {
-                    if ((data[i][columns.length - 1] / total) > 0.05) {
+                    if ((data[i][graph_column] / total) > 0.05) {
                         graph_xticks[graph_counter] = {v: graph_counter, label: data[i][0]};
-                        graph_data[graph_counter] = [graph_counter, data[i][columns.length - 1]];
+                        graph_data[graph_counter] = [graph_counter, data[i][graph_column]];
                         graph_counter++;
                     } else { // Track too small to show slices.
-                        other += data[i][columns.length - 1];
+                        other += data[i][graph_column];
                     }
                 }
             }
 
-	    for (j = 0; j<columns.length; j++) {
-		td = document.createElement('td');
-		td.innerHTML = data[i][j];
+            for (var j = 0; j < columns.length; j++) {
+                var coltype = columns[j]['type'];
+                var colindex = columns[j]['index'];
 
-		if (j+1 == columns.length) {
-		    td.setAttribute('class', 'right');
-		    td.innerHTML = jQuery().number_format(td.innerHTML, { symbol: 'R$' });
-		}
+                td = document.createElement('td');
 
-		tr.appendChild(td);
-	    }
+                if (coltype == 'money') {
+                    td.setAttribute('class', 'right');
+                    td.innerHTML = jQuery().number_format(data[i][colindex], { symbol: 'R$' });
+                } else {
+                    td.innerHTML = data[i][colindex];
+                }
+
+                tr.appendChild(td);
+            }
 
         }
 

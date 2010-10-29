@@ -46,20 +46,24 @@ class DepWatchWeb(object):
         raise cherrypy.HTTPRedirect('/static/index.html')
     index.exposed = True
 
-    def _make_response(self, columns, data, show_graph = True):
-        expenses = []
-        total = 0
+    def _make_response(self, columns, data, graph_column = None, show_graph = True):
+        if graph_column is None:
+            graph_column = len(columns) - 1
 
-        for expense in data:
-            total += expense[len(expense)-1]
-            expenses.append(expense)
+        last_line = [ 'Total' ]
+        for index, column in enumerate(columns[1:], 1):
+            if column['type'] == 'money' or column['type'] == 'number':
+                total = 0
+                for expense in data:
+                    total += expense[index]
+                last_line.append(total)
+            else:
+                last_line.append('')
 
-        last_line = ['Total'] + [''] * (len(expense) - 2) + [total]
-        expenses.append (last_line)
-
-        response = dict(show_graph = show_graph,
+        response = dict(graph_column = graph_column,
+                        show_graph = show_graph,
                         columns = columns,
-                        data = expenses)
+                        data = data + [last_line])
 
         return unicode(json.dumps(response))
 
@@ -69,16 +73,31 @@ class DepWatchWeb(object):
         expenses = session.query(Legislator.name, Legislator.party,
                                  func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party, Legislator.name).order_by(desc(3)).all()
 
-        return self._make_response([u'Deputad@', u'Partido', u'Valor ressarcido'], expenses, show_graph = False)
+        columns = []
+        columns.append(dict(label = u'Deputad@', type = 'string', index = 0))
+        columns.append(dict(label = u'Partido', type = 'string', index = 1))
+        columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 2))
+        return self._make_response(columns, expenses, show_graph = False)
     per_legislator.exposed = True
 
     def per_party(self):
         session = Session()
 
-        expenses = session.query(Legislator.party, func.count(func.distinct (Legislator.name)),
-                                 func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party).order_by(desc(2)).all()
+        expenses = session.query(Legislator.party, func.count(func.distinct(Legislator.name)),
+                                 func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party).all()
 
-        return self._make_response([u'Partido', u'Deputad@', u'Valor ressarcido'], expenses)
+        expenses = [[party, num_legislators, expensed, expensed / num_legislators]
+                     for party, num_legislators, expensed in expenses]
+
+        # Order by expense per legislator.
+        expenses.sort(cmp = lambda x, y: cmp(y[3], x[3]))
+
+        columns = []
+        columns.append(dict(label = u'Partido', type = 'string', index = 0))
+        columns.append(dict(label = u'Deputad@s', type = 'number', index = 1))
+        columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 2))
+        columns.append(dict(label = u'Média', type = 'money', index = 3))
+        return self._make_response(columns, expenses)
     per_party.exposed = True
 
     def per_nature(self):
@@ -87,7 +106,10 @@ class DepWatchWeb(object):
         expenses = session.query(Expense.nature,
                                  func.sum(Expense.expensed)).group_by(Expense.nature).all()
 
-        return self._make_response([u'Tipo de gasto', u'Valor ressarcido'], expenses)
+        columns = []
+        columns.append(dict(label = u'Tipo de gasto', type = 'string', index = 0))
+        columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 1))
+        return self._make_response(columns, expenses)
     per_nature.exposed = True
 
 cherrypy.quickstart(DepWatchWeb())
