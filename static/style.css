@@ -24,6 +24,10 @@ td {
     padding-left: 10px;
 }
 
+td.empty {
+    background-color: white;
+}
+
 td.right {
     text-align: right;
 }

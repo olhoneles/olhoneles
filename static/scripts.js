@@ -48,14 +48,16 @@ function view(url) {
             tr = document.createElement('tr');
             table.appendChild(tr);
 
-            if ((i + 1) == data.length) {
+            is_last = (i + 1) == data.length;
+
+            if (is_last) {
                 tr.setAttribute('class', 'final');
             } else if (i % 2 != 0) {
                 tr.setAttribute('class', 'odd');
             }
 
             if (show_graph) {
-                if ((i + 1) != data.length) {
+                if (!is_last) {
                     if ((data[i][graph_column] / total) > 0.05) {
                         graph_xticks[graph_counter] = {v: graph_counter, label: data[i][0]};
                         graph_data[graph_counter] = [graph_counter, data[i][graph_column]];
@@ -67,10 +69,17 @@ function view(url) {
             }
 
             for (var j = 0; j < columns.length; j++) {
+                var skip_total = columns[j].skip_total;
                 var coltype = columns[j]['type'];
                 var colindex = columns[j]['index'];
 
                 td = document.createElement('td');
+
+                if (is_last && skip_total) {
+                    td.setAttribute('class', 'empty');
+                    tr.appendChild(td);
+                    continue;
+                }
 
                 if (coltype == 'money') {
                     td.setAttribute('class', 'right');
