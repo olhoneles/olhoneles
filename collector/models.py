@@ -42,8 +42,6 @@ class Legislator(Base):
         self.party = party
 
     def __unicode__(self):
-
-
         return u'Dep. %s (Matrícula %d) - %s' % (self.name, self.id, self.party)
 
 

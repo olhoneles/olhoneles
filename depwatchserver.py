@@ -54,16 +54,7 @@ class DepWatchWeb(object):
             total += expense[len(expense)-1]
             expenses.append(expense)
 
-        # Sure there is a better way to do this! :P
-        last_line = []
-        for i in range(1, len(expense)):
-            if (i == 1):
-                last_line.append ('Total')
-            if (i == len(expense)-1):
-                last_line.append (total)
-            else:
-                last_line.append ('');
-
+        last_line = ['Total'] + [''] * (len(expense) - 2) + [total]
         expenses.append (last_line)
 
         response = dict(show_graph = show_graph,
@@ -87,7 +78,7 @@ class DepWatchWeb(object):
         expenses = session.query(Legislator.party, func.count(func.distinct (Legislator.name)),
                                  func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party).order_by(desc(2)).all()
 
-        return self._make_response([u'Partido', u'Deputad@s', u'Valor ressarcido'], expenses)
+        return self._make_response([u'Partido', u'Deputad@', u'Valor ressarcido'], expenses)
     per_party.exposed = True
 
     def per_nature(self):
