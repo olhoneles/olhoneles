@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Olho neles!</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <script type="text/javascript" src="MochiKit.js"></script>
   <script type="text/javascript" src="PlotKit.js"></script>
   <script type="text/javascript" src="jquery.js"></script>
@@ -17,11 +18,14 @@
   |
   <a href="javascript:void();" onclick="javascript:view('per_party')">Totais por partido</a>
 
-  <hr/>
-
-  <div id="graphparent" style="float: right;">
-    <canvas id="graph" height="500" width="500"></canvas>
+  <div id="content">
+    <div id="graphparent" style="float: right;">
+      <canvas id="graph" height="500" width="500"></canvas>
+    </div>
+    <div id="results"></div>
   </div>
-  <div id="results"></div>
+  <div id="footnotes">
+    Fonte: <a href="http://almg.gov.br/index.asp?diretorio=verbasindeniz&arquivo=ListaMesesVerbas">Assembléia Legislativa do Estado de Minas Gerais</a>.
+  </div>
 </body>
 </html>

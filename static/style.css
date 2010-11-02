@@ -1,3 +1,13 @@
+div#content {
+    margin-top: 60px;
+}
+
+#footnotes {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+
 #graphparent {
     margin-left: 20px;
 }
