@@ -8,6 +8,10 @@ div#content {
     right: 5px;
 }
 
+#graphtitle {
+    text-align: center;
+}
+
 #graphparent {
     margin-left: 20px;
 }

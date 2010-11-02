@@ -46,7 +46,7 @@ class DepWatchWeb(object):
         raise cherrypy.HTTPRedirect('/static/index.html')
     index.exposed = True
 
-    def _make_response(self, columns, data, graph_column = None, show_graph = True):
+    def _make_response(self, columns, data, graph_column = None, graph_title = '', show_graph = True):
         if graph_column is None:
             graph_column = len(columns) - 1
 
@@ -61,6 +61,7 @@ class DepWatchWeb(object):
                 last_line.append('')
 
         response = dict(graph_column = graph_column,
+                        graph_title = graph_title,
                         show_graph = show_graph,
                         columns = columns,
                         data = data + [last_line])
@@ -97,7 +98,9 @@ class DepWatchWeb(object):
         columns.append(dict(label = u'Deputad@s', type = 'number', index = 1))
         columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 2))
         columns.append(dict(label = u'Média', type = 'money', index = 3, skip_total = True))
-        return self._make_response(columns, expenses)
+
+        graph_title = u'Gasto médio por partido'
+        return self._make_response(columns, expenses, graph_title = graph_title)
     per_party.exposed = True
 
     def per_nature(self):
@@ -109,7 +112,9 @@ class DepWatchWeb(object):
         columns = []
         columns.append(dict(label = u'Tipo de gasto', type = 'string', index = 0))
         columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 1))
-        return self._make_response(columns, expenses)
+
+        graph_title = u'Total de gasto por tipo'
+        return self._make_response(columns, expenses, graph_title = graph_title)
     per_nature.exposed = True
 
 cherrypy.quickstart(DepWatchWeb())

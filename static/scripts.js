@@ -25,6 +25,9 @@ function view(url) {
         context = canvas.getContext('2d');
         context.clearRect(0, 0, canvas.width, canvas.height);
 
+        var graph_title = document.getElementById('graphtitle');
+        graph_title.innerHTML = '';
+
         // Remove the labels too.
         var graphparent = document.getElementById('graphparent');
         var divs = $(graphparent).find('div');
@@ -162,6 +165,11 @@ function view(url) {
         // No graph will be displayed - make sure the canvas is empty.
         if (!show_graph) {
             return;
+        }
+
+        // Title the graph with the title of the graphed column.
+        if (response.graph_title != undefined) {
+            graph_title.innerHTML = response.graph_title;
         }
 
         // The "Other" slice of the pie.
