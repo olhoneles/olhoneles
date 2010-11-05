@@ -80,8 +80,6 @@ class DepWatchWeb(object):
         else:
             sort_order = desc
 
-        print kwargs
-
         expenses_query = session.query(Expense.nature, Legislator.name, Legislator.party,
                                        Supplier.name, Supplier.cnpj, Expense.number,
                                        Expense.date, Expense.expensed
