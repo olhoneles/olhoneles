@@ -84,7 +84,7 @@ class DepWatchWeb(object):
 
         expenses_query = session.query(Expense.nature, Legislator.name, Legislator.party,
                                        Supplier.name, Supplier.cnpj, Expense.number,
-                                       Expense.expensed
+                                       Expense.date, Expense.expensed
                                        ).join('legislators').join('suppliers').order_by(sort_order(sort_column))
 
         total_results = expenses_query.count()
@@ -99,10 +99,11 @@ class DepWatchWeb(object):
         display_results = expenses_query.count()
         expenses = expenses_query[start:end]
 
-        # Format money column.
+        # Format money and date columns.
         data = []
         for item in expenses:
             item = list(item)
+            item[-2] = item[-2].strftime('%d/%m/%Y')
             item[-1] = locale.currency(float(item[-1]), grouping = True)
             data.append(item)
 

@@ -79,7 +79,8 @@ function view_all() {
     var n_columns = 0;
 
     var string_columns = ['Tipo de gasto', 'Deputad@', 'Partido',
-                          'Empresa/Pessoa', 'CNPJ/CPF', 'N° do Doc.']
+                          'Empresa/Pessoa', 'CNPJ/CPF', 'N° do Doc.',
+                          'Data']
 
     for (n_columns = 0; n_columns < string_columns.length; n_columns++) {
         var col = Object();
