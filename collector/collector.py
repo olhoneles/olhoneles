@@ -151,8 +151,8 @@ class VerbaIndenizatoria(object):
                     expense = session.query(Expense).filter(and_(Expense.number == docnumber,
                                                                  Expense.nature == nature,
                                                                  Expense.date == docdate,
-                                                                 Expense.legislator == legislator,
-                                                                 Expense.supplier == supplier)).one()
+                                                                 Expense.legislators == legislator,
+                                                                 Expense.suppliers == supplier)).one()
                 except NoResultFound:
                     expense = Expense(docnumber, nature, docdate, docvalue,
                                       expensed, legislator, supplier)
@@ -160,7 +160,20 @@ class VerbaIndenizatoria(object):
 
             session.commit()
 
+
 if __name__ == '__main__':
+    import optparse
+
+    parser = optparse.OptionParser()
+    parser.add_option('-y', '--year', type='int', dest='year', help='Year to collect from.')
+
+    (options, args) = parser.parse_args()
+
     vi = VerbaIndenizatoria()
     vi.update_legislators()
-    vi.update_data()
+
+    if options.year:
+        vi.update_data(options.year)
+    else:
+        vi.update_date()
+
