@@ -12,6 +12,116 @@ jQuery.fn.dataTableExt.oSort['money-desc'] = function(a, b) {
     return normalizeMoney(b) - normalizeMoney(a);
 };
 
+function cleanup() {
+    var canvas = document.getElementById('graph');
+
+    context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    var graph_title = document.getElementById('graphtitle');
+    graph_title.innerHTML = '';
+    graph_title.parentElement.style.display = 'none';
+
+    // Remove the labels too.
+    var graphparent = document.getElementById('graphparent');
+    var divs = $(graphparent).find('div');
+    for (var i = 0; i < divs.length; i++) {
+        graphparent.removeChild(divs[i]);
+    }
+
+    // Remove any left over from FixedHeader.
+    try {
+        var div = document.evaluate("//div[contains(@class, 'FixedHeader_Cloned')]", document, null, XPathResult.ANY_TYPE, null).iterateNext();
+        div.parentElement.removeChild(div);
+    } catch(e) {
+    }
+}
+
+function build_table_top(columns) {
+    // Now let's start building the new data display.
+    var table = document.createElement('table');
+    table.setAttribute('id', 'resultstable');
+
+    var thead = document.createElement('thead');
+    table.appendChild(thead)
+
+    var tr = document.createElement('tr');
+    thead.appendChild(tr);
+
+    // First of all, the titles.
+    for (var i = 0; i < columns.length; i++) {
+        var col_label = columns[i]['label'];
+
+        var th = document.createElement('th');
+        th.innerHTML = col_label;
+        tr.appendChild(th);
+    }
+
+    var tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+
+    // Place new table in the DOM, replacing the old one.
+    var results_pane = document.getElementById('results');
+    if (results_pane.firstChild != null) {
+        results_pane.replaceChild(table, results_pane.firstChild);
+    } else {
+        results_pane.appendChild(table);
+    }
+
+    return [table, tbody];
+}
+
+function view_all() {
+    cleanup();
+
+    // Prepare columns we will display.
+    var columns = []
+    var n_columns = 0;
+
+    var string_columns = ['Tipo de gasto', 'Deputad@', 'Partido',
+                          'Empresa/Pessoa', 'CNPJ/CPF', 'N° do Doc.']
+
+    for (n_columns = 0; n_columns < string_columns.length; n_columns++) {
+        var col = Object();
+        col.label = string_columns[n_columns];
+        col.type = 'string';
+        columns[n_columns] = col;
+    }
+
+    var col = Object();
+    col.label = 'Valor ressarcido';
+    col.type = 'money';
+    columns[n_columns++] = col;
+
+    // Build base table.
+    var table_elements = build_table_top(columns);
+    var table = table_elements[0];
+    var tbody = table_elements[1];
+
+    table.setAttribute('class', 'fullwidth');
+
+    aoColumns = []
+    for (var j = 0; j < columns.length; j++) {
+        var coltype = columns[j]['type'];
+
+        if (coltype == 'money') {
+            aoColumns[j] = { sType: 'money' };
+        } else {
+            aoColumns[j] = null;
+        }
+    }
+
+    var data_table = jQuery('#resultstable').dataTable({
+        bPaginate: true,
+	bProcessing: true,
+	bServerSide: true,
+	sAjaxSource: '/all',
+        aoColumns: aoColumns,
+    });
+
+    new FixedHeader(data_table);
+}
+
 function view(url) {
     $.getJSON('/' + url, function(response) {
         var columns = response.columns
@@ -19,40 +129,13 @@ function view(url) {
         var show_graph = response.show_graph;
         var graph_column = response.graph_column;
 
-        var canvas = document.getElementById('graph');
-
         // First of all, cleanup the graph.
-        context = canvas.getContext('2d');
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        cleanup();
 
-        var graph_title = document.getElementById('graphtitle');
-        graph_title.innerHTML = '';
-
-        // Remove the labels too.
-        var graphparent = document.getElementById('graphparent');
-        var divs = $(graphparent).find('div');
-        for (var i = 0; i < divs.length; i++) {
-            graphparent.removeChild(divs[i]);
-        }
-
-        // Now let's start building the new data display.
-        var table = document.createElement('table');
-        table.setAttribute('id', 'resultstable');
-
-        var thead = document.createElement('thead');
-        table.appendChild(thead)
-
-        var tr = document.createElement('tr');
-        thead.appendChild(tr);
-
-        // First of all, the titles.
-        for (var i = 0; i < columns.length; i++) {
-            var col_label = columns[i]['label'];
-
-            var th = document.createElement('th');
-            th.innerHTML = col_label;
-            tr.appendChild(th);
-        }
+        // Build base table.
+        var table_elements = build_table_top(columns);
+        var table = table_elements[0];
+        var tbody = table_elements[1];
 
         // If we display a graph, we need to collect some information
         // to help us, and build the list of numbers to plot.
@@ -65,10 +148,8 @@ function view(url) {
             var other = 0;
         }
 
-        var tbody = document.createElement('tbody');
-        table.appendChild(tbody);
-
         // We leave the last one out, and deal with it afterwards!
+        // This adds all of the data to the table.
         for (var i = 0; i < data.length - 1; i++) {
             tr = document.createElement('tr');
             tbody.appendChild(tr);
@@ -136,13 +217,6 @@ function view(url) {
             tr.appendChild(td);
         }
 
-        var results_pane = document.getElementById('results');
-        if (results_pane.firstChild != null) {
-            results_pane.replaceChild(table, results_pane.firstChild);
-        } else {
-            results_pane.appendChild(table);
-        }
-
         // dataTable!
         aoColumns = []
         for (var j = 0; j < columns.length; j++) {
@@ -167,6 +241,9 @@ function view(url) {
             return;
         }
 
+        var graph_title = document.getElementById('graphtitle');
+        graph_title.parentElement.style.display = 'block';
+
         // Title the graph with the title of the graphed column.
         if (response.graph_title != undefined) {
             graph_title.innerHTML = response.graph_title;
@@ -187,6 +264,7 @@ function view(url) {
         layout.addDataset('expenses', graph_data);
         layout.evaluate();
 
+        var canvas = document.getElementById('graph');
         var plotter = new PlotKit.SweetCanvasRenderer(canvas, layout, options);
         plotter.render();
     });

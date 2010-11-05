@@ -22,10 +22,10 @@ import os.path
 
 import cherrypy
 from cherrypy import tools
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, asc, or_
 import json
 
-from collector.models import Legislator, Expense, Session
+from collector.models import Legislator, Expense, Supplier, Session
 
 
 appdir = os.path.dirname(__file__)
@@ -51,11 +51,11 @@ class DepWatchWeb(object):
             graph_column = len(columns) - 1
 
         last_line = [ 'Total' ]
-        for index, column in enumerate(columns[1:], 1):
+        for column in columns[1:]:
             if column['type'] == 'money' or column['type'] == 'number':
                 total = 0
                 for expense in data:
-                    total += expense[index]
+                    total += expense[column['index']]
                 last_line.append(total)
             else:
                 last_line.append('')
@@ -67,6 +67,51 @@ class DepWatchWeb(object):
                         data = data + [last_line])
 
         return unicode(json.dumps(response))
+
+    def all(self, **kwargs):
+        session = Session()
+
+        start = int(kwargs['iDisplayStart'])
+        end = start + int(kwargs['iDisplayLength'])
+        sort_column = int(kwargs['iSortCol_0']) + 1 # sqlalchemy starts counting from 1
+
+        if kwargs['sSortDir_0'] == 'asc':
+            sort_order = asc
+        else:
+            sort_order = desc
+
+        print kwargs
+
+        expenses_query = session.query(Expense.nature, Legislator.name, Legislator.party,
+                                       Supplier.name, Supplier.cnpj, Expense.number,
+                                       Expense.expensed
+                                       ).join('legislators').join('suppliers').order_by(sort_order(sort_column))
+
+        total_results = expenses_query.count()
+
+        search_string = kwargs['sSearch'].decode('utf-8')
+        if search_string:
+            expenses_query = expenses_query.filter(or_(Expense.nature.like('%' + search_string + '%'),
+                                                       Legislator.name.like('%' + search_string + '%'),
+                                                       Legislator.party.like('%' + search_string + '%'),
+                                                       Supplier.name.like('%' + search_string + '%'),
+                                                       Supplier.cnpj.like('%' + search_string + '%')))
+        display_results = expenses_query.count()
+        expenses = expenses_query[start:end]
+
+        # Format money column.
+        data = []
+        for item in expenses:
+            item = list(item)
+            item[-1] = locale.currency(float(item[-1]), grouping = True)
+            data.append(item)
+
+        response = dict(sEcho = int(kwargs['sEcho']),
+                        iTotalRecords = total_results,
+                        iTotalDisplayRecords = display_results,
+                        aaData = data)
+        return unicode(json.dumps(response))
+    all.exposed = True
 
     def per_legislator(self):
         session = Session()
