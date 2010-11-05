@@ -83,7 +83,7 @@ class DepWatchWeb(object):
         expenses_query = session.query(Expense.nature, Legislator.name, Legislator.party,
                                        Supplier.name, Supplier.cnpj, Expense.number,
                                        Expense.date, Expense.expensed
-                                       ).join('legislators').join('suppliers').order_by(sort_order(sort_column))
+                                       ).join('legislator').join('supplier').order_by(sort_order(sort_column))
 
         total_results = expenses_query.count()
 

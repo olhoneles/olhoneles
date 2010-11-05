@@ -33,7 +33,7 @@ class Legislator(Base):
     party = Column(Unicode)
 
     expenses = relationship('Expense',
-                            backref = backref('legislators')
+                            backref = backref('legislator')
                             )
 
     def __init__(self, id, name, party):
@@ -52,7 +52,7 @@ class Supplier(Base):
     name = Column(Unicode)
 
     expenses = relationship('Expense',
-                            backref = backref('suppliers')
+                            backref = backref('supplier')
                             )
 
     def __init__(self, cnpj, name):

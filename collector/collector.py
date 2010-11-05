@@ -151,8 +151,8 @@ class VerbaIndenizatoria(object):
                     expense = session.query(Expense).filter(and_(Expense.number == docnumber,
                                                                  Expense.nature == nature,
                                                                  Expense.date == docdate,
-                                                                 Expense.legislators == legislator,
-                                                                 Expense.suppliers == supplier)).one()
+                                                                 Expense.legislator == legislator,
+                                                                 Expense.supplier == supplier)).one()
                 except NoResultFound:
                     expense = Expense(docnumber, nature, docdate, docvalue,
                                       expensed, legislator, supplier)
