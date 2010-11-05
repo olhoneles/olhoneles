@@ -90,7 +90,7 @@ function view_all() {
     }
 
     var col = Object();
-    col.label = 'Valor ressarcido';
+    col.label = 'Valor';
     col.type = 'money';
     columns[n_columns++] = col;
 
