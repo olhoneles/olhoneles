@@ -20,7 +20,7 @@ function cleanup() {
 
     var graph_title = document.getElementById('graphtitle');
     graph_title.innerHTML = '';
-    graph_title.parentElement.style.display = 'none';
+    graph_title.parentNode.style.display = 'none';
 
     // Remove the labels too.
     var graphparent = document.getElementById('graphparent');
@@ -32,7 +32,7 @@ function cleanup() {
     // Remove any left over from FixedHeader.
     try {
         var div = document.evaluate("//div[contains(@class, 'FixedHeader_Cloned')]", document, null, XPathResult.ANY_TYPE, null).iterateNext();
-        div.parentElement.removeChild(div);
+        div.parentNode.removeChild(div);
     } catch(e) {
     }
 }
@@ -244,7 +244,7 @@ function view(url) {
         }
 
         var graph_title = document.getElementById('graphtitle');
-        graph_title.parentElement.style.display = 'block';
+        graph_title.parentNode.style.display = 'block';
 
         // Title the graph with the title of the graphed column.
         if (response.graph_title != undefined) {
