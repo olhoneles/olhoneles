@@ -118,6 +118,7 @@ function view_all() {
 	bServerSide: true,
 	sAjaxSource: '/all',
         aoColumns: aoColumns,
+        aaSorting: [[6, 'desc']]
     });
 
     new FixedHeader(data_table);
