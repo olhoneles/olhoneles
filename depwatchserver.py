@@ -25,7 +25,15 @@ from cherrypy import tools
 from sqlalchemy import func, desc, asc, or_
 import json
 
-from collector.models import Legislator, Expense, Supplier, Session
+from collector.models import Legislator, Expense, Supplier
+
+import os.path
+project_path = os.path.dirname(__file__)
+if not project_path:
+    project_path = os.getcwd()
+
+from collector import models
+Session = models.initialize('sqlite:///%s/data.db' % (project_path))
 
 
 appdir = os.path.dirname(__file__)
@@ -161,4 +169,12 @@ class DepWatchWeb(object):
         return self._make_response(columns, expenses, graph_title = graph_title)
     per_nature.exposed = True
 
-cherrypy.quickstart(DepWatchWeb())
+
+def setup_server():
+    cherrypy.config.update({'environment': 'production',
+                            'log.screen': False,
+                            'show_tracebacks': True})
+    cherrypy.tree.mount(DepWatchWeb())
+
+if __name__ == '__main__':
+    cherrypy.quickstart(DepWatchWeb())

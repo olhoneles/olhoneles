@@ -24,7 +24,10 @@ from BeautifulSoup import BeautifulSoup
 from sqlalchemy import and_
 from sqlalchemy.orm.exc import NoResultFound
 
-from models import Session, Legislator, Supplier, Expense
+from models import Legislator, Supplier, Expense
+
+import models
+Session = models.initialize('sqlite:///data.db')
 
 
 def parse_money(string):

@@ -21,8 +21,6 @@ from sqlalchemy import Table, Column, Unicode, Integer, String, Date, Float, Seq
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 
-engine = create_engine('sqlite:///data.db')
-Session = sessionmaker(bind = engine)
 Base = declarative_base()
 
 class Legislator(Base):
@@ -89,5 +87,9 @@ class Expense(Base):
     def __unicode__(self):
         return u'%f (%s)' % (self.expensed, self.number)
 
+def initialize(database_path):
+    engine = create_engine(database_path)
+    Session = sessionmaker(bind = engine)
+    Base.metadata.create_all(engine)
 
-Base.metadata.create_all(engine)
+    return Session
