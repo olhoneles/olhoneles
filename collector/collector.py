@@ -175,5 +175,5 @@ if __name__ == '__main__':
     if options.year:
         vi.update_data(options.year)
     else:
-        vi.update_date()
+        vi.update_data()
 
