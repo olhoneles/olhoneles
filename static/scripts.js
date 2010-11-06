@@ -291,7 +291,8 @@ function view(url) {
 
         jQuery('#resultstable').dataTable({
             bPaginate: false,
-            aoColumns: aoColumns
+            aoColumns: aoColumns,
+            aaSorting: [[columns.length - 1, 'desc']]
         });
 
         // Graph.
