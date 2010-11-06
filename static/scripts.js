@@ -18,6 +18,9 @@ function cleanup() {
     context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    var table_title = document.getElementById('tabletitle');
+    table_title.innerHTML = '';
+
     var graph_title = document.getElementById('graphtitle');
     graph_title.innerHTML = '';
     graph_title.parentNode.style.display = 'none';
@@ -119,6 +122,61 @@ function view_all() {
 	sAjaxSource: '/all',
         aoColumns: aoColumns,
         aaSorting: [[6, 'desc']]
+    });
+
+    new FixedHeader(data_table);
+}
+
+function detail_legislator(legid, legname, legparty) {
+    cleanup();
+
+    var table_title = document.getElementById('tabletitle');
+    table_title.innerHTML = legname + ' (' + legparty + ')';
+
+    // Prepare columns we will display.
+    var columns = []
+    var n_columns = 0;
+
+    var string_columns = ['Tipo de gasto', 'Empresa/Pessoa',
+                          'CNPJ/CPF', 'N° do Doc.', 'Data']
+
+    for (n_columns = 0; n_columns < string_columns.length; n_columns++) {
+        var col = Object();
+        col.label = string_columns[n_columns];
+        col.type = 'string';
+        columns[n_columns] = col;
+    }
+
+    var col = Object();
+    col.label = 'Valor';
+    col.type = 'money';
+    columns[n_columns++] = col;
+
+    // Build base table.
+    var table_elements = build_table_top(columns);
+    var table = table_elements[0];
+    var tbody = table_elements[1];
+
+    table.setAttribute('class', 'fullwidth');
+
+    aoColumns = []
+    for (var j = 0; j < columns.length; j++) {
+        var coltype = columns[j]['type'];
+
+        if (coltype == 'money') {
+            aoColumns[j] = { sType: 'money' };
+        } else {
+            aoColumns[j] = null;
+        }
+    }
+
+    var data_table = jQuery('#resultstable').dataTable({
+        bPaginate: true,
+	bProcessing: true,
+	bServerSide: true,
+	sAjaxSource: '/legislator_all',
+        aoColumns: aoColumns,
+        aaSorting: [[4, 'desc']]
     });
 
     new FixedHeader(data_table);

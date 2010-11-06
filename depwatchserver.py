@@ -120,17 +120,65 @@ class DepWatchWeb(object):
         return unicode(json.dumps(response))
     all.exposed = True
 
+    def legislator_all(self, **kwargs):
+        session = Session()
+
+        start = int(kwargs['iDisplayStart'])
+        end = start + int(kwargs['iDisplayLength'])
+        sort_column = int(kwargs['iSortCol_0']) + 1 # sqlalchemy starts counting from 1
+
+        if kwargs['sSortDir_0'] == 'asc':
+            sort_order = asc
+        else:
+            sort_order = desc
+
+        expenses_query = session.query(Expense.nature, Supplier.name, Supplier.cnpj,
+                                       Expense.number, Expense.date, Expense.expensed
+                                       ).join('supplier').order_by(sort_order(sort_column))
+
+        total_results = expenses_query.count()
+
+        search_string = kwargs['sSearch'].decode('utf-8')
+        if search_string:
+            expenses_query = expenses_query.filter(or_(Expense.nature.like('%' + search_string + '%'),
+                                                       Supplier.name.like('%' + search_string + '%'),
+                                                       Supplier.cnpj.like('%' + search_string + '%')))
+        display_results = expenses_query.count()
+        expenses = expenses_query[start:end]
+
+        # Format money and date columns.
+        data = []
+        for item in expenses:
+            item = list(item)
+            item[-2] = item[-2].strftime('%d/%m/%Y')
+            item[-1] = locale.currency(float(item[-1]), grouping = True)
+            data.append(item)
+
+        response = dict(sEcho = int(kwargs['sEcho']),
+                        iTotalRecords = total_results,
+                        iTotalDisplayRecords = display_results,
+                        aaData = data)
+        return unicode(json.dumps(response))
+    legislator_all.exposed = True
+
     def per_legislator(self):
         session = Session()
 
-        expenses = session.query(Legislator.name, Legislator.party,
+        expenses = session.query(Legislator.id, Legislator.name, Legislator.party,
                                  func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party, Legislator.name).order_by(desc(3)).all()
+
+        data = []
+        for exp in expenses:
+            line = []
+            line.append('<a href="javascript:detail_legislator(%d, \'%s\', \'%s\')">%s</a>' % (exp[0], exp[1], exp[2], exp[1]))
+            line += exp[2:]
+            data.append(line)
 
         columns = []
         columns.append(dict(label = u'Deputad@', type = 'string', index = 0))
         columns.append(dict(label = u'Partido', type = 'string', index = 1))
         columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 2))
-        return self._make_response(columns, expenses, show_graph = False)
+        return self._make_response(columns, data, show_graph = False)
     per_legislator.exposed = True
 
     def per_party(self):
