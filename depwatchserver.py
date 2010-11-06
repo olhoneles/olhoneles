@@ -203,6 +203,19 @@ class DepWatchWeb(object):
         return self._make_response(columns, expenses, graph_title = graph_title)
     per_party.exposed = True
 
+    def per_supplier(self):
+        session = Session()
+
+        expenses = session.query(Supplier.name, Supplier.cnpj,
+                                 func.sum(Expense.expensed)).join('expenses').group_by(Supplier.cnpj).order_by(desc(3)).all()
+
+        columns = []
+        columns.append(dict(label = u'Empresa/Pessoa', type = 'string', index = 0))
+        columns.append(dict(label = u'CNPJ/CPF', type = 'string', index = 1))
+        columns.append(dict(label = u'Valor recebido', type = 'money', index = 2))
+        return self._make_response(columns, expenses, show_graph = False)
+    per_supplier.exposed = True
+
     def per_nature(self):
         session = Session()
 
