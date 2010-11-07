@@ -174,7 +174,7 @@ function detail_legislator(legid, legname, legparty) {
         bPaginate: true,
 	bProcessing: true,
 	bServerSide: true,
-	sAjaxSource: '/legislator_all',
+	sAjaxSource: '/legislator_all/' + legid,
         aoColumns: aoColumns,
         aaSorting: [[4, 'desc']]
     });

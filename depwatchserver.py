@@ -120,7 +120,7 @@ class DepWatchWeb(object):
         return unicode(json.dumps(response))
     all.exposed = True
 
-    def legislator_all(self, **kwargs):
+    def legislator_all(self, legislator_id, **kwargs):
         session = Session()
 
         start = int(kwargs['iDisplayStart'])
@@ -132,9 +132,12 @@ class DepWatchWeb(object):
         else:
             sort_order = desc
 
+        legislator = session.query(Legislator).get(legislator_id)
         expenses_query = session.query(Expense.nature, Supplier.name, Supplier.cnpj,
                                        Expense.number, Expense.date, Expense.expensed
                                        ).join('supplier').order_by(sort_order(sort_column))
+
+        expenses_query = expenses_query.filter(Expense.legislator == legislator)
 
         total_results = expenses_query.count()
 
