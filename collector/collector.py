@@ -41,12 +41,13 @@ def parse_date(string):
 
 class VerbaIndenizatoria(object):
 
-    main_uri = 'http://almg.gov.br/index.asp?diretorio=verbasindeniz&arquivo=ListaMesesVerbas'
+    legislatures = [ 16, 17]
+    main_uri = 'http://almg.gov.br/index.asp?diretorio=verbasindeniz&arquivo=ListaMesesVerbas%(legislature)d'
     sub_uri = 'http://almg.gov.br/VerbasIndeniz/%(year)s/%(legid)d/%(month).2ddet.asp'
 
-    def update_legislators(self):
+    def update_legislators_for_legislature(self, legislature):
         try:
-            url = urlopen(self.main_uri)
+            url = urlopen(self.main_uri % dict(legislature=legislature))
         except URLError:
             exception('Unable to download "%s": ')
 
@@ -74,6 +75,10 @@ class VerbaIndenizatoria(object):
                 session.add(Legislator(l['id'], l['name'], l['party']))
 
         session.commit()
+
+    def update_legislators(self):
+        for legislature in self.legislatures:
+            self.update_legislators_for_legislature(legislature)
 
     def update_data(self, year = datetime.now().year):
         session = Session()
