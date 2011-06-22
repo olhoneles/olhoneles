@@ -41,7 +41,7 @@ def parse_date(string):
 
 class VerbaIndenizatoria(object):
 
-    legislatures = [ 16, 17]
+    legislatures = [17]
     main_uri = 'http://almg.gov.br/index.asp?diretorio=verbasindeniz&arquivo=ListaMesesVerbas%(legislature)d'
     sub_uri = 'http://almg.gov.br/VerbasIndeniz/%(year)s/%(legid)d/%(month).2ddet.asp'
 
