@@ -29,15 +29,17 @@ class Legislator(Base):
     id = Column(Integer, primary_key = True)
     name = Column(Unicode)
     party = Column(Unicode)
+    position = Column(Unicode)
 
     expenses = relationship('Expense',
                             backref = backref('legislator')
                             )
 
-    def __init__(self, id, name, party):
+    def __init__(self, id, name, party, position):
         self.id = id
         self.name = name
         self.party = party
+        self.position = position
 
     def __unicode__(self):
         return u'Dep. %s (Matrícula %d) - %s' % (self.name, self.id, self.party)

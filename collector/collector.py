@@ -72,7 +72,7 @@ class VerbaIndenizatoria(object):
         # Add legislators that do not exist yet
         for l in legislators:
             if l['id'] not in existing_ids:
-                session.add(Legislator(l['id'], l['name'], l['party']))
+                session.add(Legislator(l['id'], l['name'], l['party'], u'Deputado Estadual - MG'))
 
         session.commit()
 
