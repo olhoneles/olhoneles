@@ -20,7 +20,7 @@ def parse_money(string):
 def parse_date(string):
     return datetime.strptime(string, '%d/%m/%Y').date()
 
-class VerbaIndenizatoria(object):
+class VerbaIndenizatoriaALMG(object):
 
     legislatures = [17]
     main_uri = 'http://www.almg.gov.br/index.asp?diretorio=verbasindeniz&arquivo=ListaMesesVerbas%(legislature)d'

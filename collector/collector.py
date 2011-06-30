@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sources.almg import *
+import sources
 
 if __name__ == '__main__':
     import optparse
@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    vi = VerbaIndenizatoria()
+    vi = sources.VerbaIndenizatoriaALMG()
     vi.update_legislators()
 
     if options.year:
