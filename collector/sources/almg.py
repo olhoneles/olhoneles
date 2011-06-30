@@ -1,41 +1,17 @@
-from datetime import datetime
-from logging import exception
-from urllib2 import urlopen, URLError, HTTPError
+from base import *
 
-from BeautifulSoup import BeautifulSoup
-from sqlalchemy import and_
-from sqlalchemy.orm.exc import NoResultFound
-
-from models import Legislator, Supplier, Expense
-
-import models
-Session = models.initialize('sqlite:///data.db')
-
-
-def parse_money(string):
-    string = string.replace('.', '')
-    string = string.replace(',', '.')
-    return float(string)
-
-def parse_date(string):
-    return datetime.strptime(string, '%d/%m/%Y').date()
-
-class VerbaIndenizatoriaALMG(object):
+class VerbaIndenizatoriaALMG(BaseCollector):
 
     legislatures = [17]
     main_uri = 'http://www.almg.gov.br/index.asp?diretorio=verbasindeniz&arquivo=ListaMesesVerbas%(legislature)d'
     sub_uri = 'http://www.almg.gov.br/VerbasIndeniz/%(year)s/%(legid)d/%(month).2ddet.asp'
 
     def update_legislators_for_legislature(self, legislature):
-        try:
-            url = urlopen(self.main_uri % dict(legislature=legislature))
-        except URLError:
-            exception('Unable to download "%s": ')
-
-        content = BeautifulSoup(url.read())
+        # Retrieving the first select from current legislature
+        select = self.get_element_from_uri(self.main_uri % dict(legislature=legislature), 'select')
 
         # We ignore the first one because it is a placeholder.
-        options = content.find('select').findAll('option')[1:]
+        options = select.findAll('option')[1:]
 
         # Turn the soup objects into a list of dictionaries
         legislators = []
@@ -58,6 +34,8 @@ class VerbaIndenizatoriaALMG(object):
         session.commit()
 
     def update_legislators(self):
+        if self.debug:
+            print 'Retrieving legislators information...'
         for legislature in self.legislatures:
             self.update_legislators_for_legislature(legislature)
 
@@ -67,6 +45,8 @@ class VerbaIndenizatoriaALMG(object):
 
         for legislator_id in ids:
             for month in range(1, 13):
+                if self.debug:
+                    print 'Retrieving info for legid %s, month %s' % (legislator_id, month)
                 self.update_data_for_id(legislator_id, year, month)
 
     def update_data_for_id(self, id, year, month):
@@ -74,20 +54,9 @@ class VerbaIndenizatoriaALMG(object):
 
         legislator = session.query(Legislator).get(id)
 
-        try:
-            url = urlopen(self.sub_uri % dict(year = year, legid = id, month = month))
-        except HTTPError, e:
-            url = None
-            if e.getcode() != 404:
-                raise HTTPError(e)
-        except URLError, e:
-            url = None
-            exception('Unable to download "%s": ')
-
-        if url is None:
+        content = self.retrieve_uri(self.sub_uri % dict(year = year, legid = id, month = month))
+        if content == None:
             return
-
-        content = BeautifulSoup(url.read())
 
         # Find the main content table. It looks like this:
         #
