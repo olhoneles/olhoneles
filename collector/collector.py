@@ -23,14 +23,24 @@ if __name__ == '__main__':
 
     parser = optparse.OptionParser()
     parser.add_option('-y', '--year', type='int', dest='year', help='Year to collect from.')
+    parser.add_option('-s', '--source', type='string', dest='source', default='all', help="Source to collect from. Possible values are 'almg', 'senado' or 'all'. The default value for this parameter is 'all'")
 
     (options, args) = parser.parse_args()
 
-    vi = sources.VerbaIndenizatoriaALMG()
-    vi.update_legislators()
+    src = []
+    if options.source == 'almg' or options.source == 'all':
+        src.append(sources.VerbaIndenizatoriaALMG())
+    if options.source == 'senado' or options.source == 'all':
+        src.append(sources.VerbaIndenizatoriaSenado())
 
-    if options.year:
-        vi.update_data(options.year)
-    else:
-        vi.update_data()
+    if len(src) == 0:
+        parser.error ('Invalid value for source (%s).' % (options.source))
+
+    for vi in src:
+        vi.update_legislators()
+
+        if options.year:
+            vi.update_data(options.year)
+        else:
+            vi.update_data()
 

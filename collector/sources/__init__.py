@@ -1,1 +1,2 @@
-from sources.almg import *
+from almg import *
+from senado import *

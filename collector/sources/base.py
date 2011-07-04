@@ -2,8 +2,9 @@ from datetime import datetime
 
 from logging import exception
 
+import urllib
 from urllib2 import urlopen, URLError, HTTPError
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_
@@ -30,11 +31,14 @@ class BaseCollector(object):
     def update_data(self, year = datetime.now().year):
         exception('Not implemented.')
 
-    def retrieve_uri(self, uri):
+    def retrieve_uri(self, uri, data = None):
         resp = None
 
         try:
-            resp = urlopen(uri)
+            if data == None:
+                resp = urlopen(uri)
+            else:
+                resp = urlopen(uri, urllib.urlencode(data))
         except HTTPError, e:
             if e.getcode() != 404:
                 raise HTTPError(e)
@@ -46,6 +50,6 @@ class BaseCollector(object):
 
         return BeautifulSoup(resp.read())
 
-    def get_element_from_uri(self, uri, element):
-        content = self.retrieve_uri (uri)
-        return content.find(element)
+    def get_element_from_uri(self, uri, element, attrs = {}, data = None):
+        content = self.retrieve_uri (uri, data)
+        return content.find(element, attrs)
