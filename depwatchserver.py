@@ -125,7 +125,7 @@ class DepWatchWeb(object):
 
         start = int(kwargs['iDisplayStart'])
         end = start + int(kwargs['iDisplayLength'])
-        sort_column = int(kwargs['iSortCol_0']) + 1 # sqlalchemy starts counting from 1
+        sort_column = str(int(kwargs['iSortCol_0']) + 1) # sqlalchemy starts counting from 1
 
         if kwargs['sSortDir_0'] == 'asc':
             sort_order = asc
@@ -168,7 +168,7 @@ class DepWatchWeb(object):
         session = Session()
 
         expenses = session.query(Legislator.id, Legislator.name, Legislator.party,
-                                 func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party, Legislator.name).order_by(desc(3)).all()
+                                 func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party, Legislator.name).order_by(desc('3')).all()
 
         data = []
         for exp in expenses:
@@ -210,7 +210,7 @@ class DepWatchWeb(object):
         session = Session()
 
         expenses = session.query(Supplier.name, Supplier.cnpj,
-                                 func.sum(Expense.expensed)).join('expenses').group_by(Supplier.cnpj).order_by(desc(3)).all()
+                                 func.sum(Expense.expensed)).join('expenses').group_by(Supplier.cnpj).order_by(desc('3')).all()
 
         columns = []
         columns.append(dict(label = u'Empresa/Pessoa', type = 'string', index = 0))
