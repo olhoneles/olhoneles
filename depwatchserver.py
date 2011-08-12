@@ -81,7 +81,7 @@ class DepWatchWeb(object):
 
         start = int(kwargs['iDisplayStart'])
         end = start + int(kwargs['iDisplayLength'])
-        sort_column = int(kwargs['iSortCol_0']) + 1 # sqlalchemy starts counting from 1
+        sort_column = str(int(kwargs['iSortCol_0']) + 1) # sqlalchemy starts counting from 1
 
         if kwargs['sSortDir_0'] == 'asc':
             sort_order = asc
