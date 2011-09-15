@@ -41,7 +41,7 @@ class BaseCollector(object):
                 resp = urlopen(uri, urllib.urlencode(data))
         except HTTPError, e:
             if e.getcode() != 404:
-                raise HTTPError(e)
+                raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
         except URLError:
             exception('Unable to retrieve: %s' % (uri))
 
