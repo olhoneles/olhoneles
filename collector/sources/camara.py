@@ -50,20 +50,21 @@ class VerbaIndenizatoriaCamara(BaseCollector):
     def update_data_missing(self, year = datetime.now().year, start = None):
         session = Session()
 
-        existing_ids = session.query(distinct(Expense.legislator_id));
+        existing_ids = session.query(distinct(Expense.legislator_id)).filter(and_(Expense.date >= '%s-01-01'%(year),
+                                                                                  Expense.date <= '%s-12-31'%(year)));
         if start == None:
             legislators = session.query(Legislator.id).filter(Legislator.id.op('NOT IN')(existing_ids)).all()
         else:
             legislators = session.query(Legislator.id).filter(and_(Legislator.id.op('NOT IN')(existing_ids),
-                                                              Legislator.id >= start)).all()
+                                                                   Legislator.id >= start)).all()
         for l in legislators:
-            for m in range(4, 13):
+            for m in range(1, 13):
                 self.update_data_for_id_period (l.id, year, m)
 
     def update_data_manual(self, id, year = datetime.now().year):
         session = Session()
 
-        for month in range(4, 13):
+        for month in range(1, 13):
             self.update_data_for_id_period(id, year, month)
 
 
