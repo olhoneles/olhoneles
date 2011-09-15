@@ -47,23 +47,24 @@ class VerbaIndenizatoriaCamara(BaseCollector):
         self.update_data_missing (year)
         #self.update_data_manual (year)
 
-    def update_data_missing(self, year = datetime.now().year):
+    def update_data_missing(self, year = datetime.now().year, start = None):
         session = Session()
 
         existing_ids = session.query(distinct(Expense.legislator_id));
-        legislators = session.query(Legislator.id).filter(Legislator.id.op('NOT IN')(existing_ids)).all()
+        if start == None:
+            legislators = session.query(Legislator.id).filter(Legislator.id.op('NOT IN')(existing_ids)).all()
+        else:
+            legislators = session.query(Legislator.id).filter(and_(Legislator.id.op('NOT IN')(existing_ids),
+                                                              Legislator.id >= start)).all()
         for l in legislators:
             for m in range(4, 13):
                 self.update_data_for_id_period (l.id, year, m)
 
-    def update_data_manual(self, year = datetime.now().year):
+    def update_data_manual(self, id, year = datetime.now().year):
         session = Session()
 
-        # Retrieving legislator
-        legislator = session.query(Legislator).filter(Legislator.name == u'COSTA FERREIRA').one()
-
         for month in range(4, 13):
-            self.update_data_for_id_period(legislator.id, year, month)
+            self.update_data_for_id_period(id, year, month)
 
 
     def update_data_normal(self, year = datetime.now().year):
@@ -73,6 +74,8 @@ class VerbaIndenizatoriaCamara(BaseCollector):
         for legislator_id, name in data:
             try:
                 for month in range(1, 13):
+                    if self.debug:
+                        print 'Retrieving information for %s (%s), period %s-%s' % (name, nuDeputado, month, year)
                     self.update_data_for_id_period(legislator_id, nuDeputado, year, month)
             except HTTPError as msg:
                 print "Error retrieving expenses: %s\n" % (msg)
