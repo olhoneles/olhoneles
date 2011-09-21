@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>%(title)s</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <script type="text/javascript" src="/static/MochiKit.js"></script>
+  <script type="text/javascript" src="/static/PlotKit.js"></script>
+  <script type="text/javascript" src="/static/jquery.js"></script>
+  <script type="text/javascript" src="/static/datatables/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="/static/datatables/js/FixedHeader.min.js"></script>
+  <script type="text/javascript" src="/static/jquery.number_format.js"></script>
+  <script type="text/javascript" src="/static/scripts.js"></script>
+  <link type="text/css" rel="stylesheet" href="/static/style.css">
+</head>
+<body onload="javascript:view('per_nature')">
+  <a href="javascript:view('per_nature')">Totais por tipo de gasto</a>
+  |
+  <a href="javascript:view('per_legislator')">Totais por deputad@</a>
+  |
+  <a href="javascript:view('per_party')">Totais por partido</a>
+  |
+  <a href="javascript:view('per_supplier')">Totais por fornecedor</a>
+  |
+  <a href="javascript:view_all()">Todos os gastos</a>
+  |
+
+  <div id="content">
+    <h1 id="tabletitle"></h1>
+    <div style="float: right;">
+      <h2 id="graphtitle"></h2>
+      <div id="graphparent">
+        <canvas id="graph" height="500" width="500"></canvas>
+      </div>
+    </div>
+    <div id="results"></div>
+  </div>
+  <div id="footnotes">
+    Fonte: <a href="%(data_source_uri)s">%(data_source_label)s</a>.
+    <a href="/static/data.db">Faça download do banco de dados SQLite</a>.
+  </div>
+</body>
+</html>

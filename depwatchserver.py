@@ -46,12 +46,23 @@ locale.setlocale(locale.LC_ALL, '')
 locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
 
+import config as config_module
+config = { 'title': config_module.title,
+           'data_source_uri': config_module.data_source_uri,
+           'data_source_label': config_module.data_source_label,
+           'sources_repository': config_module.sources_repository }
+cherrypy.engine.autoreload.files.add(appdir + '/templates/index.html')
+
+
+html_data = open(appdir + '/templates/index.html').read()
+
+
 class DepWatchWeb(object):
     static = tools.staticdir.handler(section='static',
                                      root=appdir, dir='static')
 
     def index(self):
-        raise cherrypy.HTTPRedirect('/static/index.html')
+        return html_data % (config)
     index.exposed = True
 
     def _make_response(self, columns, data, graph_column = None, graph_title = '', show_graph = True):

@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+title = 'Olho neles!'
+data_source_uri = 'http://almg.gov.br/'
+data_source_label = 'Assembléia Legislativa do Estado de Minas Gerais'
+sources_repository = 'http://gitorious.org/montanha/montanha'
