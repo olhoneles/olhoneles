@@ -193,7 +193,6 @@ class DepWatchWeb(object):
         expenses = [[party, num_legislators, expensed, expensed / num_legislators]
                      for party, num_legislators, expensed in expenses]
 
-        # Order by expense per legislator.
         expenses.sort(cmp = lambda x, y: cmp(y[3], x[3]))
 
         columns = []
