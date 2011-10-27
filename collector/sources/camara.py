@@ -44,8 +44,9 @@ class VerbaIndenizatoriaCamara(BaseCollector):
         session.commit()
 
     def update_data(self, year = datetime.now().year):
-        self.update_data_missing (year)
-        #self.update_data_manual (year)
+        self.update_data_normal (year, 1712)
+        #self.update_data_missing (year, 81)
+        #self.update_data_manual (81, year)
 
     def update_data_missing(self, year = datetime.now().year, start = None):
         session = Session()
@@ -68,16 +69,23 @@ class VerbaIndenizatoriaCamara(BaseCollector):
             self.update_data_for_id_period(id, year, month)
 
 
-    def update_data_normal(self, year = datetime.now().year):
+    def update_data_normal(self, year = datetime.now().year, start = None):
         session = Session()
-        data = [item for item in session.query(Legislator.id, Legislator.name).filter(Legislator.position == self.position)]
+        if start == None:
+            data = [item for item in session.query(Legislator.id, Legislator.name).filter(Legislator.position == self.position)]
+        else:
+            data = [item for item in session.query(Legislator.id, Legislator.name).filter(and_(Legislator.position == self.position,
+                                                                                               Legislator.id >= start))]
 
+        date = datetime.now()
         for legislator_id, name in data:
             try:
-                for month in range(1, 13):
-                    if self.debug:
-                        print 'Retrieving information for %s (%s), period %s-%s' % (name, nuDeputado, month, year)
-                    self.update_data_for_id_period(legislator_id, nuDeputado, year, month)
+                if year == date.year:
+                    for month in range(date.month-2, date.month+1):
+                        self.update_data_for_id_period(legislator_id, year, month)
+                else:
+                    for month in range(1, 13):
+                        self.update_data_for_id_period(legislator_id, year, month)
             except HTTPError as msg:
                 print "Error retrieving expenses: %s\n" % (msg)
                 continue
