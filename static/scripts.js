@@ -87,7 +87,9 @@ function view_from_url() {
     components.shift();
 
     var section = components.shift();
+
     var id = components.shift();
+    if (id == "") id = undefined;
 
     if (section == 'legislador') {
         if (id == undefined) {
