@@ -254,6 +254,10 @@ class DepWatchWeb(object):
         return html_data % (config)
     index.exposed = True
 
+    def default(self, *ignored):
+        return self.index()
+    default.exposed = True
+
 
 def setup_server():
     cherrypy.config.update({'environment': 'production',

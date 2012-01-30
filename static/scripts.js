@@ -74,6 +74,42 @@ function build_table_top(columns) {
     return [table, tbody];
 }
 
+function view_from_url() {
+    var pathname = window.location.pathname;
+    if (pathname == '' || pathname == '/') {
+        view('per_nature');
+        return;
+    }
+
+    var components = pathname.split('/');
+
+    // Remove the empty string.
+    components.shift();
+
+    var section = components.shift();
+    var id = components.shift();
+
+    if (section == 'legislador') {
+        if (id == undefined) {
+            view('per_legislator');
+            return;
+        }
+
+        detail_legislator(id);
+    } else if (section == 'partido') {
+        view('per_party');
+        return;
+    } else if (section == 'fornecedor') {
+        view('per_supplier');
+        return;
+    } else if (section == 'todos') {
+        view_all();
+        return;
+    }
+
+    view('per_nature');
+}
+
 function view_all() {
     cleanup();
 
