@@ -127,11 +127,13 @@ function view_all() {
     new FixedHeader(data_table);
 }
 
-function detail_legislator(legid, legname, legparty) {
+function detail_legislator(legid) {
     cleanup();
 
-    var table_title = document.getElementById('tabletitle');
-    table_title.innerHTML = legname + ' (' + legparty + ')';
+    $.getJSON('/qserver/legislator_info/' + legid, function(response) {
+        var table_title = document.getElementById('tabletitle');
+        table_title.innerHTML = response.legname + ' (' + response.legparty + ')';
+    });
 
     // Prepare columns we will display.
     var columns = []

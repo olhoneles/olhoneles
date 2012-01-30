@@ -168,6 +168,13 @@ class QueryServer(object):
         return unicode(json.dumps(response))
     legislator_all.exposed = True
 
+    def legislator_info(self, legislator_id):
+        session = Session()
+        legislator = session.query(Legislator).get(legislator_id)
+        response = dict(legname = legislator.name, legparty = legislator.party)
+        return unicode(json.dumps(response))
+    legislator_info.exposed = True
+
     def per_legislator(self):
         session = Session()
 
@@ -177,7 +184,7 @@ class QueryServer(object):
         data = []
         for exp in expenses:
             line = []
-            line.append('<a href="javascript:detail_legislator(%d, \'%s\', \'%s\')">%s</a>' % (exp[0], exp[1], exp[2], exp[1]))
+            line.append('<a href="javascript:detail_legislator(%d)">%s</a>' % (exp[0], exp[1]))
             line += exp[2:]
             data.append(line)
 
