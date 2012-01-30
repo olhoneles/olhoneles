@@ -119,7 +119,7 @@ function view_all() {
         bPaginate: true,
 	bProcessing: true,
 	bServerSide: true,
-	sAjaxSource: '/all',
+	sAjaxSource: '/qserver/all',
         aoColumns: aoColumns,
         aaSorting: [[6, 'desc']]
     });
@@ -174,7 +174,7 @@ function detail_legislator(legid, legname, legparty) {
         bPaginate: true,
 	bProcessing: true,
 	bServerSide: true,
-	sAjaxSource: '/legislator_all/' + legid,
+	sAjaxSource: '/qserver/legislator_all/' + legid,
         aoColumns: aoColumns,
         aaSorting: [[4, 'desc']]
     });
@@ -183,7 +183,7 @@ function detail_legislator(legid, legname, legparty) {
 }
 
 function view(url) {
-    $.getJSON('/' + url, function(response) {
+    $.getJSON('/qserver/' + url, function(response) {
         var columns = response.columns
         var data = response.data;
         var show_graph = response.show_graph;

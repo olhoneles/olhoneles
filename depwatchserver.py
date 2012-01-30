@@ -57,14 +57,7 @@ cherrypy.engine.autoreload.files.add(appdir + '/templates/index.html')
 html_data = open(appdir + '/templates/index.html').read()
 
 
-class DepWatchWeb(object):
-    static = tools.staticdir.handler(section='static',
-                                     root=appdir, dir='static')
-
-    def index(self):
-        return html_data % (config)
-    index.exposed = True
-
+class QueryServer(object):
     def _make_response(self, columns, data, graph_column = None, graph_title = '', show_graph = True):
         if graph_column is None:
             graph_column = len(columns) - 1
@@ -242,6 +235,17 @@ class DepWatchWeb(object):
         graph_title = u'Total de gasto por tipo'
         return self._make_response(columns, expenses, graph_title = graph_title)
     per_nature.exposed = True
+
+
+class DepWatchWeb(object):
+    static = tools.staticdir.handler(section='static',
+                                     root=appdir, dir='static')
+
+    qserver = QueryServer()
+
+    def index(self):
+        return html_data % (config)
+    index.exposed = True
 
 
 def setup_server():
