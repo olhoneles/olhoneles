@@ -98,13 +98,20 @@ function view_from_url() {
         }
 
         detail_legislator(id);
-    } else if (section == 'partido') {
+        return;
+    }
+
+    if (section == 'partido') {
         view('per_party');
         return;
-    } else if (section == 'fornecedor') {
+    }
+
+    if (section == 'fornecedor') {
         view('per_supplier');
         return;
-    } else if (section == 'todos') {
+    }
+
+    if (section == 'todos') {
         view_all();
         return;
     }
