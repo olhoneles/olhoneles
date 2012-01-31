@@ -185,7 +185,7 @@ class QueryServer(object):
         data = []
         for exp in expenses:
             line = []
-            line.append('<a href="javascript:detail_legislator(%d)">%s</a>' % (exp[0], exp[1]))
+            line.append('<a class="navigation" href="/legislador/%d">%s</a>' % (exp[0], exp[1]))
             line += exp[2:]
             data.append(line)
 

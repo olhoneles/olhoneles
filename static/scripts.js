@@ -12,6 +12,43 @@ jQuery.fn.dataTableExt.oSort['money-desc'] = function(a, b) {
     return normalizeMoney(b) - normalizeMoney(a);
 };
 
+function handle_navigation (e)
+{
+    history.pushState(null, null, $(this)[0].href);
+    view_from_url();
+    e.preventDefault();
+}
+
+function setup_history_handling()
+{
+    // Gracefully degrade.
+    if (typeof history == undefined || typeof history.pushState == undefined) {
+        return;
+    }
+
+    window.addEventListener('popstate', function(e) {
+        view_from_url();
+    });
+}
+
+function setup_navigation_handling(query)
+{
+    // Gracefully degrade.
+    if (typeof history == undefined || typeof history.pushState == undefined) {
+        return;
+    }
+
+    $(query).click(handle_navigation);
+}
+
+function montanha_init()
+{
+    setup_history_handling();
+    setup_navigation_handling('.navigation');
+
+    view_from_url();
+}
+
 function cleanup() {
     var canvas = document.getElementById('graph');
 
@@ -341,6 +378,8 @@ function view(url) {
             aoColumns: aoColumns,
             aaSorting: [[columns.length - 1, 'desc']]
         });
+
+        setup_navigation_handling('#resultstable .navigation');
 
         // Graph.
 
