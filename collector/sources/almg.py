@@ -114,12 +114,9 @@ class VerbaIndenizatoriaALMG(BaseCollector):
                 expensed = parse_money(columns[5].getText())
 
                 def print_expense(exp):
-                    try:
-                        print u'%s (%d) expensed %f docnum: %s on %s supplier: %s (%s)' % \
-                            (exp.legislator.name, exp.legislator.id, exp.expensed,
-                             exp.number, exp.date, exp.supplier.name, exp.supplier.cnpj)
-                    except Exception:
-                        import pdb;pdb.set_trace()
+                    print u'%s (%d) expensed %f docnum: %s on %s supplier: %s (%s)' % \
+                        (exp.legislator.name, exp.legislator.id, exp.expensed,
+                         exp.number, exp.date, exp.supplier.name, exp.supplier.cnpj)
 
                 try:
                     expense = session.query(Expense).filter(and_(Expense.number == docnumber,

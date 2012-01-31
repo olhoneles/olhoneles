@@ -20,6 +20,10 @@
 import sources
 
 if __name__ == '__main__':
+    import os
+    os.environ['LANG'] = 'pt_BR.UTF-8'
+    os.environ['LC_ALL'] = 'pt_br.UTF-8'
+
     import optparse
 
     parser = optparse.OptionParser()
