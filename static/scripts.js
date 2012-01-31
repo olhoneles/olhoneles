@@ -111,7 +111,21 @@ function build_table_top(columns) {
     return [table, tbody];
 }
 
-function view_from_url() {
+var main_title = undefined;
+function set_title(title)
+{
+    if (main_title == undefined) {
+        main_title = document.title;
+    }
+
+    document.title = title + ' - ' + main_title;
+}
+
+function view_from_url()
+{
+    // Set a good fallback.
+    set_title('Totais por tipo de gasto');
+
     var pathname = window.location.pathname;
     if (pathname == '' || pathname == '/') {
         view('per_nature');
@@ -129,6 +143,8 @@ function view_from_url() {
     if (id == "") id = undefined;
 
     if (section == 'legislador') {
+        set_title('Totais por legislador');
+
         if (id == undefined) {
             view('per_legislator');
             return;
@@ -139,16 +155,19 @@ function view_from_url() {
     }
 
     if (section == 'partido') {
+        set_title('Totais por partido');
         view('per_party');
         return;
     }
 
     if (section == 'fornecedor') {
+        set_title('Totais por fornecedor');
         view('per_supplier');
         return;
     }
 
     if (section == 'todos') {
+        set_title('Todos os gastos');
         view_all();
         return;
     }
@@ -213,8 +232,11 @@ function detail_legislator(legid) {
     cleanup();
 
     $.getJSON('/qserver/legislator_info/' + legid, function(response) {
+        var full_title = response.legname + ' (' + response.legparty + ')';
+        set_title(full_title);
+
         var table_title = document.getElementById('tabletitle');
-        table_title.innerHTML = response.legname + ' (' + response.legparty + ')';
+        table_title.innerHTML = full_title;
     });
 
     // Prepare columns we will display.
