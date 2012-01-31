@@ -2,25 +2,40 @@ from base import *
 
 class VerbaIndenizatoriaALMG(BaseCollector):
 
-    legislatures = [17]
-    main_uri = 'http://www.almg.gov.br/index.asp?diretorio=verbasindeniz&arquivo=ListaMesesVerbas%(legislature)d'
-    sub_uri = 'http://www.almg.gov.br/VerbasIndeniz/%(year)s/%(legid)d/%(month).2ddet.asp'
+    main_uri = 'http://www.almg.gov.br/acompanhe/prestacao_contas/index.html?pager.offset=%(offset)d&aba=js_tabVerba'
+    sub_uri = 'http://www.almg.gov.br/deputados/verbas_indenizatorias/index.html?idDep=%(legid)d'
 
-    def update_legislators_for_legislature(self, legislature):
-        # Retrieving the first select from current legislature
-        select = self.get_element_from_uri(self.main_uri % dict(legislature=legislature), 'select')
+    def update_legislators(self):
+        if self.debug:
+            print 'Retrieving legislators information...'
 
-        # We ignore the first one because it is a placeholder.
-        options = select.findAll('option')[1:]
-
-        # Turn the soup objects into a list of dictionaries
+        # Get a list of all available legislators.
         legislators = []
-        for item in options:
-            legislators.append(dict(id = int(item['matr']),
-                                    name = item['name'],
-                                    party = item.string[len(item['name'])+2:-1],
-                                    )
-                               )
+        for offset in range(0, 73, 12):
+            ul = self.get_element_from_uri(self.main_uri % dict(offset = offset), 'ul', dict(id = 'deputados_view-imagem'))
+
+            list_items = ul.findAll('li')
+
+            # Each item looks like this:
+            # <p class="titulo">
+            #   <a href="/deputados/verbas_indenizatorias/index.html?idDep=[ID]">[NAME]</a>
+            # </p>
+            # <p>Partido: [PARTY]</p>
+            for item in list_items:
+                paras = item.findAll('p')
+
+                link = paras[0].findChild('a')
+
+                legid = link['href'].split('idDep=')[1]
+                name = link.getText()
+
+                party = paras[1].getText().split(' ')[1]
+
+                legislators.append(dict(id = int(legid),
+                                        name = name,
+                                        party = party,
+                                        )
+                                   )
 
         # Obtain the existing ids
         session = Session()
@@ -33,12 +48,6 @@ class VerbaIndenizatoriaALMG(BaseCollector):
 
         session.commit()
 
-    def update_legislators(self):
-        if self.debug:
-            print 'Retrieving legislators information...'
-        for legislature in self.legislatures:
-            self.update_legislators_for_legislature(legislature)
-
     def update_data(self, year = datetime.now().year):
         session = Session()
         ids = [item[0] for item in session.query(Legislator.id)]
@@ -46,50 +55,51 @@ class VerbaIndenizatoriaALMG(BaseCollector):
         for legislator_id in ids:
             for month in range(1, 13):
                 if self.debug:
-                    print 'Retrieving info for legid %s, month %s' % (legislator_id, month)
+                    print 'Retrieving info for legid %d, month %d, year %d' % (legislator_id, month, year)
                 self.update_data_for_id(legislator_id, year, month)
 
-    def update_data_for_id(self, id, year, month):
+    def update_data_for_id(self, legid, year, month):
         session = Session()
 
-        legislator = session.query(Legislator).get(id)
+        legislator = session.query(Legislator).get(legid)
 
-        content = self.retrieve_uri(self.sub_uri % dict(year = year, legid = id, month = month))
+        content = self.retrieve_uri(self.sub_uri % dict(legid = legid),
+                                    dict(year = year, month = month))
         if content == None:
             return
 
         # Find the main content table. It looks like this:
         #
-        # <table>
-        #   <tr><td><strong>Description here</strong></td></tr>
-        #   <tr><table>[Table with the actual data comes here]</table></tr>
-        #   <tr><td><strong>Another description here</strong></td></tr>
-        #   ... and so on.
-        content = content.findAll('table')[2].findChild('tr')
+        # <ul class="listaFAQ" id="box-toggle">
+        #   <li class="primeira cor">
+        #     <span class="js_toggleNext"...>
+        #       <span class="verbas-item1">
+        #          <strong>[Nature of expense]</strong>
+        #       </span>
+        #       <span class="valores-verba">[Total for expenses of this nature]</span>
+        #       <div ...></div> (yes, empty)
+        #     </span>
+        #     <span class="clear" style="display: inline;">
+        #       [Actual data comes here]
+        #     </span>
+        #   </li>
+        # ... and so on.
+        content = content.findChild('ul', { 'class' : 'listaFAQ', 'id' : "box-toggle" })
 
-        # Obtain all of the top-level rows.
-        expenses_tables = [content] + content.findNextSiblings('tr')
+        if content == None:
+            if self.debug:
+                print 'No expenses found for legislator %d on month %d of year %d' % (legid, month, year)
+            return
 
-        # Match the description to the tables (even rows are
-        # descriptions, odd rows are data tables).
-        expenses = []
-        for x in range(0, len(expenses_tables), 2):
-            expenses.append((expenses_tables[x],
-                             expenses_tables[x+1]))
+        tables = content.findAll('li')
+        for table in tables:
+            nature = table.findChild('strong').getText()
 
-        # Parse the data.
-        for desc, exp in expenses:
-            nature = desc.find('strong').contents[0]
-
-            exp = exp.find('table').findChild('tr').nextSibling.findNextSiblings('tr')
-            for row in exp:
+            for row in table.findAll('tr'):
                 columns = row.findAll('td')
 
-                try:
-                    name = columns[0].find('div').contents[0]
-                    cnpj = str(columns[1].find('div').contents[0])
-                except IndexError:
-                    continue
+                name = columns[0].getText()
+                cnpj = columns[1].getText()
 
                 try:
                     supplier = session.query(Supplier).filter(Supplier.cnpj == cnpj).one()
@@ -97,13 +107,19 @@ class VerbaIndenizatoriaALMG(BaseCollector):
                     supplier = Supplier(cnpj, name)
                     session.add(supplier)
 
-                try:
-                    docnumber = columns[2].find('div').contents[0]
-                    docdate = parse_date(columns[3].find('div').contents[0])
-                    docvalue = parse_money(columns[4].find('div').contents[0])
-                    expensed = parse_money(columns[5].find('div').contents[0])
-                except IndexError:
-                    continue
+                docdate = parse_date(columns[2].getText())
+                docnumber = columns[3].getText()
+
+                docvalue = parse_money(columns[4].getText())
+                expensed = parse_money(columns[5].getText())
+
+                def print_expense(exp):
+                    try:
+                        print u'%s (%d) expensed %f docnum: %s on %s supplier: %s (%s)' % \
+                            (exp.legislator.name, exp.legislator.id, exp.expensed,
+                             exp.number, exp.date, exp.supplier.name, exp.supplier.cnpj)
+                    except Exception:
+                        import pdb;pdb.set_trace()
 
                 try:
                     expense = session.query(Expense).filter(and_(Expense.number == docnumber,
@@ -111,9 +127,16 @@ class VerbaIndenizatoriaALMG(BaseCollector):
                                                                  Expense.date == docdate,
                                                                  Expense.legislator == legislator,
                                                                  Expense.supplier == supplier)).one()
+                    if self.debug:
+                        print 'Found expense: ',
+                        print_expense(expense)
                 except NoResultFound:
                     expense = Expense(docnumber, nature, docdate, docvalue,
                                       expensed, legislator, supplier)
                     session.add(expense)
+
+                    if self.debug:
+                        print 'NEW expense'
+                        print_expense(expense)
 
             session.commit()

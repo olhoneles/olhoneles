@@ -15,6 +15,7 @@ import models
 Session = models.initialize('sqlite:///data.db')
 
 def parse_money(string):
+    string = string.strip('R$ ')
     string = string.replace('.', '')
     string = string.replace(',', '.')
     return float(string)
