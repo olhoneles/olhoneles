@@ -23,7 +23,7 @@ var popped = ('state' in window.history), initialURL = location.href;
 function setup_history_handling()
 {
     // Gracefully degrade.
-    if (typeof history == undefined || typeof history.pushState == undefined) {
+    if (typeof history == "undefined" || typeof history.pushState == "undefined") {
         return;
     }
 
@@ -40,7 +40,7 @@ function setup_history_handling()
 function setup_navigation_handling(query)
 {
     // Gracefully degrade.
-    if (typeof history == undefined || typeof history.pushState == undefined) {
+    if (typeof history == "undefined" || typeof history.pushState == "undefined") {
         return;
     }
 
