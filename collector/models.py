@@ -20,6 +20,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Unicode, Integer, String, Date, Float, Sequence, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy import func, desc, asc, or_
 
 Base = declarative_base()
 
@@ -95,3 +96,6 @@ def initialize(database_path):
     Base.metadata.create_all(engine)
 
     return Session
+
+def hack():
+    return initialize('sqlite:///../data.db')()
