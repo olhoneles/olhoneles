@@ -19,6 +19,7 @@ function handle_navigation (e)
     e.preventDefault();
 }
 
+var popped = ('state' in window.history), initialURL = location.href;
 function setup_history_handling()
 {
     // Gracefully degrade.
@@ -27,6 +28,11 @@ function setup_history_handling()
     }
 
     window.addEventListener('popstate', function(e) {
+        // Ignore initial pop =(.
+        var initialPop = !popped && location.href == initialURL;
+        popped = true;
+        if (initialPop) return;
+
         view_from_url();
     });
 }
