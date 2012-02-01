@@ -64,6 +64,9 @@ function cleanup() {
     var table_title = document.getElementById('tabletitle');
     table_title.innerHTML = '';
 
+    var details = document.getElementById('details');
+    details.innerHTML = '';
+
     var graph_title = document.getElementById('graphtitle');
     graph_title.innerHTML = '';
     graph_title.parentNode.style.display = 'none';
@@ -243,6 +246,32 @@ function detail_legislator(legid) {
 
         var table_title = document.getElementById('tabletitle');
         table_title.innerHTML = full_title;
+    });
+
+    $.getJSON('/qserver/legislator_trivia/' + legid, function(response) {
+        if (response.biggest_suppliers == undefined) {
+            return;
+        }
+
+        var details = document.getElementById('details');
+        var div = document.createElement('div');
+        details.appendChild(div);
+
+        var title = document.createElement('h2');
+        title.innerHTML = 'Maiores fornecedores';
+        div.appendChild(title);
+
+        var list = document.createElement('ul');
+        div.appendChild(list);
+
+        for (var i = 0; i < response.biggest_suppliers.length; i++) {
+            var supplier = response.biggest_suppliers[i];
+            var item = document.createElement('li');
+            item.innerHTML = supplier[0] + ' (' +
+                jQuery().number_format(supplier[1], { symbol: 'R$' }) +
+                ')';
+            list.appendChild(item);
+        }
     });
 
     // Prepare columns we will display.

@@ -176,6 +176,19 @@ class QueryServer(object):
         return unicode(json.dumps(response))
     legislator_info.exposed = True
 
+    def legislator_trivia(self, legislator_id):
+        session = Session()
+
+        suppliers = session.query(Supplier.name, func.sum(Expense.expensed))\
+            .join('expenses')\
+            .filter_by(legislator_id = legislator_id)\
+            .group_by(Supplier.name)\
+            .order_by(desc('2')).limit(5).all()
+
+        response = dict(biggest_suppliers = suppliers)
+        return unicode(json.dumps(response))
+    legislator_trivia.exposed = True
+
     def per_legislator(self):
         session = Session()
 
