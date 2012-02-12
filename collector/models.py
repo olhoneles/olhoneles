@@ -27,7 +27,7 @@ Base = declarative_base()
 class Legislator(Base):
     __tablename__ = 'legislators'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, Sequence('legislator_id_seq'), primary_key = True)
     name = Column(Unicode)
     party = Column(Unicode)
     position = Column(Unicode)
@@ -37,7 +37,9 @@ class Legislator(Base):
                             )
 
     def __init__(self, id, name, party, position):
-        self.id = id
+        if id:
+            self.id = id
+
         self.name = name
         self.party = party
         self.position = position

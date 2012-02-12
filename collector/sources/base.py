@@ -3,7 +3,7 @@ from datetime import datetime
 from logging import exception
 
 import urllib
-from urllib2 import urlopen, URLError, HTTPError
+from urllib2 import urlopen, Request, URLError, HTTPError
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -32,24 +32,24 @@ class BaseCollector(object):
     def update_data(self, year = datetime.now().year):
         exception('Not implemented.')
 
-    def retrieve_uri(self, uri, data = None):
+    def retrieve_uri(self, uri, data = None, headers = None):
         resp = None
 
         try:
-            if data == None:
-                resp = urlopen(uri)
-            else:
-                resp = urlopen(uri, urllib.urlencode(data))
+            req = Request(uri, urllib.urlencode(data), headers)
+            resp = urlopen(req)
         except HTTPError, e:
             if e.getcode() != 404:
                 raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
         except URLError:
             exception('Unable to retrieve: %s' % (uri))
 
-        if resp == None:
+        if not resp:
             return None
 
-        return BeautifulSoup(resp.read())
+        contents = resp.read().decode('utf-8')
+
+        return BeautifulSoup(contents)
 
     def get_element_from_uri(self, uri, element, attrs = {}, data = None):
         content = self.retrieve_uri (uri, data)

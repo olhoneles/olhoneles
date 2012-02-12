@@ -28,13 +28,15 @@ if __name__ == '__main__':
 
     parser = optparse.OptionParser()
     parser.add_option('-y', '--year', type='int', dest='year', help='Year to collect from.')
-    parser.add_option('-s', '--source', type='string', dest='source', default='all', help="Source to collect from. Possible values are 'almg', 'senado', 'camara' or 'all'. The default value for this parameter is 'all'")
+    parser.add_option('-s', '--source', type='string', dest='source', default='all', help="Source to collect from. Possible values are 'almg', 'cmbh', 'senado', 'camara' or 'all'. The default value for this parameter is 'all'")
 
     (options, args) = parser.parse_args()
 
     src = []
     if options.source == 'almg' or options.source == 'all':
         src.append(sources.VerbaIndenizatoriaALMG())
+    if options.source == 'cmbh' or options.source == 'all':
+        src.append(sources.VerbaIndenizatoriaCMBH())
     if options.source == 'senado' or options.source == 'all':
         src.append(sources.VerbaIndenizatoriaSenado())
     if options.source == 'camara' or options.source == 'all':
