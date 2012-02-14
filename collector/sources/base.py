@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 from logging import exception
@@ -35,14 +36,18 @@ class BaseCollector(object):
     def retrieve_uri(self, uri, data = None, headers = None):
         resp = None
 
-        try:
-            req = Request(uri, urllib.urlencode(data), headers)
-            resp = urlopen(req)
-        except HTTPError, e:
-            if e.getcode() != 404:
-                raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
-        except URLError:
-            exception('Unable to retrieve: %s' % (uri))
+        while True:
+            try:
+                req = Request(uri, urllib.urlencode(data), headers)
+                resp = urlopen(req)
+                break
+            except HTTPError, e:
+                if e.getcode() != 404:
+                    raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
+            except URLError:
+                print 'Unable to retrieve %s; will try again in 10 seconds.' % (uri)
+
+            time.sleep(10)
 
         if not resp:
             return None
