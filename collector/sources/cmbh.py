@@ -89,6 +89,9 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
     def update_data_for_legislator(self, xls, month, legislator, line):
         expense_types = self.retrieve_expense_types(xls, month, legislator, line)
 
+        if not expense_types:
+            return
+
         # Ignore the last one, which is the total.
         expense_types = expense_types.find('ul').findAll('a')[:-1]
 
@@ -103,6 +106,9 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
             month = parts[11]
 
             data = self.retrieve_actual_data(xls, line, column, legislator, nature, month)
+
+            if not data:
+                continue
 
             # Get the lines of data, ignoring the first one, which
             # contains the titles, and the last one, which contains
@@ -126,6 +132,17 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
 
             for row in data:
                 columns = row.findAll('td')
+
+                if not len(columns) == 4:
+                    try:
+                        print u'Bad row: %s' % columns.decode('utf-8')
+                    except UnicodeEncodeError:
+                        print u'Bad row: %s' % unicode(columns)
+                    continue
+
+                if not len(columns) == 4:
+                    print u'Bad row: %s' % unicode(columns)
+                    continue
 
                 cnpj = columns[0].getText().replace('.','').replace('-', '').replace('/', '').strip()
 
