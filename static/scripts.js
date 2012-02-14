@@ -191,7 +191,7 @@ function view_all() {
     var columns = []
     var n_columns = 0;
 
-    var string_columns = ['Tipo de gasto', 'Deputad@', 'Partido',
+    var string_columns = ['Tipo de gasto', 'Parlamentar', 'Partido',
                           'Empresa/Pessoa', 'CNPJ/CPF', 'N° do Doc.',
                           'Data']
 
