@@ -33,7 +33,7 @@ class BaseCollector(object):
     def update_data(self, year = datetime.now().year):
         exception('Not implemented.')
 
-    def retrieve_uri(self, uri, data = None, headers = None):
+    def retrieve_uri(self, uri, data = {}, headers = {}):
         resp = None
 
         while True:
