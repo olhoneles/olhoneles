@@ -203,7 +203,7 @@ class QueryServer(object):
             data.append(line)
 
         columns = []
-        columns.append(dict(label = u'Deputad@', type = 'string', index = 0))
+        columns.append(dict(label = u'Parlamentar', type = 'string', index = 0))
         columns.append(dict(label = u'Partido', type = 'string', index = 1))
         columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 2))
         return self._make_response(columns, data, show_graph = False)
@@ -222,7 +222,7 @@ class QueryServer(object):
 
         columns = []
         columns.append(dict(label = u'Partido', type = 'string', index = 0))
-        columns.append(dict(label = u'Deputad@s', type = 'number', index = 1))
+        columns.append(dict(label = u'Parlamentares', type = 'number', index = 1))
         columns.append(dict(label = u'Valor ressarcido', type = 'money', index = 2))
         columns.append(dict(label = u'Média', type = 'money', index = 3, skip_total = True))
 
