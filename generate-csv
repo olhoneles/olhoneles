@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Copyright (©) 2010 Gustavo Noronha Silva
+# Copyright (©) 2010, 2012 Gustavo Noronha Silva
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -22,13 +22,26 @@ import csv
 import sources
 from models import *
 
-if __name__ == '__main__':
-    project_path = os.getcwd()
+import sys
+if len(sys.argv) < 2:
+    print 'Tell me which house!'
+    sys.exit(1)
 
+import os
+appdir = os.path.dirname(__file__)
+if not appdir:
+    appdir = '.'
+appdir = os.path.abspath(appdir)
+
+
+sys.path = [ appdir ] + sys.path
+
+
+if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('-y', '--year', type='int', dest='year', help='Year to collect from.')
 
-    Session = initialize ('sqlite:///%s/data.db' % (project_path))
+    Session = models.initialize('sqlite:///data.db')
     session = Session()
     query = session.query(Expense.nature, Legislator.name, Legislator.party,
                           Supplier.name.label('supplier'), Supplier.cnpj, Expense.number,
@@ -51,3 +64,4 @@ if __name__ == '__main__':
                 curr.number.encode('utf-8')]) for curr in query ]
 
     outfile.close()
+

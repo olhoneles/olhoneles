@@ -17,8 +17,6 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sources
-
 if __name__ == '__main__':
     import os
     os.environ['LANG'] = 'pt_BR.UTF-8'
@@ -28,28 +26,31 @@ if __name__ == '__main__':
 
     parser = optparse.OptionParser()
     parser.add_option('-y', '--year', type='int', dest='year', help='Year to collect from.')
-    parser.add_option('-s', '--source', type='string', dest='source', default='all', help="Source to collect from. Possible values are 'almg', 'cmbh', 'senado', 'camara' or 'all'. The default value for this parameter is 'all'")
+    parser.add_option('-s', '--source', type='string', dest='source', help="Source to collect from. Possible values are 'almg', 'cmbh', 'senado', 'camara'")
 
     (options, args) = parser.parse_args()
 
-    src = []
-    if options.source == 'almg' or options.source == 'all':
-        src.append(sources.VerbaIndenizatoriaALMG())
-    if options.source == 'cmbh' or options.source == 'all':
-        src.append(sources.VerbaIndenizatoriaCMBH())
-    if options.source == 'senado' or options.source == 'all':
-        src.append(sources.VerbaIndenizatoriaSenado())
-    if options.source == 'camara' or options.source == 'all':
-        src.append(sources.VerbaIndenizatoriaCamara())
+    vi = None
+    if options.source == 'almg':
+        from sources import almgsource
+        vi = almg.VerbaIndenizatoriaALMG()
+    if options.source == 'cmbh':
+        from sources import cmbhsource
+        vi = cmbhsource.VerbaIndenizatoriaCMBH()
+    if options.source == 'senado':
+        from sources import senado
+        vi = senadosource.VerbaIndenizatoriaSenado()
+    if options.source == 'camara':
+        from sources import senado
+        vi = camarasource.VerbaIndenizatoriaCamara()
 
-    if len(src) == 0:
+    if not vi:
         parser.error ('Invalid value for source (%s).' % (options.source))
 
-    for vi in src:
-        #vi.update_legislators()
+    #vi.update_legislators()
 
-        if options.year:
-            vi.update_data(options.year)
-        else:
-            vi.update_data()
+    if options.year:
+        vi.update_data(options.year)
+    else:
+        vi.update_data()
 

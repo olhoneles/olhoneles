@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime
 
@@ -10,10 +11,10 @@ from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import and_
 
-from models import Legislator, Supplier, Expense
 
-import models
-Session = models.initialize('sqlite:///data.db')
+appdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+def get_database_path(house):
+    return 'sqlite:///' + os.path.join(appdir, house, 'data.db')
 
 def parse_money(string):
     string = string.strip('R$ ')

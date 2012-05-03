@@ -26,32 +26,21 @@ from cherrypy import tools
 from sqlalchemy import func, desc, asc, or_
 import json
 
-from collector.models import Legislator, Expense, Supplier
-
-import os.path
 project_path = os.path.dirname(__file__)
 if not project_path:
     project_path = os.getcwd()
-
-from collector import models
-Session = models.initialize('sqlite:///%s/data.db' % (project_path))
-
+project_path = os.path.abspath(os.path.join(project_path, '..'))
 
 appdir = os.path.dirname(__file__)
 if not appdir:
-    appdir = '.'
-appdir = os.path.abspath(appdir)
+    appdir = ''
+appdir = os.path.abspath(os.path.join(appdir, '..'))
 
 
 locale.setlocale(locale.LC_ALL, '')
 locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
 
-import config as config_module
-config = { 'title': config_module.title,
-           'data_source_uri': config_module.data_source_uri,
-           'data_source_label': config_module.data_source_label,
-           'sources_repository': config_module.sources_repository }
 cherrypy.engine.autoreload.files.add(appdir + '/templates/index.html')
 
 
@@ -59,6 +48,13 @@ html_data = open(appdir + '/templates/index.html').read()
 
 
 class QueryServer(object):
+    def __init__(self, config, models):
+        self.Session = models.initialize('sqlite:///%s/%s/data.db' % (project_path, config['base_path']))
+        self.Legislator = models.Legislator
+        self.Expense = models.Expense
+        self.Supplier = models.Supplier
+
+
     def _make_response(self, columns, data, graph_column = None, graph_title = '', show_graph = True):
         if graph_column is None:
             graph_column = len(columns) - 1
@@ -82,7 +78,7 @@ class QueryServer(object):
         return unicode(json.dumps(response))
 
     def all(self, **kwargs):
-        session = Session()
+        session = self.Session()
 
         start = int(kwargs['iDisplayStart'])
         end = start + int(kwargs['iDisplayLength'])
@@ -93,20 +89,20 @@ class QueryServer(object):
         else:
             sort_order = desc
 
-        expenses_query = session.query(Expense.nature, Legislator.name, Legislator.party,
-                                       Supplier.name, Supplier.cnpj, Expense.number,
-                                       Expense.date, Expense.expensed
+        expenses_query = session.query(self.Expense.nature, self.Legislator.name, self.Legislator.party,
+                                       self.Supplier.name, self.Supplier.cnpj, self.Expense.number,
+                                       self.Expense.date, self.Expense.expensed
                                        ).join('legislator').join('supplier').order_by(sort_order(sort_column))
 
         total_results = expenses_query.count()
 
         search_string = kwargs['sSearch'].decode('utf-8')
         if search_string:
-            expenses_query = expenses_query.filter(or_(Expense.nature.like('%' + search_string + '%'),
-                                                       Legislator.name.like('%' + search_string + '%'),
-                                                       Legislator.party.like('%' + search_string + '%'),
-                                                       Supplier.name.like('%' + search_string + '%'),
-                                                       Supplier.cnpj.like('%' + search_string + '%')))
+            expenses_query = expenses_query.filter(or_(self.Expense.nature.like('%' + search_string + '%'),
+                                                       self.Legislator.name.like('%' + search_string + '%'),
+                                                       self.Legislator.party.like('%' + search_string + '%'),
+                                                       self.Supplier.name.like('%' + search_string + '%'),
+                                                       self.Supplier.cnpj.like('%' + search_string + '%')))
         display_results = expenses_query.count()
         expenses = expenses_query[start:end]
 
@@ -126,7 +122,7 @@ class QueryServer(object):
     all.exposed = True
 
     def legislator_all(self, legislator_id, **kwargs):
-        session = Session()
+        session = self.Session()
 
         start = int(kwargs['iDisplayStart'])
         end = start + int(kwargs['iDisplayLength'])
@@ -137,20 +133,20 @@ class QueryServer(object):
         else:
             sort_order = desc
 
-        legislator = session.query(Legislator).get(legislator_id)
-        expenses_query = session.query(Expense.nature, Supplier.name, Supplier.cnpj,
-                                       Expense.number, Expense.date, Expense.expensed
+        legislator = session.query(self.Legislator).get(legislator_id)
+        expenses_query = session.query(self.Expense.nature, self.Supplier.name, self.Supplier.cnpj,
+                                       self.Expense.number, self.Expense.date, self.Expense.expensed
                                        ).join('supplier').order_by(sort_order(sort_column))
 
-        expenses_query = expenses_query.filter(Expense.legislator == legislator)
+        expenses_query = expenses_query.filter(self.Expense.legislator == legislator)
 
         total_results = expenses_query.count()
 
         search_string = kwargs['sSearch'].decode('utf-8')
         if search_string:
-            expenses_query = expenses_query.filter(or_(Expense.nature.like('%' + search_string + '%'),
-                                                       Supplier.name.like('%' + search_string + '%'),
-                                                       Supplier.cnpj.like('%' + search_string + '%')))
+            expenses_query = expenses_query.filter(or_(self.Expense.nature.like('%' + search_string + '%'),
+                                                       self.Supplier.name.like('%' + search_string + '%'),
+                                                       self.Supplier.cnpj.like('%' + search_string + '%')))
         display_results = expenses_query.count()
         expenses = expenses_query[start:end]
 
@@ -170,19 +166,19 @@ class QueryServer(object):
     legislator_all.exposed = True
 
     def legislator_info(self, legislator_id):
-        session = Session()
-        legislator = session.query(Legislator).get(legislator_id)
+        session = self.Session()
+        legislator = session.query(self.Legislator).get(legislator_id)
         response = dict(legname = legislator.name, legparty = legislator.party)
         return unicode(json.dumps(response))
     legislator_info.exposed = True
 
     def legislator_trivia(self, legislator_id):
-        session = Session()
+        session = self.Session()
 
-        suppliers = session.query(Supplier.name, func.sum(Expense.expensed))\
+        suppliers = session.query(self.Supplier.name, func.sum(self.Expense.expensed))\
             .join('expenses')\
             .filter_by(legislator_id = legislator_id)\
-            .group_by(Supplier.name)\
+            .group_by(self.Supplier.name)\
             .order_by(desc('2')).limit(5).all()
 
         response = dict(biggest_suppliers = suppliers)
@@ -190,10 +186,10 @@ class QueryServer(object):
     legislator_trivia.exposed = True
 
     def per_legislator(self):
-        session = Session()
+        session = self.Session()
 
-        expenses = session.query(Legislator.id, Legislator.name, Legislator.party,
-                                 func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party, Legislator.name).order_by(desc('3')).all()
+        expenses = session.query(self.Legislator.id, self.Legislator.name, self.Legislator.party,
+                                 func.sum(self.Expense.expensed)).join('expenses').group_by(self.Legislator.party, self.Legislator.name).order_by(desc('3')).all()
 
         data = []
         for exp in expenses:
@@ -210,10 +206,10 @@ class QueryServer(object):
     per_legislator.exposed = True
 
     def per_party(self):
-        session = Session()
+        session = self.Session()
 
-        expenses = session.query(Legislator.party, func.count(func.distinct(Legislator.name)),
-                                 func.sum(Expense.expensed)).join('expenses').group_by(Legislator.party).all()
+        expenses = session.query(self.Legislator.party, func.count(func.distinct(self.Legislator.name)),
+                                 func.sum(self.Expense.expensed)).join('expenses').group_by(self.Legislator.party).all()
 
         expenses = [[party, num_legislators, expensed, expensed / num_legislators]
                      for party, num_legislators, expensed in expenses]
@@ -231,10 +227,10 @@ class QueryServer(object):
     per_party.exposed = True
 
     def per_supplier(self):
-        session = Session()
+        session = self.Session()
 
-        expenses = session.query(Supplier.name, Supplier.cnpj,
-                                 func.sum(Expense.expensed)).join('expenses').group_by(Supplier.cnpj).order_by(desc('3')).all()
+        expenses = session.query(self.Supplier.name, self.Supplier.cnpj,
+                                 func.sum(self.Expense.expensed)).join('expenses').group_by(self.Supplier.cnpj).order_by(desc('3')).all()
 
         columns = []
         columns.append(dict(label = u'Empresa/Pessoa', type = 'string', index = 0))
@@ -244,10 +240,10 @@ class QueryServer(object):
     per_supplier.exposed = True
 
     def per_nature(self):
-        session = Session()
+        session = self.Session()
 
-        expenses = session.query(Expense.nature,
-                                 func.sum(Expense.expensed)).group_by(Expense.nature).all()
+        expenses = session.query(self.Expense.nature,
+                                 func.sum(self.Expense.expensed)).group_by(self.Expense.nature).all()
 
         columns = []
         columns.append(dict(label = u'Tipo de gasto', type = 'string', index = 0))
@@ -262,22 +258,23 @@ class DepWatchWeb(object):
     static = tools.staticdir.handler(section='static',
                                      root=appdir, dir='static')
 
-    qserver = QueryServer()
+    def __init__(self, config, models):
+        self.config = config
+        self.qserver = QueryServer(config, models)
+
 
     def index(self):
-        return html_data % (config)
+        return html_data % (self.config)
     index.exposed = True
+
+
+    def database(self):
+        return cherrypy.lib.static.serve_file(os.path.join(project_path, self.config['base_path'], 'data.db'),
+                                               'application/octet-stream', 'attachment', self.config['base_path'] + '.db')
+    database.exposed = True
+
 
     def default(self, *ignored):
         return self.index()
     default.exposed = True
 
-
-def setup_server():
-    cherrypy.config.update({'environment': 'production',
-                            'log.screen': False,
-                            'show_tracebacks': True})
-    cherrypy.tree.mount(DepWatchWeb())
-
-if __name__ == '__main__':
-    cherrypy.quickstart(DepWatchWeb())

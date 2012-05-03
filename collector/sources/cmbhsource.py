@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
-from base import *
+from basesource import *
+from cmbh.models import Legislator, Supplier, Expense
+from cmbh import models
 
 import base64
+
+
+Session = models.initialize(get_database_path('cmbh'))
+
 
 def parse_cmbh_date(date_string):
     month, year = date_string.split(' - ')

@@ -1,4 +1,10 @@
-from base import *
+from basesource import *
+from base.models import models
+from base.models.models import *
+
+
+Session = models.initialize(get_database_path('almg2011'))
+
 
 class VerbaIndenizatoriaALMG(BaseCollector):
 
