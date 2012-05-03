@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Copyright (©) 2010 Gustavo Noronha Silva
+# Copyright (©) 2010, 2012 Gustavo Noronha Silva
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -16,55 +16,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Unicode, Integer, String, Date, Float, Sequence, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import func, desc, asc, or_
-
-Base = declarative_base()
-
-class Legislator(Base):
-    __tablename__ = 'legislators'
-
-    id = Column(Integer, Sequence('legislator_id_seq'), primary_key = True)
-    name = Column(Unicode)
-    party = Column(Unicode)
-    position = Column(Unicode)
-
-    expenses = relationship('Expense',
-                            backref = backref('legislator')
-                            )
-
-    def __init__(self, id, name, party, position):
-        if id:
-            self.id = id
-
-        self.name = name
-        self.party = party
-        self.position = position
-
-    def __unicode__(self):
-        return u'Dep. %s (Matrícula %d) - %s' % (self.name, self.id, self.party)
-
-
-class Supplier(Base):
-    __tablename__ = 'suppliers'
-
-    cnpj = Column(String, primary_key = True)
-    name = Column(Unicode)
-
-    expenses = relationship('Expense',
-                            backref = backref('supplier')
-                            )
-
-    def __init__(self, cnpj, name):
-        self.cnpj = cnpj
-        self.name = name
-
-    def __unicode__(self):
-        return u'%s (CNPJ: %s)' % (self.name, self.cnpj)
-
+from base.models import Base
 
 class Expense(Base):
     __tablename__ = 'expenses'
@@ -92,12 +47,3 @@ class Expense(Base):
     def __unicode__(self):
         return u'%f (%s)' % (self.expensed, self.number)
 
-def initialize(database_path):
-    engine = create_engine(database_path)
-    Session = sessionmaker(bind = engine)
-    Base.metadata.create_all(engine)
-
-    return Session
-
-def hack():
-    return initialize('sqlite:///../data.db')()

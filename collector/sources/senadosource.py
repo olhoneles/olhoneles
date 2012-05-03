@@ -1,5 +1,11 @@
 # coding=utf-8
-from base import *
+from basesource import *
+from base.models import models
+from base.models.models import Legislator, Supplier, Expense
+
+
+Session = models.initialize(get_database_path('senado'))
+
 
 class VerbaIndenizatoriaSenado(BaseCollector):
 

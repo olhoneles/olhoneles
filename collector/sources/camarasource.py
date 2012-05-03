@@ -1,8 +1,14 @@
 # coding=utf-8
-from base import *
+from basesource import *
+from base.models import models
+from base.models.models import Legislator, Supplier, Expense
 from sqlalchemy import distinct
 
 import re
+
+
+Session = models.initialize(get_database_path('camara'))
+
 
 class VerbaIndenizatoriaCamara(BaseCollector):
 
