@@ -140,13 +140,6 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
                 columns = row.findAll('td')
 
                 if not len(columns) == 4:
-                    try:
-                        print u'Bad row: %s' % columns.decode('utf-8')
-                    except UnicodeEncodeError:
-                        print u'Bad row: %s' % unicode(columns)
-                    continue
-
-                if not len(columns) == 4:
                     print u'Bad row: %s' % unicode(columns)
                     continue
 
