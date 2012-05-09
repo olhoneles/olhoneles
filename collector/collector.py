@@ -38,10 +38,10 @@ if __name__ == '__main__':
         from sources import cmbhsource
         vi = cmbhsource.VerbaIndenizatoriaCMBH()
     if options.source == 'senado':
-        from sources import senado
+        from sources import senadosource
         vi = senadosource.VerbaIndenizatoriaSenado()
     if options.source == 'camara':
-        from sources import senado
+        from sources import camarasource
         vi = camarasource.VerbaIndenizatoriaCamara()
 
     if not vi:
