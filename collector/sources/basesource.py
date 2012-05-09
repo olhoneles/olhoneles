@@ -57,6 +57,6 @@ class BaseCollector(object):
 
         return BeautifulSoup(contents)
 
-    def get_element_from_uri(self, uri, element, attrs = {}, data = None):
+    def get_element_from_uri(self, uri, element, attrs = {}, data = {}):
         content = self.retrieve_uri (uri, data)
         return content.find(element, attrs)
