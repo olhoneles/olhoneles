@@ -47,7 +47,7 @@ if __name__ == '__main__':
     if not vi:
         parser.error ('Invalid value for source (%s).' % (options.source))
 
-    #vi.update_legislators()
+    vi.update_legislators()
 
     if options.year:
         vi.update_data(options.year)
