@@ -171,8 +171,14 @@ function view_from_url()
 
     if (section == 'fornecedor') {
         set_title('Totais por fornecedor');
-        view_all('per_supplier');
-        return;
+
+	if (id == undefined) {
+            view_all('per_supplier');
+            return;
+	}
+
+	detail_supplier (id);
+	return;
     }
 
     if (section == 'todos') {
@@ -324,6 +330,92 @@ function detail_legislator(legid) {
 	bProcessing: true,
 	bServerSide: true,
 	sAjaxSource: '/qserver/legislator_all/' + legid,
+        aoColumns: aoColumns,
+        aaSorting: [[4, 'desc']]
+    });
+
+    new FixedHeader(data_table);
+}
+
+function detail_supplier(cnpj) {
+    cleanup();
+
+    $.getJSON('/qserver/supplier_info/' + cnpj, function(response) {
+        var full_title = response.name + ' (' + response.cnpj + ')';
+        set_title(full_title);
+
+        var table_title = document.getElementById('tabletitle');
+        table_title.innerHTML = full_title;
+    });
+
+    $.getJSON('/qserver/supplier_trivia/' + cnpj, function(response) {
+        if (response.biggest_legislators == undefined) {
+            return;
+        }
+
+        var details = document.getElementById('details');
+        var div = document.createElement('div');
+        details.appendChild(div);
+
+        var title = document.createElement('h2');
+        title.innerHTML = 'Parlamentares que mais compraram';
+        div.appendChild(title);
+
+        var list = document.createElement('ul');
+        div.appendChild(list);
+
+        for (var i = 0; i < response.biggest_legislators.length; i++) {
+            var legislator = response.biggest_legislators[i];
+            var item = document.createElement('li');
+            item.innerHTML = legislator[0] + ' (' +
+                jQuery().number_format(legislator[1], { symbol: 'R$' }) +
+                ')';
+            list.appendChild(item);
+        }
+    });
+
+    // Prepare columns we will display.
+    var columns = []
+    var n_columns = 0;
+
+    var string_columns = ['Tipo de gasto', 'Parlamentar',
+                          'Partido', 'N° do Doc.', 'Data']
+
+    for (n_columns = 0; n_columns < string_columns.length; n_columns++) {
+        var col = Object();
+        col.label = string_columns[n_columns];
+        col.type = 'string';
+        columns[n_columns] = col;
+    }
+
+    var col = Object();
+    col.label = 'Valor';
+    col.type = 'money';
+    columns[n_columns++] = col;
+
+    // Build base table.
+    var table_elements = build_table_top(columns);
+    var table = table_elements[0];
+    var tbody = table_elements[1];
+
+    table.setAttribute('class', 'fullwidth');
+
+    aoColumns = []
+    for (var j = 0; j < columns.length; j++) {
+        var coltype = columns[j]['type'];
+
+        if (coltype == 'money') {
+            aoColumns[j] = { sType: 'money' };
+        } else {
+            aoColumns[j] = null;
+        }
+    }
+
+    var data_table = jQuery('#resultstable').dataTable({
+        bPaginate: true,
+	bProcessing: true,
+	bServerSide: true,
+	sAjaxSource: '/qserver/supplier_all/' + cnpj,
         aoColumns: aoColumns,
         aaSorting: [[4, 'desc']]
     });
