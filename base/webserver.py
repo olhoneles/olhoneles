@@ -56,6 +56,8 @@ class QueryServer(object):
 
         self.TotalsPerNature = models.TotalsPerNature
         self.TotalsPerLegislator = models.TotalsPerLegislator
+        self.TotalsPerParty = models.TotalsPerParty
+        self.TotalsPerSupplier = models.TotalsPerSupplier
 
 
     def _make_response(self, columns, data, graph_column = None, graph_title = '', show_graph = True):
@@ -211,9 +213,10 @@ class QueryServer(object):
     def per_party(self):
         session = self.Session()
 
-        expenses = session.query(self.Legislator.party, func.count(func.distinct(self.Legislator.name)),
-                                 func.sum(self.Expense.expensed)).join('expenses').group_by(self.Legislator.party).all()
+        expenses = session.query(self.TotalsPerParty.party, self.TotalsPerParty.num_legislators,
+                                 self.TotalsPerParty.expensed).all()
 
+        # FIXME: there is probably a cunning way of doing this in SQL.
         expenses = [[party, num_legislators, expensed, expensed / num_legislators]
                      for party, num_legislators, expensed in expenses]
 
@@ -232,8 +235,8 @@ class QueryServer(object):
     def per_supplier(self):
         session = self.Session()
 
-        expenses = session.query(self.Supplier.name, self.Supplier.cnpj,
-                                 func.sum(self.Expense.expensed)).join('expenses').group_by(self.Supplier.cnpj).order_by(desc('3')).all()
+        expenses = session.query(self.TotalsPerSupplier.name, self.TotalsPerSupplier.cnpj,
+                                 self.TotalsPerSupplier.expensed).all()
 
         columns = []
         columns.append(dict(label = u'Empresa/Pessoa', type = 'string', index = 0))

@@ -42,3 +42,25 @@ class TotalsPerLegislator(Base):
     def __unicode__(self):
         return u'%s (%s) expensed %.2f' % (self.name, self.party, self.expensed)
 
+
+class TotalsPerParty(Base):
+    __tablename__ = 'totals_per_party'
+
+    party = Column(Unicode, primary_key = True)
+    num_legislators = Column(Integer)
+    expensed = Column(Float)
+
+    def __unicode__(self):
+        return u'%s expensed %.2f' % (self.party, self.expensed)
+
+
+class TotalsPerSupplier(Base):
+    __tablename__ = 'totals_per_supplier'
+
+    cnpj = Column(Unicode, primary_key = True)
+    name = Column(Unicode)
+    expensed = Column(Float)
+
+    def __unicode__(self):
+        return u'%.2f paid to %s (%s)' % (self.expensed, self.name, self.cnpj)
+

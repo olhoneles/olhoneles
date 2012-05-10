@@ -22,7 +22,7 @@ from sqlalchemy.orm import relationship, backref
 from base.models import Base, initialize
 from base.models.expense import Expense
 from base.models.supplier import Supplier
-from base.models.totals import TotalsPerNature, TotalsPerLegislator
+from base.models.totals import TotalsPerNature, TotalsPerLegislator, TotalsPerParty, TotalsPerSupplier
 
 
 class Legislator(Base):
