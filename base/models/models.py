@@ -20,5 +20,5 @@ from base.models import Base, initialize
 from legislator import Legislator
 from expense import Expense
 from supplier import Supplier
-from totals import TotalsPerNature, TotalsPerLegislator
+from totals import TotalsPerNature, TotalsPerLegislator, TotalsPerParty, TotalsPerSupplier
 
