@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Copyright (©) 2010 Gustavo Noronha Silva
+# Copyright (©) 2012 Gustavo Noronha Silva
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -16,9 +16,17 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from base.models import Base, initialize
-from legislator import Legislator
-from expense import Expense
-from supplier import Supplier
-from totals import TotalsPerNature
+from sqlalchemy import Table, Column, Unicode, Float
+
+from base.models import Base
+
+
+class TotalsPerNature(Base):
+    __tablename__ = 'totals_per_nature'
+
+    nature = Column(Unicode, primary_key = True)
+    expensed = Column(Float)
+
+    def __unicode__(self):
+        return u'%s - %.2f' % (self.nature, self.expensed)
 

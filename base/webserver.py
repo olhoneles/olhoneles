@@ -54,6 +54,8 @@ class QueryServer(object):
         self.Expense = models.Expense
         self.Supplier = models.Supplier
 
+        self.TotalsPerNature = models.TotalsPerNature
+
 
     def _make_response(self, columns, data, graph_column = None, graph_title = '', show_graph = True):
         if graph_column is None:
@@ -242,8 +244,7 @@ class QueryServer(object):
     def per_nature(self):
         session = self.Session()
 
-        expenses = session.query(self.Expense.nature,
-                                 func.sum(self.Expense.expensed)).group_by(self.Expense.nature).all()
+        expenses = session.query(self.TotalsPerNature.nature, self.TotalsPerNature.expensed).all()
 
         columns = []
         columns.append(dict(label = u'Tipo de gasto', type = 'string', index = 0))
