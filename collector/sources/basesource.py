@@ -53,7 +53,16 @@ class BaseCollector(object):
         if not resp:
             return None
 
-        contents = resp.read().decode('utf-8')
+        contents = resp.read()
+
+        # Some sites are not in utf-8.
+        try:
+            contents = contents.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                contents = contents.decode('iso-8859-1')
+            except Exception:
+                pass
 
         return BeautifulSoup(contents)
 
