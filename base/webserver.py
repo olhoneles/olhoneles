@@ -44,7 +44,7 @@ locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 cherrypy.engine.autoreload.files.add(appdir + '/templates/index.html')
 
 
-html_data = open(appdir + '/templates/index.html').read()
+html_data = open(appdir + '/templates/index.html').read().decode('utf-8')
 
 
 class QueryServer(object):
