@@ -171,7 +171,7 @@ function view_from_url()
 
     if (section == 'fornecedor') {
         set_title('Totais por fornecedor');
-        view('per_supplier');
+        view_all('per_supplier');
         return;
     }
 
@@ -184,16 +184,24 @@ function view_from_url()
     view('per_nature');
 }
 
-function view_all() {
+function view_all(page) {
     cleanup();
 
     // Prepare columns we will display.
     var columns = []
     var n_columns = 0;
 
-    var string_columns = ['Tipo de gasto', 'Parlamentar', 'Partido',
+    var string_columns;
+
+    if (page == 'per_supplier') {
+        string_columns = ['Empresa/Pessoa', 'CNPJ/CPF']
+        ajax_source = '/qserver/per_supplier'
+    } else {
+        string_columns = ['Tipo de gasto', 'Parlamentar', 'Partido',
                           'Empresa/Pessoa', 'CNPJ/CPF', 'N° do Doc.',
                           'Data']
+        ajax_source = '/qserver/all'
+    }
 
     for (n_columns = 0; n_columns < string_columns.length; n_columns++) {
         var col = Object();
@@ -227,11 +235,11 @@ function view_all() {
 
     var data_table = jQuery('#resultstable').dataTable({
         bPaginate: true,
-	bProcessing: true,
-	bServerSide: true,
-	sAjaxSource: '/qserver/all',
+        bProcessing: true,
+        bServerSide: true,
+        sAjaxSource: ajax_source,
         aoColumns: aoColumns,
-        aaSorting: [[6, 'desc']]
+        aaSorting: [[aoColumns.length - 1, 'desc']]
     });
 
     new FixedHeader(data_table);

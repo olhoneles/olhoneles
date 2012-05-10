@@ -232,17 +232,42 @@ class QueryServer(object):
         return self._make_response(columns, expenses, graph_title = graph_title)
     per_party.exposed = True
 
-    def per_supplier(self):
+    def per_supplier(self, **kwargs):
         session = self.Session()
 
-        expenses = session.query(self.TotalsPerSupplier.name, self.TotalsPerSupplier.cnpj,
-                                 self.TotalsPerSupplier.expensed).all()
+        start = int(kwargs['iDisplayStart'])
+        end = start + int(kwargs['iDisplayLength'])
+        sort_column = str(int(kwargs['iSortCol_0']) + 1) # sqlalchemy starts counting from 1
 
-        columns = []
-        columns.append(dict(label = u'Empresa/Pessoa', type = 'string', index = 0))
-        columns.append(dict(label = u'CNPJ/CPF', type = 'string', index = 1))
-        columns.append(dict(label = u'Valor recebido', type = 'money', index = 2))
-        return self._make_response(columns, expenses, show_graph = False)
+        if kwargs['sSortDir_0'] == 'asc':
+            sort_order = asc
+        else:
+            sort_order = desc
+
+        expenses_query = session.query(self.TotalsPerSupplier.name, self.TotalsPerSupplier.cnpj,
+                                       self.TotalsPerSupplier.expensed).order_by(sort_order(sort_column))
+
+        total_results = expenses_query.count()
+        
+        search_string = kwargs['sSearch'].decode('utf-8')
+        if search_string:
+            expenses_query = expenses_query.filter(or_(self.TotalsPerSupplier.name.like('%' + search_string + '%'),
+                                                       self.TotalsPerSupplier.cnpj.like('%' + search_string + '%')))
+        display_results = expenses_query.count()
+        expenses = expenses_query[start:end]
+
+        # Format money and date columns.
+        data = []
+        for item in expenses:
+            item = list(item)
+            item[-1] = locale.currency(float(item[-1]), grouping = True)
+            data.append(item)
+
+        response = dict(sEcho = int(kwargs['sEcho']),
+                        iTotalRecords = total_results,
+                        iTotalDisplayRecords = display_results,
+                        aaData = data)
+        return unicode(json.dumps(response))
     per_supplier.exposed = True
 
     def per_nature(self):
