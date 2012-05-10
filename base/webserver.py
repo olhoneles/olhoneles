@@ -232,6 +232,70 @@ class QueryServer(object):
         return self._make_response(columns, expenses, graph_title = graph_title)
     per_party.exposed = True
 
+    def supplier_all(self, cnpj, **kwargs):
+        session = self.Session()
+
+        start = int(kwargs['iDisplayStart'])
+        end = start + int(kwargs['iDisplayLength'])
+        sort_column = str(int(kwargs['iSortCol_0']) + 1) # sqlalchemy starts counting from 1
+
+        if kwargs['sSortDir_0'] == 'asc':
+            sort_order = asc
+        else:
+            sort_order = desc
+
+        supplier = session.query(self.Supplier).filter(self.Supplier.cnpj.like(cnpj)).one()
+        expenses_query = session.query(self.Expense.nature, self.Legislator.name, self.Legislator.party,
+                                       self.Expense.number, self.Expense.date, self.Expense.expensed
+                                       ).join('legislator').order_by(sort_order(sort_column))
+
+        expenses_query = expenses_query.filter(self.Expense.supplier_cnpj.like(cnpj))
+
+        total_results = expenses_query.count()
+
+        search_string = kwargs['sSearch'].decode('utf-8')
+        if search_string:
+            expenses_query = expenses_query.filter(or_(self.Expense.nature.like('%' + search_string + '%'),
+                                                       self.Legislator.name.like('%' + search_string + '%'),
+                                                       self.Legislator.party.like('%' + search_string + '%')))
+        display_results = expenses_query.count()
+        expenses = expenses_query[start:end]
+
+        # Format money and date columns.
+        data = []
+        for item in expenses:
+            item = list(item)
+            item[-2] = item[-2].strftime('%d/%m/%Y')
+            item[-1] = locale.currency(float(item[-1]), grouping = True)
+            data.append(item)
+
+        response = dict(sEcho = int(kwargs['sEcho']),
+                        iTotalRecords = total_results,
+                        iTotalDisplayRecords = display_results,
+                        aaData = data)
+        return unicode(json.dumps(response))
+    supplier_all.exposed = True
+
+    def supplier_info(self, cnpj):
+        session = self.Session()
+        supplier = session.query(self.Supplier).filter(self.Supplier.cnpj.like(cnpj)).one()
+        response = dict(name = supplier.name, cnpj = supplier.cnpj)
+        return unicode(json.dumps(response))
+    supplier_info.exposed = True
+
+    def supplier_trivia(self, cnpj):
+        session = self.Session()
+
+        legislators = session.query(self.Legislator.name, func.sum(self.Expense.expensed))\
+            .join('expenses')\
+            .filter(self.Expense.supplier_cnpj.like(cnpj))\
+            .group_by(self.Legislator.name)\
+            .order_by(desc('2')).limit(5).all()
+
+        response = dict(biggest_legislators = legislators)
+        return unicode(json.dumps(response))
+    supplier_trivia.exposed = True
+
     def per_supplier(self, **kwargs):
         session = self.Session()
 
@@ -260,6 +324,8 @@ class QueryServer(object):
         data = []
         for item in expenses:
             item = list(item)
+            cnpj = item[1].replace('/', '_')
+            item[0] = '<a class="navigation" href="/fornecedor/%s">%s</a>' % (item[1].replace('/', '_'), item[0])
             item[-1] = locale.currency(float(item[-1]), grouping = True)
             data.append(item)
 
