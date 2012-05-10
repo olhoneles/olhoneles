@@ -55,6 +55,7 @@ class QueryServer(object):
         self.Supplier = models.Supplier
 
         self.TotalsPerNature = models.TotalsPerNature
+        self.TotalsPerLegislator = models.TotalsPerLegislator
 
 
     def _make_response(self, columns, data, graph_column = None, graph_title = '', show_graph = True):
@@ -190,8 +191,8 @@ class QueryServer(object):
     def per_legislator(self):
         session = self.Session()
 
-        expenses = session.query(self.Legislator.id, self.Legislator.name, self.Legislator.party,
-                                 func.sum(self.Expense.expensed)).join('expenses').group_by(self.Legislator.party, self.Legislator.name).order_by(desc('3')).all()
+        expenses = session.query(self.TotalsPerLegislator.id, self.TotalsPerLegislator.name, self.TotalsPerLegislator.party,
+                                 self.TotalsPerLegislator.expensed).all()
 
         data = []
         for exp in expenses:

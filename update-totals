@@ -7,4 +7,6 @@ fi
 
 sqlite3 $1 'drop table if exists totals_per_nature;'
 sqlite3 $1 'create table totals_per_nature as select expenses.nature as nature, sum(expenses.expensed) as expensed from expenses group by expenses.nature;'
+sqlite3 $1 'drop table if exists totals_per_legislator;'
+sqlite3 $1 'create table totals_per_legislator as select legislators.id as id, legislators.name as name, legislators.party as party, sum(expenses.expensed) as expensed from legislators, expenses where legislators.id = expenses.legislator_id group by legislators.name, legislators.party order by expensed desc;'
 
