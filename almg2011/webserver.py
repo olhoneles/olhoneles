@@ -21,7 +21,7 @@ from base.models import models
 
 
 config = dict(
-    base_path = 'almg2007',
+    base_path = 'almg2011',
     title = 'Olho neles! ALMG 2011-2014',
     data_source_uri = 'http://almg.gov.br/',
     data_source_label = 'Assembléia Legislativa do Estado de Minas Gerais'
