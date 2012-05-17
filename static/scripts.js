@@ -367,8 +367,8 @@ function detail_supplier(cnpj) {
         for (var i = 0; i < response.biggest_legislators.length; i++) {
             var legislator = response.biggest_legislators[i];
             var item = document.createElement('li');
-            item.innerHTML = legislator[0] + ' (' +
-                jQuery().number_format(legislator[1], { symbol: 'R$' }) +
+            item.innerHTML = legislator[0] + ' - ' + legislator[1] + ' (' +
+                jQuery().number_format(legislator[2], { symbol: 'R$' }) +
                 ')';
             list.appendChild(item);
         }

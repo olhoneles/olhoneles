@@ -286,11 +286,11 @@ class QueryServer(object):
     def supplier_trivia(self, cnpj):
         session = self.Session()
 
-        legislators = session.query(self.Legislator.name, func.sum(self.Expense.expensed))\
+        legislators = session.query(self.Legislator.name, self.Legislator.party, func.sum(self.Expense.expensed))\
             .join('expenses')\
             .filter(self.Expense.supplier_cnpj.like(cnpj))\
             .group_by(self.Legislator.name)\
-            .order_by(desc('2')).limit(5).all()
+            .order_by(desc('3')).limit(5).all()
 
         response = dict(biggest_legislators = legislators)
         return unicode(json.dumps(response))
