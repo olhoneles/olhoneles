@@ -39,7 +39,10 @@ class BaseCollector(object):
 
         while True:
             try:
-                req = Request(uri, urllib.urlencode(data), headers)
+                if data:
+                    req = Request(uri, urllib.urlencode(data), headers)
+                else:
+                    req = Request(uri, headers=headers)
                 resp = urlopen(req)
                 break
             except HTTPError, e:
