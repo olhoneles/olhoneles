@@ -50,54 +50,23 @@ class VerbaIndenizatoriaCamara(BaseCollector):
         session.commit()
 
     def update_data(self, year = datetime.now().year):
-        self.update_data_normal (year, 1712)
-        #self.update_data_missing (year, 81)
-        #self.update_data_manual (81, year)
-
-    def update_data_missing(self, year = datetime.now().year, start = None):
         session = Session()
-
-        existing_ids = session.query(distinct(Expense.legislator_id)).filter(and_(Expense.date >= '%s-01-01'%(year),
-                                                                                  Expense.date <= '%s-12-31'%(year)));
-        if start == None:
-            legislators = session.query(Legislator.id).filter(Legislator.id.op('NOT IN')(existing_ids)).all()
-        else:
-            legislators = session.query(Legislator.id).filter(and_(Legislator.id.op('NOT IN')(existing_ids),
-                                                                   Legislator.id >= start)).all()
-        for l in legislators:
-            for m in range(1, 13):
-                self.update_data_for_id_period (l.id, year, m)
-
-    def update_data_manual(self, id, year = datetime.now().year):
-        session = Session()
-
-        for month in range(1, 13):
-            self.update_data_for_id_period(id, year, month)
-
-
-    def update_data_normal(self, year = datetime.now().year, start = None):
-        session = Session()
-        if start == None:
-            data = [item for item in session.query(Legislator.id, Legislator.name).filter(Legislator.position == self.position)]
-        else:
-            data = [item for item in session.query(Legislator.id, Legislator.name).filter(and_(Legislator.position == self.position,
-                                                                                               Legislator.id >= start))]
+        legislators = [item for item in session.query(Legislator.id).filter(Legislator.position == self.position)]
 
         date = datetime.now()
-        for legislator_id, name in data:
+        for legislator in legislators:
             try:
                 if year == date.year:
                     for month in range(date.month-2, date.month+1):
-                        self.update_data_for_id_period(legislator_id, year, month)
+                        self.update_data_for_id_period(legislator.id, year, month)
                 else:
                     for month in range(1, 13):
-                        self.update_data_for_id_period(legislator_id, year, month)
+                        self.update_data_for_id_period(legislator.id, year, month)
             except HTTPError as msg:
                 print "Error retrieving expenses: %s\n" % (msg)
                 continue
 
         return
-
 
     def update_data_for_id_period(self, id, year, month):
         session = Session()
