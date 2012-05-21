@@ -4,27 +4,41 @@ from base.models import models
 from base.models.models import Legislator, Supplier, Expense
 from sqlalchemy import distinct
 
-import re
-
-
 Session = models.initialize(get_database_path('camara'))
 
-
 class VerbaIndenizatoriaCamara(BaseCollector):
-
-    legislators_uri = 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/verba_indenizatoria_index'
-    expenses_uri = 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/verba_indenizatoria_detalheVerbaAnalitico?nuDeputadoId=%s&numMes=%s&numAno=%s'
-
     position = u'Deputado Federal'
 
-    def update_legislators(self):
+    def retrieve_legislators(self):
         if self.debug:
             print 'Retrieving legislators...'
 
-        # Retrieving the select with legislators information
-        select = self.get_element_from_uri (self.legislators_uri, 'select', {'id' : 'listaDep'})
+        uri  = 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar'
+        headers = {
+            'Referer' : 'http://www2.camara.gov.br/transparencia',
+            'Origin' : 'http://www2.camara.gov.br',
+            }
+        return BaseCollector.retrieve_uri(self, uri=uri, headers=headers)
 
-        # We ignore the first one because it's a placeholder.
+    def retrieve_month_expenses(self, legid, year, month):
+        session = Session()
+        legislator = session.query(Legislator.id, Legislator.name).filter(Legislator.id == legid).one()
+        if self.debug:
+            print "Retrieving expenses for %s (%d) in %s-%s" % (legislator.name, legislator.id, year, month)
+
+        uri  = 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/verba_indenizatoria_detalheVerbaAnalitico?nuDeputadoId=%s&numMes=%s&numAno=%s&numSubCota='
+        headers = {
+            'Referer' : 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/verba_indenizatoria_retPesquisaDep',
+            'Origin' : 'http://www2.camara.gov.br',
+            }
+        return BaseCollector.retrieve_uri(self, uri=uri % (legid, month, year), headers=headers)
+
+    def update_legislators(self):
+        # Retrieving html and select with legislators information
+        html = self.retrieve_legislators()
+        select = html.find('select', {'id' : 'listaDep'})
+
+        # We ignore the first option because it's a placeholder.
         options = select.findAll('option')[1:]
 
         # Turn the soup objects into a list of dictionaries
@@ -83,16 +97,11 @@ class VerbaIndenizatoriaCamara(BaseCollector):
         #   </div>
         #   ... and so on.
         # </div>
+        html = self.retrieve_month_expenses(id, year, month)
+        div = html.find('div', {'class' : 'grid'})
 
-        if self.debug:
-            print "Retrieving expenses for %s (%d) in %s/%s" % (legislator.name, legislator.id, month, year)
-        try:
-            div = self.get_element_from_uri (self.expenses_uri %(id, month, year),
-                                             'div', {'class' : 'grid'});
-        except HTTPError, e:
-            # Error 500 indicates that there's no expense information available
-            if e.getcode() == 500:
-                return
+        if div is None:
+            return
 
         # Obtain expenses information. Another div holds an 
         # h4 (the category) and the expense table.
