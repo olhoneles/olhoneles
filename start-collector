@@ -32,5 +32,5 @@ if os.environ.has_key('PYTHONPATH'):
 else:
     os.environ['PYTHONPATH'] = '%s:' % (appdir)
 
-os.execve(sys.executable, [sys.executable, os.path.join(appdir, 'collector', 'collector.py'), '--source', sys.argv[1]], os.environ)
+os.execve(sys.executable, [sys.executable, os.path.join(appdir, 'collector', 'collector.py'), '--source', sys.argv[1]]+sys.argv[2:], os.environ)
 
