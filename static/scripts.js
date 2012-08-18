@@ -172,13 +172,13 @@ function view_from_url()
     if (section == 'fornecedor') {
         set_title('Totais por fornecedor');
 
-	if (id == undefined) {
+        if (id == undefined) {
             view_all('per_supplier');
             return;
-	}
+        }
 
-	detail_supplier (id);
-	return;
+        detail_supplier(id);
+        return;
     }
 
     if (section == 'todos') {
