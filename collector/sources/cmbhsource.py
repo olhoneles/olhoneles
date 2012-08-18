@@ -10,37 +10,8 @@ Session = models.initialize(get_database_path('cmbh'))
 
 
 def parse_cmbh_date(date_string):
-    month, year = date_string.split(' - ')
-
     day = '01'
-
-    if month == u'Janeiro':
-        month = '01'
-    elif month == u'Fevereiro':
-        month = '02'
-    elif month == u'Março':
-        month = '03'
-    elif month == u'Abril':
-        month = '04'
-    elif month == u'Maio':
-        month = '05'
-    elif month == u'Junho':
-        month = '06'
-    elif month == u'Julho':
-        month = '07'
-    elif month == u'Agosto':
-        month = '08'
-    elif month == u'Setembro':
-        month = '09'
-    elif month == u'Outubro':
-        month = '10'
-    elif month == u'Novembro':
-        month = '11'
-    elif month == u'Dezembro':
-        month = '12'
-    else:
-        raise Exception('Unknown month: ' + month)
-
+    month, year = date_string.split('/')
     return parse_date(day + '/' + month + '/' + year)
 
 
@@ -55,36 +26,35 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
             }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
 
-    def retrieve_legislators(self, xls, month):
-        uri  = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_vereadores.php'
-        data = { 'xls' : xls, 'mes' : month }
+    def retrieve_legislators(self, month):
+        uri  = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_vereadores.php'
+        data = { 'mes' : month }
         headers = {
             'Referer' : 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_meses.php',
             'Origin' : 'http://www.cmbh.mg.gov.br',
             }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
 
-    def retrieve_expense_types(self, xls, month, legislator, line):
-        uri  = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_tipodespesa.php'
-        data = { 'xls' : xls, 'mes' : month, 'vereador': legislator, 'linha' : line }
+    def retrieve_expense_types(self, month, legislator, code):
+        uri  = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_tipodespesa.php'
+        data = { 'mes' : month, 'vereador': legislator, 'cod' : code }
         headers = {
-            'Referer' : 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_vereadores.php',
+            'Referer' : 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_vereadores.php',
             'Origin' : 'http://www.cmbh.mg.gov.br',
             }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
 
-    def retrieve_actual_data(self, xls, line, column, legislator, nature, month):
-        uri  = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_valordespesa.php'
+    def retrieve_actual_data(self, code, seq, legislator, nature, month):
+        uri  = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_valordespesa.php'
         data = {
-            'xls' : xls,
-            'linha' : line,
-            'coluna' : column,
+            'cod' : code,
+            'seq' : seq,
             'vereador': legislator,
             'tipodespesa' : nature,
             'mes' : month
             }
         headers = {
-            'Referer' : 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_tipodespesa.php',
+            'Referer' : 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_tipodespesa.php',
             'Origin' : 'http://www.cmbh.mg.gov.br',
             }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
@@ -92,8 +62,8 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
     def update_legislators(self):
         pass
 
-    def update_data_for_legislator(self, xls, month, legislator, line):
-        expense_types = self.retrieve_expense_types(xls, month, legislator, line)
+    def update_data_for_legislator(self, month, legislator, code):
+        expense_types = self.retrieve_expense_types(month, legislator, code)
 
         if not expense_types:
             return
@@ -104,16 +74,16 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
         parameters_list = []
         for etype in expense_types:
             parts = etype['onclick'].split("'")
-            xls = parts[1]
-            line = parts[3]
-            column = parts[5]
-            legislator = parts[7]
-            nature = parts[9]
-            month = parts[11]
+            legislator = parts[1]
+            code = parts[3]
+            nature = parts[5]
+            seq = parts[7]
+            month = parts[9]
 
-            data = self.retrieve_actual_data(xls, line, column, legislator, nature, month)
+            data = self.retrieve_actual_data(code, seq, legislator, nature, month)
 
             if not data:
+                print 'No data...'
                 continue
 
             # Get the lines of data, ignoring the first one, which
@@ -139,7 +109,7 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
             for row in data:
                 columns = row.findAll('td')
 
-                if not len(columns) == 4:
+                if not len(columns) == 5:
                     print u'Bad row: %s' % unicode(columns)
                     continue
 
@@ -189,23 +159,21 @@ class VerbaIndenizatoriaCMBH(BaseCollector):
     def update_data(self, year = datetime.now().year):
         months = self.retrieve_months().findAll('div', 'arquivo_meses')
 
-        parameters_list = []
+        date_list = []
         for month in months:
             anchor = month.find('a')
             parts = anchor['onclick'].split("'")
-            parameters_list.append((parts[1], parts[3]))
+            date_list.append(parts[1])
 
-        for parameters in parameters_list:
-            print base64.decodestring(parameters[0]), base64.decodestring(parameters[1])
-            leg_list = self.retrieve_legislators(*parameters)
+        for date in date_list:
+            leg_list = self.retrieve_legislators(date)
             anchors = leg_list.find('ul').findAll('a')
             for anchor in anchors:
                 parts = anchor['onclick'].split("'")
-                xls = parts[1]
-                line = parts[3]
-                legislator = parts[5]
-                month = parts[7]
-                self.update_data_for_legislator(xls, month, legislator, line)
+                legislator = parts[1]
+                code = parts[3]
+                month = parts[5]
+                self.update_data_for_legislator(month, legislator, code)
 
 def hack():
     return VerbaIndenizatoriaCMBH()
