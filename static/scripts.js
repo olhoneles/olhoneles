@@ -268,6 +268,10 @@ function detail_legislator(legid) {
         }
 
         var details = document.getElementById('details');
+
+        // Clear any previous content.
+        details.innerHTML = '';
+
         var div = document.createElement('div');
         details.appendChild(div);
 
@@ -354,6 +358,10 @@ function detail_supplier(cnpj) {
         }
 
         var details = document.getElementById('details');
+
+        // Clear any previous content.
+        details.innerHTML = '';
+
         var div = document.createElement('div');
         details.appendChild(div);
 
