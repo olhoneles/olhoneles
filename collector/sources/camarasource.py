@@ -4,21 +4,43 @@ from base.models import models
 from base.models.models import Legislator, Supplier, Expense
 from sqlalchemy import distinct
 
+from utils.cache import timedelta, RequestCache
+
 Session = models.initialize(get_database_path('camara'))
 
 class VerbaIndenizatoriaCamara(BaseCollector):
+    cache = RequestCache ('/tmp/montanha/camara');
+    cache_default_expiry = timedelta (days=15)
     position = u'Deputado Federal'
+
+    def retrieve_uri(self, uri, data = {}, headers = {}, cache_file = None, cache_expiry = None):
+        # if no cache_file informed, keep the current behaviour
+        if cache_file == None:
+            return BaseCollector.retrieve_uri (uri, data, headers)
+
+        if cache_expiry == None:
+            cache_expiry = self.cache_default_expiry
+
+        if not self.cache.exists (cache_file) or self.cache.expired (cache_file, cache_expiry):
+            content = BaseCollector.retrieve_uri (uri, data, headers)
+            # do not write to disk if there's nothing to write
+            if content is None:
+                return content
+            self.cache.write (cache_file, str(content))
+
+        return BeautifulSoup (self.cache.read (cache_file))        
 
     def retrieve_legislators(self):
         if self.debug:
             print 'Retrieving legislators...'
 
+        cache_file = 'camara-legislators'
         uri  = 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar'
         headers = {
             'Referer' : 'http://www2.camara.gov.br/transparencia',
             'Origin' : 'http://www2.camara.gov.br',
             }
-        return BaseCollector.retrieve_uri(self, uri=uri, headers=headers)
+        return self.retrieve_uri(self, uri, headers=headers, cache_file=cache_file)
 
     def retrieve_month_expenses(self, legid, year, month):
         session = Session()
@@ -26,12 +48,14 @@ class VerbaIndenizatoriaCamara(BaseCollector):
         if self.debug:
             print "Retrieving expenses for %s (%d) in %s-%s" % (legislator.name, legislator.id, year, month)
 
+        legname = legislator.name.lower ().replace (' ', '_')
+        cache_file = 'camara-%s-%s-%s' % (legname, year, month)
         uri  = 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/verba_indenizatoria_detalheVerbaAnalitico?nuDeputadoId=%s&numMes=%s&numAno=%s&numSubCota='
         headers = {
             'Referer' : 'http://www2.camara.gov.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/verba_indenizatoria_retPesquisaDep',
             'Origin' : 'http://www2.camara.gov.br',
             }
-        return BaseCollector.retrieve_uri(self, uri=uri % (legid, month, year), headers=headers)
+        return self.retrieve_uri(self, uri % (legid, month, year), headers=headers, cache_file=cache_file)
 
     def update_legislators(self):
         # Retrieving html and select with legislators information
