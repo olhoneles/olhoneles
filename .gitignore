@@ -1,3 +1,4 @@
 *.pyc
 *~
 data.db
+olhoneles/settings.py
