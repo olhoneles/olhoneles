@@ -21,10 +21,10 @@ import models
 
 
 config = dict(
-    base_path = 'cmbh',
-    title = 'Olho neles! CM BH 2010-2012',
-    data_source_uri = 'http://www.cmbh.mg.gov.br/',
-    data_source_label = 'Camara Municipal de Belo Horizonte'
+    base_path = u'cmbh',
+    title = u'Olho neles! CM BH 2010-2012',
+    data_source_uri = u'http://www.cmbh.mg.gov.br/',
+    data_source_label = u'Camara Municipal de Belo Horizonte'
 )
 
 
