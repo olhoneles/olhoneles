@@ -21,10 +21,10 @@ from base.models import models
 
 
 config = dict(
-    base_path = 'almg2007',
-    title = 'Olho neles! ALMG 2007-2011',
-    data_source_uri = 'http://almg.gov.br/',
-    data_source_label = 'Assembléia Legislativa do Estado de Minas Gerais'
+    base_path = u'almg2007',
+    title = u'Olho neles! ALMG 2007-2011',
+    data_source_uri = u'http://almg.gov.br/',
+    data_source_label = u'Assembléia Legislativa do Estado de Minas Gerais'
 )
 
 
