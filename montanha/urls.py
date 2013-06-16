@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (©) 2010-2013 Gustavo Noronha Silva
+# Copyright (©) 2013 Marcelo Jorge Vieira <metal@alucinados.com>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -15,12 +15,12 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import patterns, include, url
+from django.conf.urls.defaults import patterns, url
 
-from django.contrib import admin
-admin.autodiscover()
 
-urlpatterns = patterns('',
-                       url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-                       url(r'^admin/', include(admin.site.urls)),
-                       url(r'^', include('montanha.urls', namespace='montanha', app_name='montanha')))
+urlpatterns = patterns(
+    'montanha.views',
+
+    # Index
+    url(r'^$', 'show_index', name='index'),
+)
