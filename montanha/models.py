@@ -99,7 +99,7 @@ class ExpenseNature(models.Model):
                             verbose_name=_("Expense nature name"))
 
     def __unicode__(self):
-        return u"%s" % sellf.name
+        return u"%s" % self.name
 
 
 class Expense(models.Model):
