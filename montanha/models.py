@@ -19,6 +19,23 @@ from django.db import models
 from django.utils.translation import ugettext as _
 
 
+class PoliticalParty(models.Model):
+
+    class Meta:
+        verbose_name = _("Political Party")
+        verbose_name_plural = _("Political Parties")
+
+    siglum = models.CharField(max_length=10,
+                              verbose_name=_("Siglum"),
+                              unique=True)
+
+    name = models.CharField(max_length=2048,
+                            verbose_name=_("Full name"))
+
+    def __unicode__(self):
+        return u"%s" % (self.siglum)
+
+
 class Legislator(models.Model):
 
     class Meta:
@@ -55,10 +72,10 @@ class Mandate(models.Model):
                                 help_text=_("""Date in which this mandate ended, paused for taking an """
                                             """executive-branch office, or affiliation change."""))
 
-    party = models.CharField(max_length=50,
-                             verbose_name=_("Party"),
-                             help_text=_("""Party the legislator was affiliated to during this """
-                                         """mandate."""))
+    party = models.ForeignKey("PoliticalParty",
+                              verbose_name=_("Party"),
+                              help_text=_("""Party the legislator was affiliated to during this """
+                                          """mandate."""))
 
     def __unicode__(self):
         if self.date_end:
