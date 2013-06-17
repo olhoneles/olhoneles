@@ -23,4 +23,6 @@ urlpatterns = patterns(
 
     # Index
     url(r'^$', 'show_index', name='index'),
+
+    url(r'per-nature/$', 'show_per_nature', name='per-nature'),
 )
