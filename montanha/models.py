@@ -116,7 +116,8 @@ class Expense(models.Model):
 
     date = models.DateField(verbose_name=_("Expense date"))
 
-    value = models.DecimalField(max_digits=10, decimal_places=2,
+    value = models.DecimalField(max_digits=10,
+                                decimal_places=2,
                                 verbose_name=_("Value"),
                                 help_text=_("The total amount spent."))
 
