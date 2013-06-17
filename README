@@ -21,6 +21,15 @@ We have two ways:
    http://www.miniwebtool.com/django-secret-key-generator/
 
 
+Dependencies
+============
+
+* Django (http://djangoproject.com/)
+* Bootstrap (http://twitter.github.io/bootstrap/)
+* jQuery (http://jquery.com/)
+* jQuery Flot (https://github.com/flot/flot)
+
+
 License
 =======
 

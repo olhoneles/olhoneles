@@ -23,8 +23,8 @@
         {% include 'header.html' %}
         {% block content %}{% endblock %}
         {% include 'footer.html' %}
-        {% block footer-extra %}{% endblock %}
         <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+        {% block footer-extra %}{% endblock %}
     </body>
 </html>

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Per nature{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <h1>Per nature</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span6">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Tipo de Gasto</th>
+                        <th>Valor ressarcido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in data %}
+                    <tr>
+                        <td>{{ d.nature__name }}</td>
+                        <td>{{ d.expensed }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="span6">
+            <div id="placeholder" class="demo-placeholder"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer-extra %}
+
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.pie.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+
+	data = [
+        {% for d in data %}{label: "{{ d.nature__name }}", data: "{{ d.expensed }}"},{% endfor %}
+    ]
+
+    function labelFormatter(label, series) {
+        return "<div style='font-size:8pt; text-align:center; padding:2px; color:black;'>" + label + "<br/>" + Math.round(series.percent) + "%</div>";
+    }
+
+    $.plot('#placeholder', data, {
+        series: {
+            pie: {
+                show: true,
+                radius: 1,
+                tilt: 0.5,
+                label: {
+                    show: true,
+                    radius: 1,
+                    formatter: labelFormatter,
+                    background: {
+                        opacity: 0.8
+                    }
+                },
+                combine: {
+                    color: '#999',
+                    threshold: 0.1
+                }
+            }
+        },
+        legend: {
+            show: false
+        }
+    });
+
+});
+</script>
+
+{% endblock %}

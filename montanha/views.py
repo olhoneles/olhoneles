@@ -16,6 +16,8 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.shortcuts import render
+from django.db.models import Sum
+from montanha.models import *
 
 
 def show_index(request):
@@ -23,3 +25,13 @@ def show_index(request):
     c = {}
 
     return render(request, 'index.html', c)
+
+
+def show_per_nature(request):
+
+    data = Expense.objects.values('nature__name')
+    data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+    c = {'data': data}
+
+    return render(request, 'per_nature.html', c)
