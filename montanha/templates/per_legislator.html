@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Per legislator{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <h1>Per legislator</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Legislador</th>
+                        <th>Partido</th>
+                        <th>Valor ressarcido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in data %}
+                    <tr>
+                        <td>{{ d.mandate__legislator__name }}</td>
+                        <td>{{ d.mandate__party__siglum }}</td>
+                        <td>{{ d.expensed }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footer-extra %}
+
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.pie.js' %}"></script>
+
+{% endblock %}
