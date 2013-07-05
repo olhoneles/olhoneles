@@ -35,3 +35,13 @@ def show_per_nature(request):
     c = {'data': data}
 
     return render(request, 'per_nature.html', c)
+
+
+def show_per_legislator(request):
+
+    data = Expense.objects.values('mandate__legislator__name', 'mandate__party__siglum')
+    data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+    c = {'data': data}
+
+    return render(request, 'per_legislator.html', c)
