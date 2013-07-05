@@ -54,6 +54,16 @@ class Legislator(models.Model):
         return u"Legislator %s" % (self.name)
 
 
+class Institution(models.Model):
+
+    class Meta:
+        verbose_name = _("Institution")
+        verbose_name_plural = _("Institutions")
+
+    name = models.CharField(max_length=2048,
+                            verbose_name=_("Name"))
+
+
 class Mandate(models.Model):
 
     class Meta:
@@ -61,6 +71,8 @@ class Mandate(models.Model):
         verbose_name_plural = _("Mandates")
 
     legislator = models.ForeignKey("Legislator")
+
+    institution = models.ForeignKey("Institution")
 
     date_start = models.DateField(verbose_name=_("Date started"),
                                   help_text=_("""Date in which this mandate started; may also be """
@@ -95,6 +107,10 @@ class ExpenseNature(models.Model):
         verbose_name = _("Expense nature")
         verbose_name_plural = _("Expense natures")
 
+    original_id = models.CharField(blank=True, null=True,
+                                   max_length=512,
+                                   verbose_name=_("Original ID"))
+
     name = models.CharField(max_length=512,
                             verbose_name=_("Expense nature name"))
 
@@ -107,6 +123,10 @@ class Expense(models.Model):
     class Meta:
         verbose_name = _("Expense")
         verbose_name_plural = _("Expenses")
+
+    original_id = models.CharField(blank=True, null=True,
+                                   max_length=512,
+                                   verbose_name=_("Original ID"))
 
     number = models.CharField(max_length=512,
                               verbose_name=_("Document number"),
