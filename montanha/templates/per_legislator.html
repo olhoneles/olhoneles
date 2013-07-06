@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load staticfiles %}
+{% load montanhatags %}
 
 {% block title %}Per legislator{% endblock %}
 
@@ -26,7 +27,7 @@
                     <tr>
                         <td>{{ d.mandate__legislator__name }}</td>
                         <td>{{ d.mandate__party__siglum }}</td>
-                        <td>{{ d.expensed }}</td>
+                        <td>{{ d.expensed|format_currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
