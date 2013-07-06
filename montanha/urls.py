@@ -26,4 +26,5 @@ urlpatterns = patterns(
 
     url(r'per-nature/$', 'show_per_nature', name='per-nature'),
     url(r'per-legislator/$', 'show_per_legislator', name='per-legislator'),
+    url(r'per-party/$', 'show_per_party', name='per-party'),
 )
