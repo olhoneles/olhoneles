@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load staticfiles %}
+{% load montanhatags %}
 
 {% block title %}Per party{% endblock %}
 
@@ -27,8 +28,8 @@
                     <tr>
                         <td>{{ d.siglum }}</td>
                         <td>{{ d.n_legislators }}</td>
-                        <td>{{ d.expensed_sum }}</td>
-                        <td>{{ d.expensed_average }}</td>
+                        <td>{{ d.expensed_sum|format_currency }}</td>
+                        <td>{{ d.expensed_average|format_currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

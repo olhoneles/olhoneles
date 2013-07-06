@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load staticfiles %}
+{% load montanhatags %}
 
 {% block title %}Per nature{% endblock %}
 
@@ -24,7 +25,7 @@
                     {% for d in data %}
                     <tr>
                         <td>{{ d.nature__name }}</td>
-                        <td>{{ d.expensed }}</td>
+                        <td>{{ d.expensed|format_currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
