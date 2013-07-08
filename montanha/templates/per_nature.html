@@ -14,7 +14,7 @@
     </div>
     <div class="row">
         <div class="span6">
-            <table class="table table-bordered table-striped">
+            <table id="datatable" class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>Tipo de Gasto</th>
@@ -32,7 +32,7 @@
             </table>
         </div>
         <div class="span6">
-            <div id="placeholder" class="demo-placeholder"></div>
+            <div id="placeholder"></div>
         </div>
     </div>
 </div>
@@ -42,31 +42,29 @@
 {% block footer-extra %}
 
 <script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.js' %}"></script>
-<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.pie.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.stack.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.time.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.resize.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/accounting.min.js' %}"></script>
 <script type="text/javascript">
+function format_currency(val, axis) {
+    return accounting.formatMoney(val, "R$", axis.tickDecimals, ".", ",");
+}
+
 $(document).ready(function(){
+    $('#placeholder').css('height', ($('#datatable').height() + 35) + 'px');
+    $('#placeholder').css('-webkit-transform', 'translateY(-10px)');
 
 	data = [
-        {% for d in data %}{label: "{{ d.nature__name }}", data: "{{ d.expensed }}"},{% endfor %}
+        {% for d in years_data %}{{ d }},{% endfor %}
     ]
 
-    function labelFormatter(label, series) {
-        return "<div style='font-size:8pt; text-align:center; padding:2px; color:black;'>" + label + "<br/>" + Math.round(series.percent) + "%</div>";
-    }
-
-    $.plot('#placeholder', data, {
+    graph = $.plot('#placeholder', data, {
         series: {
-            pie: {
+            stack: true,
+            lines: {
                 show: true,
-                radius: 1,
-                label: {
-                    show: true,
-                    radius: 1,
-                    formatter: labelFormatter,
-                    background: {
-                        opacity: 0.8
-                    }
-                },
+                fill: 1,
                 combine: {
                     color: '#999',
                     threshold: 0.1
@@ -74,10 +72,28 @@ $(document).ready(function(){
             }
         },
         legend: {
-            show: false
-        }
+            show: false,
+        },
+        xaxis: {
+            mode: 'time',
+            timeformat: "%Y",
+            tickSize: [1, "year"]
+        },
+        yaxis: {
+            tickFormatter: format_currency,
+            position: "right",
+        },
+        grid: {
+            borderWidth: {
+                top: 0,
+                bottom: 0,
+                left: 2,
+                right: 0,
+            },
+            borderColor: "#f4f4f4",
+            markings: 0,
+        },
     });
-
 });
 </script>
 
