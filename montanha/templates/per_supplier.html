@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load montanhatags %}
+{% load bootstrap_toolkit %}
+
+{% block title %}Per supplier{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <h1>Per supplier</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Fornecedor</th>
+                        <th>CNPJ</th>
+                        <th>Valor recebido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in data %}
+                    <tr>
+                        <td>{{ d.supplier__name }}</td>
+                        <td>{{ d.supplier__identifier }}</td>
+                        <td>{{ d.expensed|format_currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row span12">
+      {{ data|pagination }}
+    </div>
+</div>
+
+{% endblock %}

@@ -17,6 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import locale
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render
 from django.db.models import Sum, Count
 from montanha.models import *
@@ -66,3 +67,22 @@ def show_per_party(request):
     c = {'data': list(data)}
 
     return render(request, 'per_party.html', c)
+
+
+def show_per_supplier(request):
+
+    data = Expense.objects.values('supplier__name', 'supplier__identifier')
+    data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+    paginator = Paginator(data, 10)
+    page = request.GET.get('page')
+    try:
+        data = paginator.page(page)
+    except PageNotAnInteger:
+        data = paginator.page(1)
+    except EmptyPage:
+        data = paginator.page(paginator.num_pages)
+
+    c = {'data': data}
+
+    return render(request, 'per_supplier.html', c)
