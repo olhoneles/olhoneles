@@ -44,7 +44,7 @@ def show_per_nature(request):
     # We use the data variable to get our list of expense natures so that we can
     # match the graph stacking with the order of the table rows
     time_series = []
-    for nature_name in [d["nature__name"] for d in reversed(data)]:
+    for nature_name in [d["nature__name"] for d in data]:
         nature = ExpenseNature.objects.get(name=nature_name)
 
         l = []
@@ -57,7 +57,10 @@ def show_per_nature(request):
             year_data = year_data.annotate(expensed=Sum("expensed"))
             l.append([int(date(year, 1, 1).strftime("%s000")), float(year_data[0]["expensed"])])
 
-    c = {'data': data, 'years_data': time_series}
+    colors = ["#cb0d0d", "#cb410d", "#cbc40d", "#5fcb0d", "#0dcb14", "#0dcb68", "#0dcbc6", "#0d82cb",
+              "#0d33cb", "#300dcb", "#7e0dcb", "#c80dcb", "#cb0d9a", "#cb0d3c", "#cb0d0d"]
+
+    c = {'data': data, 'years_data': time_series, 'colors': colors}
 
     return render(request, 'per_nature.html', c)
 

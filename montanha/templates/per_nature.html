@@ -17,13 +17,14 @@
             <table id="datatable" class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Tipo de Gasto</th>
+                        <th colspan="2">Tipo de Gasto</th>
                         <th>Valor ressarcido</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for d in data %}
                     <tr>
+                        <td style="background-color: {{ colors|itercycle:forloop.counter0 }}; opacity: 0.8;"></td>
                         <td>{{ d.nature__name }}</td>
                         <td>{{ d.expensed|format_currency }}</td>
                     </tr>
@@ -56,19 +57,17 @@ $(document).ready(function(){
     $('#placeholder').css('-webkit-transform', 'translateY(-10px)');
 
 	data = [
-        {% for d in years_data %}{{ d }},{% endfor %}
-    ]
+        {% for d in years_data %}{ "color": "{{ colors|itercycle:forloop.counter0 }}", "data": {{ d }} },{% endfor %}
+    ].reverse()
 
     graph = $.plot('#placeholder', data, {
         series: {
             stack: true,
-            lines: {
+            bars: {
                 show: true,
-                fill: 1,
-                combine: {
-                    color: '#999',
-                    threshold: 0.1
-                }
+                barWidth: 24 * 60 * 60 * 1000 * 260,
+                lineWidth: 0,
+                fill: 0.8,
             }
         },
         legend: {
