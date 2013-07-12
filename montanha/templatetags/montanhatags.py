@@ -26,3 +26,8 @@ register = template.Library()
 @register.filter
 def format_currency(value):
     return mark_safe(locale.currency(value, grouping=True).replace(" ", "&nbsp;"))
+
+
+@register.filter
+def itercycle(iterable, counter):
+    return iterable[counter % len(iterable)]
