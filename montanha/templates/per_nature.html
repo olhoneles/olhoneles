@@ -77,7 +77,14 @@ $(document).ready(function(){
         xaxis: {
             mode: 'time',
             timeformat: "%Y",
-            tickSize: [1, "year"]
+            tickSize: [1, "year"],
+            ticks: (function(data) {
+                var new_data = new Array(data.length);
+                for (var i = 0, len = data.length; i < len; i += 1) {
+                    new_data[i] = data[i][0];
+                }
+                return new_data;
+            })(data[0].data),
         },
         yaxis: {
             tickFormatter: format_currency,
