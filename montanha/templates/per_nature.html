@@ -58,15 +58,13 @@ $(document).ready(function(){
 
 	data = [
         {% for d in years_data %}{ "color": "{{ colors|itercycle:forloop.counter0 }}", "data": {{ d }} },{% endfor %}
-    ].reverse()
+    ]
 
     graph = $.plot('#placeholder', data, {
         series: {
             stack: true,
-            bars: {
+            lines: {
                 show: true,
-                barWidth: 24 * 60 * 60 * 1000 * 260,
-                lineWidth: 0,
                 fill: 0.8,
             }
         },
