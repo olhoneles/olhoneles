@@ -48,6 +48,7 @@ def show_per_nature(request):
         nature = ExpenseNature.objects.get(name=nature_name)
 
         l = []
+        cummulative = .0
         time_series.append(l)
 
         for year in years:
@@ -55,7 +56,10 @@ def show_per_nature(request):
             year_data = year_data.filter(date__year=year)
             year_data = year_data.values("nature__name")
             year_data = year_data.annotate(expensed=Sum("expensed"))
-            l.append([int(date(year, 1, 1).strftime("%s000")), float(year_data[0]["expensed"])])
+
+            cummulative = cummulative + float(year_data[0]["expensed"])
+
+            l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 
     colors = ["#cb0d0d", "#cb410d", "#cbc40d", "#5fcb0d", "#0dcb14", "#0dcb68", "#0dcbc6", "#0d82cb",
               "#0d33cb", "#300dcb", "#7e0dcb", "#c80dcb", "#cb0d9a", "#cb0d3c", "#cb0d0d"]
