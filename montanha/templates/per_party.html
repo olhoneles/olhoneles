@@ -67,7 +67,7 @@ function toggle_details()
 $(document).ready(function(){
 
 	data = [
-        {% for d in data %}{label: "{{ d.siglum }}", data: "{{ d.expensed_sum }}"},{% endfor %}
+        {% for d in data %}{label: "{{ d.siglum }}", color: "{{ colors|itercycle:forloop.counter0 }}", data: {{ d.expensed_average }}},{% endfor %}
     ]
 
     function labelFormatter(label, series) {
@@ -79,6 +79,7 @@ $(document).ready(function(){
             pie: {
                 show: true,
                 radius: 1,
+                threshold: 0.1,
                 label: {
                     show: true,
                     radius: 1,
@@ -87,10 +88,6 @@ $(document).ready(function(){
                         opacity: 0.8
                     }
                 },
-                combine: {
-                    color: '#999',
-                    threshold: 0.1
-                }
             }
         },
         legend: {

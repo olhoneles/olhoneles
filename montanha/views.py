@@ -27,6 +27,10 @@ from montanha.models import *
 locale.setlocale(locale.LC_MONETARY, "")
 
 
+colors = ["#cb410d", "#cbc40d", "#5fcb0d", "#0dcb14", "#0dcb68", "#0dcbc6", "#0d82cb",
+          "#0d33cb", "#300dcb", "#7e0dcb", "#c80dcb", "#cb0d9a", "#cb0d3c", "#cb0d0d"]
+
+
 def show_index(request):
 
     c = {}
@@ -61,9 +65,6 @@ def show_per_nature(request):
 
             l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 
-    colors = ["#cb0d0d", "#cb410d", "#cbc40d", "#5fcb0d", "#0dcb14", "#0dcb68", "#0dcbc6", "#0d82cb",
-              "#0d33cb", "#300dcb", "#7e0dcb", "#c80dcb", "#cb0d9a", "#cb0d3c", "#cb0d0d"]
-
     c = {'data': data, 'years_data': time_series, 'colors': colors}
 
     return render(request, 'per_nature.html', c)
@@ -90,7 +91,7 @@ def show_per_party(request):
                                       "montanha_expense.mandate_id = montanha_mandate.id "
                                       "group by siglum order by expensed_average desc")
 
-    c = {'data': list(data)}
+    c = {'data': list(data), 'colors': colors}
 
     return render(request, 'per_party.html', c)
 
