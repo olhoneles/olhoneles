@@ -63,6 +63,9 @@ class Institution(models.Model):
     name = models.CharField(max_length=2048,
                             verbose_name=_("Name"))
 
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
 
 class Mandate(models.Model):
 
