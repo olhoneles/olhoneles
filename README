@@ -28,6 +28,9 @@ Dependencies
 * Bootstrap (http://twitter.github.io/bootstrap/)
 * jQuery (http://jquery.com/)
 * jQuery Flot (https://github.com/flot/flot)
+* Django Bootstrap Toolkit (https://github.com/gnoronha/django-bootstrap-toolkit/)
+ - For this module we are using a private branch because there are changes
+   we use that are still pending acceptance upstream.
 
 
 License
