@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (©) 2013 Gustavo Noronha Silva
+# Copyright (©) 2013 Marcelo Jorge Vieira
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -16,7 +17,20 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from montanha.models import *
+
+
+class PoliticalPartyAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'name', 'show_logo']
+    ordering = ['siglum']
+    search_fields = ['name']
+
+    def show_logo(self, obj):
+        if obj.logo:
+            return mark_safe('<img src="%s" width="32" />' % obj.logo.url)
+    show_logo.allow_tags = True
+    show_logo.short_description = 'Logo'
 
 
 admin.site.register(Legislator)
@@ -24,5 +38,5 @@ admin.site.register(Mandate)
 admin.site.register(Supplier)
 admin.site.register(ExpenseNature)
 admin.site.register(Expense)
-admin.site.register(PoliticalParty)
+admin.site.register(PoliticalParty, PoliticalPartyAdmin)
 admin.site.register(Institution)

@@ -1,5 +1,8 @@
 # Django settings for olhoneles project.
 
+import os
+INSTANCE = lambda *x:os.path.join(os.path.dirname(__file__), *x)
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -50,12 +53,12 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = INSTANCE('../media')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://example.com/media/", "http://media.example.com/"
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -122,6 +125,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'bootstrap_toolkit',
+    'easy_thumbnails',
     'montanha',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
@@ -156,4 +160,10 @@ LOGGING = {
             'propagate': True,
         },
     }
+}
+
+THUMBNAIL_ALIASES = {
+    '': {
+        'political-party-mini': {'size': (20, 20), 'crop': False},
+    },
 }
