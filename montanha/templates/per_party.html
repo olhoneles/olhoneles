@@ -6,6 +6,22 @@
 
 {% block content %}
 
+<script>
+function toggle_details()
+{
+    var details = $('.details');
+    var toggle_link = $('#toggle-details-link')[0];
+    if (details.css('display') == 'none') {
+        details.show();
+        toggle_link.innerHTML = '(Esconder)'
+        return;
+    }
+
+    details.hide();
+    toggle_link.innerHTML = '(Ver detalhes)'
+}
+</script>
+
 <div class="container">
     <div class="row">
         <div class="span12">
@@ -13,29 +29,29 @@
         </div>
     </div>
     <div class="row">
-        <div class="span9">
+        <div class="span6">
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>Partido</th>
-                        <th>Parlamentares</th>
-                        <th>Valor ressarcido</th>
-                        <th>Média</th>
+                        <th>Média <a id="toggle-details-link" href="javascript:toggle_details()">(Ver detalhes)</a></th>
+                        <th class="details" style="display: none;">Parlamentares</th>
+                        <th class="details" style="display: none;">Valor ressarcido</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for d in data %}
                     <tr>
                         <td>{{ d.siglum }}</td>
-                        <td>{{ d.n_legislators }}</td>
-                        <td>{{ d.expensed_sum|format_currency }}</td>
                         <td>{{ d.expensed_average|format_currency }}</td>
+                        <td class="details" style="display: none;">{{ d.n_legislators }}</td>
+                        <td class="details" style="display: none;">{{ d.expensed_sum|format_currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="span3">
+        <div class="span6">
             <div id="placeholder" class="demo-placeholder"></div>
         </div>
     </div>
