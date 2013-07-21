@@ -24,7 +24,7 @@ from django.db.models import Sum, Count
 from montanha.models import *
 
 
-locale.setlocale(locale.LC_MONETARY, "")
+locale.setlocale(locale.LC_MONETARY, "pt_BR.UTF-8")
 
 
 colors = ["#cb410d", "#cbc40d", "#5fcb0d", "#0dcb14", "#0dcb68", "#0dcbc6", "#0d82cb",
