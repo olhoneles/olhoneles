@@ -37,3 +37,15 @@
 </div>
 
 {% endblock %}
+
+
+{% block footer-extra %}
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    $('#menu-per-legislator').addClass('active').siblings().removeClass('active');
+});
+</script>
+
+{% endblock %}

@@ -41,3 +41,15 @@
 </div>
 
 {% endblock %}
+
+
+{% block footer-extra %}
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    $('#menu-per-supplier').addClass('active').siblings().removeClass('active');
+});
+</script>
+
+{% endblock %}

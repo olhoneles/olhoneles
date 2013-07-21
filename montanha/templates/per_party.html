@@ -66,6 +66,8 @@ function toggle_details()
 <script type="text/javascript">
 $(document).ready(function(){
 
+    $('#menu-per-party').addClass('active').siblings().removeClass('active');
+
 	data = [
         {% for d in data %}{label: "{{ d.siglum }}", color: "{{ colors|itercycle:forloop.counter0 }}", data: {{ d.expensed_average }}},{% endfor %}
     ]
