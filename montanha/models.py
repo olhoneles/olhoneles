@@ -63,6 +63,10 @@ class Institution(models.Model):
     name = models.CharField(max_length=2048,
                             verbose_name=_("Name"))
 
+    siglum = models.CharField(max_length=10,
+                              verbose_name=_("Siglum"),
+                              unique=True)
+
     def __unicode__(self):
         return u"%s" % (self.name)
 
