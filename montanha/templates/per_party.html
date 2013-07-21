@@ -79,7 +79,6 @@ $(document).ready(function(){
             pie: {
                 show: true,
                 radius: 1,
-                threshold: 0.1,
                 label: {
                     show: true,
                     radius: 1,
@@ -88,6 +87,9 @@ $(document).ready(function(){
                         opacity: 0.8
                     }
                 },
+                combine: {
+                    threshold: 0.02,
+                }
             }
         },
         legend: {
