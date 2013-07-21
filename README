@@ -31,6 +31,7 @@ Dependencies
 * Django Bootstrap Toolkit (https://github.com/gnoronha/django-bootstrap-toolkit/)
  - For this module we are using a private branch because there are changes
    we use that are still pending acceptance upstream.
+* Easy Thumbnails (https://github.com/SmileyChris/easy-thumbnails)
 
 
 License

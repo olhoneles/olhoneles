@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load montanhatags %}
+{% load thumbnail %}
 
 {% block title %}Per party{% endblock %}
 
@@ -42,7 +43,7 @@ function toggle_details()
                 <tbody>
                     {% for d in data %}
                     <tr>
-                        <td>{{ d.siglum }}</td>
+                        <td>{% if d.logo %}<img src="{{ d.logo|thumbnail_url:'political-party-mini' }}" title="{{ d.name }}" alt="{{ d.name }}">{% endif %} {{ d.siglum }}</td>
                         <td>{{ d.expensed_average|format_currency }}</td>
                         <td class="details" style="display: none;">{{ d.n_legislators }}</td>
                         <td class="details" style="display: none;">{{ d.expensed_sum|format_currency }}</td>

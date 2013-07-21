@@ -17,6 +17,7 @@
 
 from django.db import models
 from django.utils.translation import ugettext as _
+from easy_thumbnails.fields import ThumbnailerImageField
 
 
 class PoliticalParty(models.Model):
@@ -31,6 +32,10 @@ class PoliticalParty(models.Model):
 
     name = models.CharField(max_length=2048,
                             verbose_name=_("Full name"))
+
+    logo = ThumbnailerImageField(
+        verbose_name=_('Logo'),
+        upload_to='political_party')
 
     def __unicode__(self):
         return u"%s" % (self.siglum)
