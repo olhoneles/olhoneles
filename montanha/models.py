@@ -37,6 +37,11 @@ class PoliticalParty(models.Model):
         verbose_name=_('Logo'),
         upload_to='political_party')
 
+    wikipedia = models.URLField(
+        verbose_name=_('Wikipedia'),
+        blank=True,
+        null=True)
+
     def __unicode__(self):
         return u"%s" % (self.siglum)
 
