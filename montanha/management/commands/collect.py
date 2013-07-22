@@ -71,9 +71,9 @@ class ALMG(BaseCollector):
     def __init__(self, mandate_start=date(2011, 1, 1)):
         self.mandate_start = mandate_start
         try:
-            self.institution = Institution.objects.get(name='ALMG')
+            self.institution = Institution.objects.get(siglum='ALMG')
         except Institution.DoesNotExist:
-            self.institution = Institution(name='ALMG')
+            self.institution = Institution(siglum='ALMG', u'Assembléia Legislativa do Estado de Minas Gerais')
             self.institution.save()
 
     def update_legislators(self):
