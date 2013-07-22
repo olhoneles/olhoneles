@@ -20,6 +20,7 @@
 import os
 import urllib2
 import urllib
+from BeautifulSoup import BeautifulSoup
 from django.core.files import File
 from montanha.models import *
 
