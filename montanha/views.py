@@ -133,3 +133,21 @@ def show_per_supplier(request):
     c = {'data': data}
 
     return render(request, 'per_supplier.html', c)
+
+
+def show_all(request):
+
+    data = Expense.objects.all().order_by('-date')
+
+    paginator = Paginator(data, 10)
+    page = request.GET.get('page')
+    try:
+        data = paginator.page(page)
+    except PageNotAnInteger:
+        data = paginator.page(1)
+    except EmptyPage:
+        data = paginator.page(paginator.num_pages)
+
+    c = {'data': data}
+
+    return render(request, 'all_expenses.html', c)
