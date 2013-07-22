@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load montanhatags %}
+{% load bootstrap_toolkit %}
+
+{% block title %}{{ legislator.name }} ({{ legislator.party.siglum }}{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <h1>{{ legislator.name }} ({{ legislator.party }})</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Tipo de gasto</th>
+                        <th>Empresa/Pessoa</th>
+                        <th>CNPJ/CPF</th>
+                        <th>Número do Documento</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in data %}
+                    <tr>
+                        <td>{{ d.nature__name }}</td>
+                        <td>{{ d.supplier__name }}</td>
+                        <td>{{ d.supplier__identifier }}</td>
+                        <td>{{ d.number }}</td>
+                        <td>{{ d.date|date:"d/m/Y" }}</td>
+                        <td>{{ d.expensed|format_currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row span12">
+      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block footer-extra %}
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    $('#menu-per-legislator').removeClass('active').siblings().removeClass('active');
+});
+</script>
+
+{% endblock %}

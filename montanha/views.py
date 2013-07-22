@@ -72,12 +72,32 @@ def show_per_nature(request):
 
 def show_per_legislator(request):
 
-    data = Expense.objects.values('mandate__legislator__name', 'mandate__party__siglum')
+    data = Expense.objects.values('mandate__legislator__id', 'mandate__legislator__name', 'mandate__party__siglum')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
     c = {'data': data}
 
     return render(request, 'per_legislator.html', c)
+
+
+def show_legislator_detail(request, **kwargs):
+
+    legislator = Legislator.objects.get(pk=kwargs['legislator_id'])
+    data = Expense.objects.values('nature__name', 'supplier__name', 'supplier__identifier',
+                                  'number', 'date', 'expensed').order_by('-date')
+
+    paginator = Paginator(data, 10)
+    page = request.GET.get('page')
+    try:
+        data = paginator.page(page)
+    except PageNotAnInteger:
+        data = paginator.page(1)
+    except EmptyPage:
+        data = paginator.page(paginator.num_pages)
+
+    c = {'legislator': legislator, 'data': data}
+
+    return render(request, 'detail_legislator.html', c)
 
 
 def show_per_party(request):
