@@ -53,6 +53,10 @@ class Legislator(models.Model):
 
         return u"Legislator %s" % (self.name)
 
+    @property
+    def party(self):
+        return self.mandate_set.order_by("-date_start")[0].party
+
 
 class Institution(models.Model):
 

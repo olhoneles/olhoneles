@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load url from future %}
 {% load staticfiles %}
 {% load montanhatags %}
 
@@ -25,7 +26,11 @@
                 <tbody>
                     {% for d in data %}
                     <tr>
-                        <td>{{ d.mandate__legislator__name }}</td>
+                        <td>
+                          <a href="{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
+                            {{ d.mandate__legislator__name }}
+                          </a>
+                        </td>
                         <td>{{ d.mandate__party__siglum }}</td>
                         <td>{{ d.expensed|format_currency }}</td>
                     </tr>

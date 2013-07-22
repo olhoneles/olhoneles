@@ -28,4 +28,6 @@ urlpatterns = patterns(
     url(r'per-legislator/$', 'show_per_legislator', name='per-legislator'),
     url(r'per-party/$', 'show_per_party', name='per-party'),
     url(r'per-supplier/$', 'show_per_supplier', name='per-supplier'),
+
+    url(r'detail-legislator/(?P<legislator_id>\d+)$', 'show_legislator_detail', name='show-legislator-detail'),
 )
