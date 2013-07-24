@@ -61,6 +61,12 @@ class Legislator(models.Model):
     name = models.CharField(max_length=2048,
                             verbose_name=_("Full name"))
 
+    picture = ThumbnailerImageField(
+        verbose_name=_('Picture'),
+        upload_to='legislator',
+        blank=True,
+        null=True)
+
     def __unicode__(self):
         if self.original_id:
             return u"Legislator %s (Original ID: %s)" % (self.name, self.original_id)
