@@ -32,6 +32,7 @@ Dependencies
  - For this module we are using a private branch because there are changes
    we use that are still pending acceptance upstream.
 * Easy Thumbnails (https://github.com/SmileyChris/easy-thumbnails)
+* Python PIL (https://pypi.python.org/pypi/PIL)
 
 
 License
