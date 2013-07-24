@@ -18,6 +18,7 @@
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
 from montanha.models import *
 
 
@@ -33,7 +34,19 @@ class PoliticalPartyAdmin(admin.ModelAdmin):
     show_logo.short_description = 'Logo'
 
 
-admin.site.register(Legislator)
+class LegislatorAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'show_picture']
+    ordering = ['name']
+    search_fields = ['name']
+
+    def show_picture(self, obj):
+        if obj.picture:
+            return mark_safe('<img src="%s" width="32" />' % obj.picture.url)
+    show_picture.allow_tags = True
+    show_picture.short_description = _('Picture')
+
+
+admin.site.register(Legislator, LegislatorAdmin)
 admin.site.register(Mandate)
 admin.site.register(Supplier)
 admin.site.register(ExpenseNature)
