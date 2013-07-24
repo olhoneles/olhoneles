@@ -28,3 +28,6 @@ urlpatterns = patterns('',
                        url(r'^', include('montanha.urls', namespace='montanha', app_name='montanha')))
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler500 = 'montanha.views.error_500'
+handler404 = 'montanha.views.error_404'
