@@ -19,7 +19,6 @@
 
 import urllib2
 from BeautifulSoup import BeautifulSoup
-import simplejson
 from montanha.models import *
 
 
