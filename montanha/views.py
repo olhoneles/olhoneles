@@ -38,6 +38,16 @@ def show_index(request):
     return render(request, 'index.html', c)
 
 
+def error_500(request):
+    c = {}
+    return render(request, '500.html', c)
+
+
+def error_404(request):
+    c = {}
+    return render(request, '404.html', c)
+
+
 def show_per_nature(request):
 
     data = Expense.objects.values('nature__name')
