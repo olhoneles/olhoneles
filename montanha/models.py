@@ -31,11 +31,15 @@ class PoliticalParty(models.Model):
                               unique=True)
 
     name = models.CharField(max_length=2048,
-                            verbose_name=_("Full name"))
+                            verbose_name=_("Full name"),
+                            blank=True,
+                            null=True)
 
     logo = ThumbnailerImageField(
         verbose_name=_('Logo'),
-        upload_to='political_party')
+        upload_to='political_party',
+        blank=True,
+        null=True)
 
     wikipedia = models.URLField(
         verbose_name=_('Wikipedia'),
