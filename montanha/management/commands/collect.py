@@ -73,7 +73,7 @@ class ALMG(BaseCollector):
         try:
             self.institution = Institution.objects.get(siglum='ALMG')
         except Institution.DoesNotExist:
-            self.institution = Institution(siglum='ALMG', u'Assembléia Legislativa do Estado de Minas Gerais')
+            self.institution = Institution(siglum='ALMG', name=u'Assembléia Legislativa do Estado de Minas Gerais')
             self.institution.save()
 
     def update_legislators(self):
