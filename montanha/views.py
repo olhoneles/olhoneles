@@ -71,7 +71,8 @@ def show_per_nature(request):
             year_data = year_data.values("nature__name")
             year_data = year_data.annotate(expensed=Sum("expensed"))
 
-            cummulative = cummulative + float(year_data[0]["expensed"])
+            if year_data:
+                cummulative = cummulative + float(year_data[0]["expensed"])
 
             l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 

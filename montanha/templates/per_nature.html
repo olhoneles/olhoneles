@@ -56,9 +56,6 @@ $(document).ready(function(){
 
     $('#menu-per-nature').addClass('active').siblings().removeClass('active');
 
-    $('#placeholder').css('height', ($('#datatable').height() + 35) + 'px');
-    $('#placeholder').css('-webkit-transform', 'translateY(-10px)');
-
 	data = [
         {% for d in years_data %}{ "color": "{{ colors|itercycle:forloop.counter0 }}", "data": {{ d }} },{% endfor %}
     ]

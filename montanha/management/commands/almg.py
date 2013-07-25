@@ -45,27 +45,22 @@ class ALMG(BaseCollector):
         legislators = self.retrieve_uri("http://dadosabertos.almg.gov.br/ws/deputados/em_exercicio?formato=json")["list"]
         for entry in legislators:
             try:
+                party = PoliticalParty.objects.get(siglum=entry["partido"])
+            except PoliticalParty.DoesNotExist:
+                party = PoliticalParty(siglum=entry["partido"])
+                party.save()
+
+                self.debug("New party: %s" % unicode(party))
+
+            try:
                 legislator = Legislator.objects.get(original_id=entry["id"])
                 self.debug("Found existing legislator: %s" % unicode(legislator))
 
-                try:
-                    mandate = Mandate.objects.get(legislator=legislator, date_start=self.mandate_start)
-                except Mandate.DoesNotExist:
-                    mandate = Mandate(legislator=legislator, date_start=self.mandate_start, party=party, institution=self.institution)
-                    mandate.save()
-                    self.debug("Mandate starting on %s did not exist, created." % self.mandate_start.strftime("%F"))
+                mandate = self.mandate_for_legislator(legislator, party)
 
             except Legislator.DoesNotExist:
                 legislator = Legislator(name=entry["nome"], original_id=entry["id"])
                 legislator.save()
-
-                try:
-                    party = PoliticalParty.objects.get(siglum=entry["partido"])
-                except PoliticalParty.DoesNotExist:
-                    party = PoliticalParty(siglum=entry["partido"])
-                    party.save()
-
-                    self.debug("New party: %s" % unicode(party))
 
                 mandate = Mandate(legislator=legislator, date_start=self.mandate_start, party=party, institution=self.institution)
                 mandate.save()
