@@ -29,6 +29,15 @@ class BaseCollector(object):
         if self.debug_enabled:
             print message
 
+    def mandate_for_legislator(self, legislator, party):
+        try:
+            mandate = Mandate.objects.get(legislator=legislator, date_start=self.mandate_start)
+        except Mandate.DoesNotExist:
+            mandate = Mandate(legislator=legislator, date_start=self.mandate_start, party=party, institution=self.institution)
+            mandate.save()
+            self.debug("Mandate starting on %s did not exist, created." % self.mandate_start.strftime("%F"))
+        return mandate
+
     def update_legislators(self):
         exception("Not implemented.")
 

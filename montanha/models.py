@@ -118,7 +118,9 @@ class Mandate(models.Model):
     party = models.ForeignKey("PoliticalParty",
                               verbose_name=_("Party"),
                               help_text=_("""Party the legislator was affiliated to during this """
-                                          """mandate."""))
+                                          """mandate."""),
+                              blank=True,
+                              null=True)
 
     def __unicode__(self):
         if self.date_end:
@@ -170,7 +172,9 @@ class Expense(models.Model):
     value = models.DecimalField(max_digits=10,
                                 decimal_places=2,
                                 verbose_name=_("Value"),
-                                help_text=_("The total amount spent."))
+                                help_text=_("The total amount spent."),
+                                blank=True,
+                                null=True)
 
     expensed = models.DecimalField(max_digits=10, decimal_places=2,
                                    verbose_name=_("Expensed"),
