@@ -21,6 +21,7 @@ import time
 import urllib
 from datetime import datetime, date
 from urllib2 import urlopen, Request, URLError, HTTPError
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from django.core.management.base import BaseCommand, CommandError
 from montanha.models import *
 
@@ -60,11 +61,19 @@ class BaseCollector(object):
 
             time.sleep(10)
 
-        # The JSON returned by ALMG's web service uses the brazilian
-        # locale for floating point numbers (uses , instead of .).
-        data = re.sub(r"([0-9]+),([0-9]+)", r"\1.\2", resp.read())
+        return self.post_process_uri(resp.read())
 
-        return json.loads(data)
+    def post_process_uri(self, contents):
+        # Some sites are not in utf-8.
+        try:
+            contents = contents.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                contents = contents.decode('iso-8859-1')
+            except Exception:
+                pass
+
+        return BeautifulSoup(contents)
 
 
 class ALMG(BaseCollector):
@@ -75,6 +84,13 @@ class ALMG(BaseCollector):
         except Institution.DoesNotExist:
             self.institution = Institution(siglum='ALMG', name=u'Assembléia Legislativa do Estado de Minas Gerais')
             self.institution.save()
+
+    def post_process_uri(self, contents):
+        # The JSON returned by ALMG's web service uses the brazilian
+        # locale for floating point numbers (uses , instead of .).
+        data = re.sub(r"([0-9]+),([0-9]+)", r"\1.\2", contents)
+
+        return json.loads(data)
 
     def update_legislators(self):
         legislators = self.retrieve_uri("http://dadosabertos.almg.gov.br/ws/deputados/em_exercicio?formato=json")["list"]
