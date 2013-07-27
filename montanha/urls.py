@@ -24,12 +24,12 @@ urlpatterns = patterns(
     # Index
     url(r'^$', 'show_index', name='index'),
 
-    url(r'all/$', 'show_all', name='show-all'),
+    url(r'(?P<institution>[^/]+)?/?all/$', 'show_all', name='show-all'),
 
-    url(r'per-nature/$', 'show_per_nature', name='per-nature'),
-    url(r'per-legislator/$', 'show_per_legislator', name='per-legislator'),
-    url(r'per-party/$', 'show_per_party', name='per-party'),
-    url(r'per-supplier/$', 'show_per_supplier', name='per-supplier'),
+    url(r'(?P<institution>[^/]+)?/?per-nature/$', 'show_per_nature', name='per-nature'),
+    url(r'(?P<institution>[^/]+)?/?per-legislator/$', 'show_per_legislator', name='per-legislator'),
+    url(r'(?P<institution>[^/]+)?/?per-party/$', 'show_per_party', name='per-party'),
+    url(r'(?P<institution>[^/]+)?/?per-supplier/$', 'show_per_supplier', name='per-supplier'),
 
-    url(r'detail-legislator/(?P<legislator_id>\d+)$', 'show_legislator_detail', name='show-legislator-detail'),
+    url(r'(?P<institution>[^/]+)?/?detail-legislator/(?P<legislator_id>\d+)$', 'show_legislator_detail', name='show-legislator-detail'),
 )

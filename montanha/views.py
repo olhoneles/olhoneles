@@ -48,9 +48,13 @@ def error_404(request):
     return render(request, '404.html', c)
 
 
-def show_per_nature(request):
+def show_per_nature(request, institution=None):
 
-    data = Expense.objects.values('nature__name')
+    data = Expense.objects.all()
+    if institution:
+        data = data.filter(mandate__institution__siglum=institution)
+
+    data = data.values('nature__name')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
     years = [d.year for d in Expense.objects.dates('date', 'year')]
@@ -76,12 +80,12 @@ def show_per_nature(request):
 
             l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 
-    c = {'data': data, 'years_data': time_series, 'colors': colors}
+    c = {'data': data, 'years_data': time_series, 'colors': colors, 'institution': institution}
 
     return render(request, 'per_nature.html', c)
 
 
-def show_per_legislator(request):
+def show_per_legislator(request, institution=None):
 
     data = Expense.objects.values('mandate__legislator__id',
                                   'mandate__legislator__name',
@@ -90,12 +94,12 @@ def show_per_legislator(request):
                                   'mandate__party__logo')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
-    c = {'data': data}
+    c = {'data': data, 'institution': institution}
 
     return render(request, 'per_legislator.html', c)
 
 
-def show_legislator_detail(request, **kwargs):
+def show_legislator_detail(request, institution=None, **kwargs):
 
     legislator = Legislator.objects.get(pk=kwargs['legislator_id'])
     data = Expense.objects.values('nature__name', 'supplier__name', 'supplier__identifier',
@@ -110,12 +114,12 @@ def show_legislator_detail(request, **kwargs):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'legislator': legislator, 'data': data}
+    c = {'legislator': legislator, 'data': data, 'institution': institution}
 
     return render(request, 'detail_legislator.html', c)
 
 
-def show_per_party(request):
+def show_per_party(request, institution=None):
     data = PoliticalParty.objects.raw("select montanha_politicalparty.id, "
                                       "siglum, logo, count(distinct(montanha_legislator.id)) as n_legislators, "
                                       "sum(montanha_expense.expensed) as expensed_sum, "
@@ -126,12 +130,12 @@ def show_per_party(request):
                                       "montanha_expense.mandate_id = montanha_mandate.id "
                                       "group by siglum order by expensed_average desc")
 
-    c = {'data': list(data), 'colors': colors}
+    c = {'data': list(data), 'colors': colors, 'institution': institution}
 
     return render(request, 'per_party.html', c)
 
 
-def show_per_supplier(request):
+def show_per_supplier(request, institution=None):
 
     data = Expense.objects.values('supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
@@ -145,12 +149,12 @@ def show_per_supplier(request):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'data': data}
+    c = {'data': data, 'institution': institution}
 
     return render(request, 'per_supplier.html', c)
 
 
-def show_all(request):
+def show_all(request, institution=None):
 
     data = Expense.objects.all().order_by('-date')
 
@@ -163,6 +167,6 @@ def show_all(request):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'data': data}
+    c = {'data': data, 'institution': institution}
 
     return render(request, 'all_expenses.html', c)
