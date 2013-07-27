@@ -26,3 +26,21 @@
         padding-top: 50px;
     }
 }
+
+#title {
+    font-size: 60px;
+    font-weight: bold;
+    padding-bottom: 50px;
+}
+
+.main-content {
+    padding-bottom: 80px;
+}
+
+.main-content div {
+    margin-top: 40px;
+}
+
+p {
+    font-size: 18px;
+}
