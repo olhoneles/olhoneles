@@ -1,7 +1,7 @@
 {% load url from future %}
 
-                    <li id="menu-per-nature"><a href="{% if institution %}/{{ institution }}{% endif %}{% url 'montanha:per-nature' %}">Totais por tipo de gasto</a></li>
-                    <li id="menu-per-legislator"><a href="{% if institution %}/{{ institution }}{% endif %}{% url 'montanha:per-legislator' %}">Totais por parlamentar</a></li>
-                    <li id="menu-per-party"><a href="{% if institution %}/{{ institution }}{% endif %}{% url 'montanha:per-party' %}">Totais por partido</a></li>
-                    <li id="menu-per-supplier"><a href="{% if institution %}/{{ institution }}{% endif %}{% url 'montanha:per-supplier' %}">Totais por fornecedor</a></li>
-                    <li id="menu-all"><a href="{% if institution %}/{{ institution }}{% endif %}{% url 'montanha:show-all' %}">Todos os gastos</a></li>
+                    <li id="menu-per-nature"><a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-nature' %}">Totais por tipo de gasto</a></li>
+                    <li id="menu-per-legislator"><a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-legislator' %}">Totais por parlamentar</a></li>
+                    <li id="menu-per-party"><a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-party' %}">Totais por partido</a></li>
+                    <li id="menu-per-supplier"><a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-supplier' %}">Totais por fornecedor</a></li>
+                    <li id="menu-all"><a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-all' %}">Todos os gastos</a></li>
