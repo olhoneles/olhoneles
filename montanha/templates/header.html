@@ -1,4 +1,5 @@
 {% load url from future %}
+{% load thumbnail %}
 
 <div class="navbar navbar-inverse navbar-fixed-top">
     <div class="navbar-inner">
@@ -9,6 +10,9 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="brand" href="{% url 'montanha:index' %}">Olho Neles!</a>
+            {% if institution %}
+            <img class="brand" src="{{ institution.logo|thumbnail_url:'mini' }}"/>
+            {% endif %}
             <div class="nav-collapse collapse">
                 <ul class="nav">
                     {% include 'menu_items.html' %}

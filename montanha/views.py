@@ -51,8 +51,10 @@ def error_404(request):
 def show_per_nature(request, institution=None):
 
     data = Expense.objects.all()
+
     if institution:
-        data = data.filter(mandate__institution__siglum=institution)
+        institution = Institution.objects.get(siglum=institution)
+        data = data.filter(mandate__institution=institution)
 
     data = data.values('nature__name')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
@@ -87,6 +89,9 @@ def show_per_nature(request, institution=None):
 
 def show_per_legislator(request, institution=None):
 
+    if institution:
+        institution = Institution.objects.get(siglum=institution)
+
     data = Expense.objects.values('mandate__legislator__id',
                                   'mandate__legislator__name',
                                   'mandate__party__siglum',
@@ -100,6 +105,9 @@ def show_per_legislator(request, institution=None):
 
 
 def show_legislator_detail(request, institution=None, **kwargs):
+
+    if institution:
+        institution = Institution.objects.get(siglum=institution)
 
     legislator = Legislator.objects.get(pk=kwargs['legislator_id'])
     data = Expense.objects.values('nature__name', 'supplier__name', 'supplier__identifier',
@@ -120,6 +128,10 @@ def show_legislator_detail(request, institution=None, **kwargs):
 
 
 def show_per_party(request, institution=None):
+
+    if institution:
+        institution = Institution.objects.get(siglum=institution)
+
     data = PoliticalParty.objects.raw("select montanha_politicalparty.id, "
                                       "siglum, logo, count(distinct(montanha_legislator.id)) as n_legislators, "
                                       "sum(montanha_expense.expensed) as expensed_sum, "
@@ -136,6 +148,9 @@ def show_per_party(request, institution=None):
 
 
 def show_per_supplier(request, institution=None):
+
+    if institution:
+        institution = Institution.objects.get(siglum=institution)
 
     data = Expense.objects.values('supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
@@ -155,6 +170,9 @@ def show_per_supplier(request, institution=None):
 
 
 def show_all(request, institution=None):
+
+    if institution:
+        institution = Institution.objects.get(siglum=institution)
 
     data = Expense.objects.all().order_by('-date')
 

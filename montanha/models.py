@@ -91,6 +91,12 @@ class Institution(models.Model):
                               verbose_name=_("Siglum"),
                               unique=True)
 
+    logo = ThumbnailerImageField(
+        verbose_name=_('Logo'),
+        upload_to='institution',
+        blank=True,
+        null=True)
+
     def __unicode__(self):
         return u"%s" % (self.name)
 
