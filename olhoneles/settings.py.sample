@@ -164,6 +164,6 @@ LOGGING = {
 
 THUMBNAIL_ALIASES = {
     '': {
-        'political-party-mini': {'size': (20, 20), 'crop': False},
+        'mini': {'size': (20, 20), 'crop': False},
     },
 }
