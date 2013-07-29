@@ -17,6 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import locale
+from colorsys import hsv_to_rgb
 from datetime import date
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render as original_render
@@ -27,8 +28,11 @@ from montanha.models import *
 locale.setlocale(locale.LC_MONETARY, "pt_BR.UTF-8")
 
 
-colors = ["#cb410d", "#cbc40d", "#5fcb0d", "#0dcb14", "#0dcb68", "#0dcbc6", "#0d82cb",
-          "#0d33cb", "#300dcb", "#7e0dcb", "#c80dcb", "#cb0d9a", "#cb0d3c", "#cb0d0d"]
+def generate_colors(n=7, sat=1.0, val=1.0):
+    '''Generates an array of n colors from red to violet, considering
+    saturation sat and value val'''
+    return ['#%02X%02X%02X' % t for t in [tuple([int(round(c * 255)) for c in t]) for t in
+           [hsv_to_rgb(x/float(n), sat, val) for x in xrange(0, n)]]]
 
 
 def render(request, to_disable, template, context):
@@ -127,7 +131,7 @@ def show_per_nature(request, to_disable):
 
             l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 
-    c = {'data': data, 'years_data': time_series, 'colors': colors}
+    c = {'data': data, 'years_data': time_series, 'colors': generate_colors(len(data), 0.93, 0.8)}
 
     return render(request, to_disable, 'per_nature.html', c)
 
@@ -186,7 +190,9 @@ def show_per_party(request, to_disable):
                                       "montanha_expense.mandate_id = montanha_mandate.id "
                                       "group by siglum order by expensed_average desc")
 
-    c = {'data': list(data), 'colors': colors}
+    data = list(data)
+
+    c = {'data': data, 'colors': generate_colors(len(data), 0.93, 0.8)}
 
     return render(request, to_disable, 'per_party.html', c)
 
