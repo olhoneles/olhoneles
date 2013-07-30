@@ -155,6 +155,7 @@ def show_legislator_detail(request, legislator_id, to_disable):
     data = exclude_disabled(data, to_disable)
 
     legislator = Legislator.objects.get(pk=legislator_id)
+    data = data.filter(mandate__legislator=legislator)
 
     data = data.values('nature__name', 'supplier__name', 'supplier__identifier',
                        'number', 'date', 'expensed').order_by('-date')
