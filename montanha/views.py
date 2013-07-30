@@ -149,12 +149,12 @@ def show_per_legislator(request, to_disable):
     return render(request, to_disable, 'per_legislator.html', c)
 
 
-def show_legislator_detail(request, **kwargs):
+def show_legislator_detail(request, legislator_id, to_disable):
 
     data = Expense.objects.all()
     data = exclude_disabled(data, to_disable)
 
-    legislator = Legislator.objects.get(pk=kwargs['legislator_id'])
+    legislator = Legislator.objects.get(pk=legislator_id)
 
     data = data.values('nature__name', 'supplier__name', 'supplier__identifier',
                        'number', 'date', 'expensed').order_by('-date')

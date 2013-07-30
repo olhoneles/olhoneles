@@ -31,5 +31,5 @@ urlpatterns = patterns(
     url(r'^per-party/(no:[^/]+)?/?$', 'show_per_party', name='per-party'),
     url(r'^per-supplier/(no:[^/]+)?/?$', 'show_per_supplier', name='per-supplier'),
 
-    url(r'^detail-legislator/(?P<legislator_id>\d+)/(no:[^/]+)?/?$', 'show_legislator_detail', name='show-legislator-detail'),
+    url(r'^detail-legislator/(\d+)/(no:[^/]+)?/?$', 'show_legislator_detail', name='show-legislator-detail'),
 )
