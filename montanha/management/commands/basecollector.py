@@ -67,6 +67,7 @@ class BaseCollector(object):
                 break
             except HTTPError, e:
                 if e.getcode() != 404:
+                    print 'Failing URI:', uri
                     raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
             except URLError:
                 print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
