@@ -40,15 +40,22 @@ def parse_cmbh_date(date_string):
 
 
 class CMBH(BaseCollector):
-    def __init__(self, debug_enabled=False, full_scan=False, mandate_start=date(2013, 1, 1)):
+    def __init__(self, debug_enabled=False, full_scan=False):
         self.debug_enabled = debug_enabled
         self.full_scan = full_scan
-        self.mandate_start = mandate_start
         try:
-            self.institution = Institution.objects.get(siglum='CMBH')
+            institution = Institution.objects.get(siglum='CMBH')
         except Institution.DoesNotExist:
-            self.institution = Institution(siglum='CMBH', name=u'Câmara Municipal de Belo Horizonte')
-            self.institution.save()
+            institution = Institution(siglum='CMBH', name=u'Câmara Municipal de Belo Horizonte')
+            institution.save()
+
+        try:
+            self.legislature = Legislature.objects.all().filter(institution=institution).order_by('-date_start')[0]
+        except IndexError:
+            self.legislature = Legislature(institution=institution,
+                                           date_start=datetime(2013, 1, 1),
+                                           date_end=datetime(2016, 12, 31))
+            self.legislature.save()
 
     def retrieve_months(self):
         uri = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_meses.php'
@@ -146,7 +153,7 @@ class CMBH(BaseCollector):
                 legislator = Legislator(name=legislator, original_id=code)
                 legislator.save()
 
-                mandate = Mandate(legislator=legislator, date_start=self.mandate_start, party=None, institution=self.institution)
+                mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=None, legislature=self.legislature)
                 mandate.save()
 
                 self.debug("New legislator found: %s" % unicode(legislator))
@@ -197,7 +204,7 @@ class CMBH(BaseCollector):
 
     def update_data(self):
         if self.full_scan:
-            for year in range(self.mandate_start.year, datetime.now().year + 1):
+            for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                 self.update_data_for_year(year)
         else:
             self.update_data_for_year(datetime.now().year)

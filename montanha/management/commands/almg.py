@@ -24,15 +24,22 @@ from montanha.models import *
 
 
 class ALMG(BaseCollector):
-    def __init__(self, debug_enabled=False, full_scan=False, mandate_start=date(2011, 1, 1)):
+    def __init__(self, debug_enabled=False, full_scan=False):
         self.debug_enabled = debug_enabled
         self.full_scan = full_scan
-        self.mandate_start = mandate_start
         try:
-            self.institution = Institution.objects.get(siglum='ALMG')
+            institution = Institution.objects.get(siglum='ALMG')
         except Institution.DoesNotExist:
-            self.institution = Institution(siglum='ALMG', name=u'Assembléia Legislativa do Estado de Minas Gerais')
-            self.institution.save()
+            institution = Institution(siglum='ALMG', name=u'Assembléia Legislativa do Estado de Minas Gerais')
+            institution.save()
+
+        try:
+            self.legislature = Legislature.objects.all().filter(institution=institution).order_by('-date_start')[0]
+        except IndexError:
+            self.legislature = Legislature(institution=institution,
+                                           date_start=datetime(2011, 1, 1),
+                                           date_end=datetime(2014, 12, 31))
+            self.legislature.save()
 
     def post_process_uri(self, contents):
         # The JSON returned by ALMG's web service uses the brazilian
@@ -62,7 +69,7 @@ class ALMG(BaseCollector):
                 legislator = Legislator(name=entry["nome"], original_id=entry["id"])
                 legislator.save()
 
-                mandate = Mandate(legislator=legislator, date_start=self.mandate_start, party=party, institution=self.institution)
+                mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=party, legislature=self.legislature)
                 mandate.save()
 
                 self.debug("New legislator found: %s" % unicode(legislator))

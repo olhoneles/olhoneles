@@ -101,6 +101,27 @@ class Institution(models.Model):
         return u"%s" % (self.name)
 
 
+class Legislature(models.Model):
+
+    class Meta:
+        verbose_name = _("Legislature")
+        verbose_name_plural = _("Legislatures")
+
+    institution = models.ForeignKey("Institution")
+
+    date_start = models.DateField(verbose_name=_("Date started"),
+                                  help_text=_("""Date in which this legislature started."""))
+
+    date_end = models.DateField(blank=True, null=True,
+                                verbose_name=_("Date ended"),
+                                help_text=_("""Date in which this legislature ended."""))
+
+    def __unicode__(self):
+        return u"%s's legislature starting at %s, ending at %s" % (self.institution.siglum,
+                                                                   str(self.date_start),
+                                                                   str(self.date_end))
+
+
 class Mandate(models.Model):
 
     class Meta:
@@ -109,7 +130,7 @@ class Mandate(models.Model):
 
     legislator = models.ForeignKey("Legislator")
 
-    institution = models.ForeignKey("Institution")
+    legislature = models.ForeignKey("Legislature")
 
     date_start = models.DateField(verbose_name=_("Date started"),
                                   help_text=_("""Date in which this mandate started; may also be """

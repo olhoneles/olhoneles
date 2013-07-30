@@ -27,20 +27,26 @@
     }
 }
 
-#title {
-    font-size: 60px;
-    font-weight: bold;
-    padding-bottom: 50px;
+.dropdown-menu img {
+    padding-right: 10px;
 }
 
-.main-content {
-    padding-bottom: 80px;
+.dropdown-menu .sub-institution {
+    margin-left: 15px;
 }
 
-.main-content div {
-    margin-top: 40px;
+.dropdown-menu li span {
+    margin-left: 10px;
 }
 
-p {
-    font-size: 18px;
+.dropdown-menu li span:after {
+    content: "✔"
+}
+
+.dropdown-menu span.disabled:after {
+    content: "✗"
+}
+
+.dropdown-menu button {
+    margin-right: 10px;
 }

@@ -19,7 +19,7 @@
 import locale
 from datetime import date
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.shortcuts import render
+from django.shortcuts import render as original_render
 from django.db.models import Sum, Count
 from montanha.models import *
 
@@ -31,30 +31,75 @@ colors = ["#cb410d", "#cbc40d", "#5fcb0d", "#0dcb14", "#0dcb68", "#0dcbc6", "#0d
           "#0d33cb", "#300dcb", "#7e0dcb", "#c80dcb", "#cb0d9a", "#cb0d3c", "#cb0d0d"]
 
 
-def show_index(request):
+def render(request, to_disable, template, context):
+    disable_list = to_disable and [item for item in to_disable[3:].split(',')] or []
+
+    institutions = Institution.objects.all()
+    institution_dicts = []
+    for institution in institutions:
+        d = {}
+        d["siglum"] = institution.siglum
+        d["name"] = institution.name
+        d["logo"] = institution.logo
+        d["enabled"] = institution.siglum not in disable_list
+        legislatures = institution.legislature_set.all()
+        if legislatures.count() > 1:
+            legislature_dicts = []
+            for legislature in legislatures:
+                l = {}
+                l["date_start"] = legislature.date_start
+                l["date_end"] = legislature.date_end
+                legislature_string = '%s-%d' % (institution.siglum, legislature.date_start.year)
+                l["enabled"] = legislature_string in disable_list
+                legislature_dicts.append(l)
+            d["legislatures"] = legislature_dicts
+        else:
+            d["legislatures"] = None
+        institution_dicts.append(d)
+    context['institutions'] = institution_dicts
+    context['extra_uri'] = to_disable
+    return original_render(request, template, context)
+
+
+def exclude_disabled(data, to_disable):
+    if not to_disable:
+        return data
+
+    for item in to_disable[3:].split(','):
+        parts = item.split('-')
+
+        if len(parts) == 1:
+            institution = Institution.objects.get(siglum=parts[0])
+            data = data.exclude(mandate__legislature__institution=institution)
+        elif len(parts) == 2:
+            institution = Institution.objects.get(siglum=parts[0])
+            legislature = institution.legislature_set.get(date_start__year=parts[1])
+            data = data.exclude(mandate__legislature=legislature)
+
+    return data
+
+
+def show_index(request, to_disable):
 
     c = {}
 
-    return render(request, 'index.html', c)
+    return render(request, to_disable, 'index.html', c)
 
 
 def error_500(request):
     c = {}
-    return render(request, '500.html', c)
+    return original_render(request, '500.html', c)
 
 
 def error_404(request):
     c = {}
-    return render(request, '404.html', c)
+    return original_render(request, '404.html', c)
 
 
-def show_per_nature(request, institution=None):
+def show_per_nature(request, to_disable):
 
     data = Expense.objects.all()
-
-    if institution:
-        institution = Institution.objects.get(siglum=institution)
-        data = data.filter(mandate__institution=institution)
+    data = exclude_disabled(data, to_disable)
 
     data = data.values('nature__name')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
@@ -82,36 +127,37 @@ def show_per_nature(request, institution=None):
 
             l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 
-    c = {'data': data, 'years_data': time_series, 'colors': colors, 'institution': institution}
+    c = {'data': data, 'years_data': time_series, 'colors': colors}
 
-    return render(request, 'per_nature.html', c)
+    return render(request, to_disable, 'per_nature.html', c)
 
 
-def show_per_legislator(request, institution=None):
+def show_per_legislator(request, to_disable):
 
-    if institution:
-        institution = Institution.objects.get(siglum=institution)
+    data = Expense.objects.all()
+    data = exclude_disabled(data, to_disable)
 
-    data = Expense.objects.values('mandate__legislator__id',
-                                  'mandate__legislator__name',
-                                  'mandate__party__siglum',
-                                  'mandate__party__name',
-                                  'mandate__party__logo')
+    data = data.values('mandate__legislator__id',
+                       'mandate__legislator__name',
+                       'mandate__party__siglum',
+                       'mandate__party__name',
+                       'mandate__party__logo')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
-    c = {'data': data, 'institution': institution}
+    c = {'data': data}
 
-    return render(request, 'per_legislator.html', c)
+    return render(request, to_disable, 'per_legislator.html', c)
 
 
-def show_legislator_detail(request, institution=None, **kwargs):
+def show_legislator_detail(request, **kwargs):
 
-    if institution:
-        institution = Institution.objects.get(siglum=institution)
+    data = Expense.objects.all()
+    data = exclude_disabled(data, to_disable)
 
     legislator = Legislator.objects.get(pk=kwargs['legislator_id'])
-    data = Expense.objects.values('nature__name', 'supplier__name', 'supplier__identifier',
-                                  'number', 'date', 'expensed').order_by('-date')
+
+    data = data.values('nature__name', 'supplier__name', 'supplier__identifier',
+                       'number', 'date', 'expensed').order_by('-date')
 
     paginator = Paginator(data, 10)
     page = request.GET.get('page')
@@ -122,15 +168,12 @@ def show_legislator_detail(request, institution=None, **kwargs):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'legislator': legislator, 'data': data, 'institution': institution}
+    c = {'legislator': legislator, 'data': data}
 
-    return render(request, 'detail_legislator.html', c)
+    return render(request, to_disable, 'detail_legislator.html', c)
 
 
-def show_per_party(request, institution=None):
-
-    if institution:
-        institution = Institution.objects.get(siglum=institution)
+def show_per_party(request, to_disable):
 
     data = PoliticalParty.objects.raw("select montanha_politicalparty.id, "
                                       "siglum, logo, count(distinct(montanha_legislator.id)) as n_legislators, "
@@ -142,17 +185,17 @@ def show_per_party(request, institution=None):
                                       "montanha_expense.mandate_id = montanha_mandate.id "
                                       "group by siglum order by expensed_average desc")
 
-    c = {'data': list(data), 'colors': colors, 'institution': institution}
+    c = {'data': list(data), 'colors': colors}
 
-    return render(request, 'per_party.html', c)
+    return render(request, to_disable, 'per_party.html', c)
 
 
-def show_per_supplier(request, institution=None):
+def show_per_supplier(request, to_disable):
 
-    if institution:
-        institution = Institution.objects.get(siglum=institution)
+    data = Expense.objects.all()
+    data = exclude_disabled(data, to_disable)
 
-    data = Expense.objects.values('supplier__name', 'supplier__identifier')
+    data = data.values('supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
     paginator = Paginator(data, 10)
@@ -164,17 +207,15 @@ def show_per_supplier(request, institution=None):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'data': data, 'institution': institution}
+    c = {'data': data}
 
-    return render(request, 'per_supplier.html', c)
+    return render(request, to_disable, 'per_supplier.html', c)
 
 
-def show_all(request, institution=None):
-
-    if institution:
-        institution = Institution.objects.get(siglum=institution)
+def show_all(request, to_disable):
 
     data = Expense.objects.all().order_by('-date')
+    data = exclude_disabled(data, to_disable)
 
     paginator = Paginator(data, 10)
     page = request.GET.get('page')
@@ -185,6 +226,6 @@ def show_all(request, institution=None):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'data': data, 'institution': institution}
+    c = {'data': data}
 
-    return render(request, 'all_expenses.html', c)
+    return render(request, to_disable, 'all_expenses.html', c)

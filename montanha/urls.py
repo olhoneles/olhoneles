@@ -22,14 +22,14 @@ urlpatterns = patterns(
     'montanha.views',
 
     # Index
-    url(r'^$', 'show_index', name='index'),
+    url(r'^(no:[^/]+)?/?$', 'show_index', name='index'),
 
-    url(r'(?P<institution>[^/]+)?/?all/$', 'show_all', name='show-all'),
+    url(r'^all/(no:[^/]+)?/?$', 'show_all', name='show-all'),
 
-    url(r'(?P<institution>[^/]+)?/?per-nature/$', 'show_per_nature', name='per-nature'),
-    url(r'(?P<institution>[^/]+)?/?per-legislator/$', 'show_per_legislator', name='per-legislator'),
-    url(r'(?P<institution>[^/]+)?/?per-party/$', 'show_per_party', name='per-party'),
-    url(r'(?P<institution>[^/]+)?/?per-supplier/$', 'show_per_supplier', name='per-supplier'),
+    url(r'^per-nature/(no:[^/]+)?/?$', 'show_per_nature', name='per-nature'),
+    url(r'^per-legislator/(no:[^/]+)?/?$', 'show_per_legislator', name='per-legislator'),
+    url(r'^per-party/(no:[^/]+)?/?$', 'show_per_party', name='per-party'),
+    url(r'^per-supplier/(no:[^/]+)?/?$', 'show_per_supplier', name='per-supplier'),
 
-    url(r'(?P<institution>[^/]+)?/?detail-legislator/(?P<legislator_id>\d+)$', 'show_legislator_detail', name='show-legislator-detail'),
+    url(r'^detail-legislator/(?P<legislator_id>\d+)/(no:[^/]+)?/?$', 'show_legislator_detail', name='show-legislator-detail'),
 )

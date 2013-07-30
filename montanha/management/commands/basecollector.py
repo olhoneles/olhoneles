@@ -31,20 +31,20 @@ class BaseCollector(object):
 
     def mandate_for_legislator(self, legislator, party):
         try:
-            mandate = Mandate.objects.get(legislator=legislator, date_start=self.mandate_start)
+            mandate = Mandate.objects.get(legislator=legislator, date_start=self.legislature.date_start)
         except Mandate.DoesNotExist:
-            mandate = Mandate(legislator=legislator, date_start=self.mandate_start, party=party, institution=self.institution)
+            mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=party, legislature=self.legislature)
             mandate.save()
-            self.debug("Mandate starting on %s did not exist, created." % self.mandate_start.strftime("%F"))
+            self.debug("Mandate starting on %s did not exist, created." % self.legislature.date_start.strftime("%F"))
         return mandate
 
     def update_legislators(self):
         exception("Not implemented.")
 
     def update_data(self):
-        for mandate in Mandate.objects.filter(date_start__year=self.mandate_start.year):
+        for mandate in Mandate.objects.filter(date_start__year=self.legislature.date_start.year):
             if self.full_scan:
-                for year in range(self.mandate_start.year, datetime.now().year + 1):
+                for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                     self.update_data_for_year(mandate, year)
             else:
                 self.update_data_for_year(mandate, datetime.now().year)

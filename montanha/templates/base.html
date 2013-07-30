@@ -25,6 +25,48 @@
         {% include 'footer.html' %}
         <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+        <script>
+            $('.dropdown-menu li').click(function(e) {
+                var target = $(e.currentTarget);
+                var institution_siglum = target.attr('id');
+
+                var span = target.find('span');
+                var span_class = span.attr('class');
+                if (span_class == undefined)
+                    span.attr('class', 'disabled');
+                else
+                    span.removeAttr('class');
+
+                if (institution_siglum != undefined) {
+                    var sub_spans = $('li.' + institution_siglum).find('span');
+                    if (span_class == undefined)
+                        sub_spans.attr('class', 'disabled');
+                    else
+                        sub_spans.removeAttr('class');
+                }
+                e.stopPropagation();
+            });
+
+            $('#houses-dropdown-apply').click(function(e) {
+                var uri_parts = document.location.pathname.split('/');
+                var new_uri = '/';
+                for (var i = 0; i < uri_parts.length; i++) {
+                    if (uri_parts[i] != "" && uri_parts[i].substr(0, 3) != "no:")
+                        new_uri = new_uri + uri_parts[i] + '/';
+                }
+                var to_disable = $('.dropdown-menu span.disabled');
+                var to_disable_ids = [];
+                for (var i = 0; i < to_disable.length; i++) {
+                    var parts = to_disable[i].id.split('-');
+                    if (parts.length == 3 && to_disable_ids.indexOf(parts[1]) != -1)
+                        continue;
+                    to_disable_ids.push(to_disable[i].id.substr(3));
+                }
+                if (to_disable_ids.length)
+                    new_uri = new_uri + 'no:' + to_disable_ids.join(',') + '/';
+                document.location = new_uri;
+            });
+        </script>
         {% block footer-extra %}{% endblock %}
     </body>
 </html>
