@@ -67,6 +67,35 @@ class Legislator(models.Model):
         blank=True,
         null=True)
 
+    site = models.URLField(
+        verbose_name=_('Site'),
+        blank=True,
+        null=True)
+
+    email = models.EmailField(
+        verbose_name=_('Email'),
+        blank=True,
+        null=True)
+
+    about = models.TextField(
+        verbose_name=_('About'),
+        blank=True,
+        null=True)
+
+    gender = models.CharField(
+        verbose_name=_('Gender'),
+        choices=(
+            ('F', _('Female')),
+            ('M', _('Male'))),
+        blank=True,
+        null=True,
+        max_length=1)
+
+    date_of_birth = models.DateField(
+        verbose_name=_('Date of Birth'),
+        blank=True,
+        null=True)
+
     def __unicode__(self):
         if self.original_id:
             return u"Legislator %s (Original ID: %s)" % (self.name, self.original_id)

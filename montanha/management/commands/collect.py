@@ -41,6 +41,7 @@ class Command(BaseCommand):
             almg = ALMG(debug_enabled, full_scan)
             almg.update_legislators()
             almg.update_data()
+            almg.update_legislators_data()
 
         if "cmbh" in args:
             from cmbh import CMBH
