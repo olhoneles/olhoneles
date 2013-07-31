@@ -50,3 +50,17 @@
 .dropdown-menu button {
     margin-right: 10px;
 }
+
+th.sorted:after {
+    content: "↑";
+    float: right;
+}
+
+th.sorted-asc:after {
+    content: "↓";
+    float: right;
+}
+
+th.sortable {
+    cursor: pointer;
+}
