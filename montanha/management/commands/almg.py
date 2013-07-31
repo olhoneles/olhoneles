@@ -2,6 +2,7 @@
 #
 # Copyright (©) 2010-2013 Estêvão Samuel Procópio
 # Copyright (©) 2010-2013 Gustavo Noronha Silva
+# Copyright (©) 2013 Marcelo Jorge Vieira
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -18,6 +19,7 @@
 
 import json
 import re
+import datetime
 from basecollector import BaseCollector
 from datetime import datetime, date
 from montanha.models import *
@@ -73,6 +75,41 @@ class ALMG(BaseCollector):
                 mandate.save()
 
                 self.debug("New legislator found: %s" % unicode(legislator))
+
+    def update_legislators_data(self):
+
+        legislatures = self.legislature.mandate_set.all()
+        for legislature in legislatures:
+            original_id = legislature.legislator.original_id
+            uri = "http://dadosabertos.almg.gov.br/ws/deputados/%s?formato=json" % original_id
+            entry = self.retrieve_uri(uri)["deputado"]
+
+            self.debug("Legislator %s" % unicode(legislature.legislator))
+
+            if "sexo" in entry:
+                legislature.legislator.gender = entry["sexo"]
+
+            if "sitePessoal" in entry:
+                legislature.legislator.site = entry["sitePessoal"]
+
+            if "vidaProfissionalPolitica" in entry:
+                legislature.legislator.about = entry["vidaProfissionalPolitica"]
+
+            if "emails" in entry:
+                email = entry["emails"][0]['endereco']
+                legislature.legislator.email = "%s%s" % (email, "@almg.gov.br")
+
+            if "dataNascimento" in entry:
+                date_of_birth = entry["dataNascimento"]
+                # Removed crazy char º
+                crazy_char = "º".decode("utf-8")
+                if crazy_char in date_of_birth:
+                    date_of_birth = date_of_birth.replace(crazy_char, "")
+                date_of_birth = datetime.strptime(date_of_birth,
+                                                  "%d/%m/%Y").date()
+                legislature.legislator.date_of_birth = date_of_birth
+
+            legislature.legislator.save()
 
     def update_data_for_month(self, mandate, year, month):
         self.debug("Updating data for %d-%d - %s" % (year, month, unicode(mandate)))
