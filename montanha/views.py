@@ -180,17 +180,24 @@ def show_legislator_detail(request, legislator_id, to_disable):
 
 def show_per_party(request, to_disable):
 
-    data = PoliticalParty.objects.raw("select montanha_politicalparty.id, "
-                                      "siglum, logo, count(distinct(montanha_legislator.id)) as n_legislators, "
-                                      "sum(montanha_expense.expensed) as expensed_sum, "
-                                      "sum(montanha_expense.expensed) / count(distinct(montanha_legislator.id)) as expensed_average "
-                                      "from montanha_politicalparty, montanha_mandate, montanha_legislator, montanha_expense "
-                                      "where montanha_politicalparty.id = montanha_mandate.party_id and "
-                                      "montanha_mandate.legislator_id = montanha_legislator.id and "
-                                      "montanha_expense.mandate_id = montanha_mandate.id "
-                                      "group by siglum order by expensed_average desc")
+    data = Expense.objects.all()
+    data = exclude_disabled(data, to_disable)
 
-    data = list(data)
+    data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
+    data = data.annotate(expensed=Sum('expensed'))
+
+    for d in list(data):
+        if d['mandate__party__siglum']:
+            party = PoliticalParty.objects.get(siglum=d['mandate__party__siglum'])
+            d['n_legislators'] = party.mandate_set.values('legislator').count()
+            d['expensed_average'] = d['expensed'] / d['n_legislators']
+        else:
+            d['mandate__party__siglum'] = 'NC'
+            d['mandate__party__name'] = 'Desconhecido'
+            d['n_legislators'] = Legislator.objects.filter(mandate__party__siglum=None).count()
+            d['expensed_average'] = d['expensed'] / d['n_legislators']
+
+    data = sorted(data, key=lambda d: d['expensed_average'], reverse=True)
 
     c = {'data': data, 'colors': generate_colors(len(data), 0.93, 0.8)}
 

@@ -43,10 +43,10 @@ function toggle_details()
                 <tbody>
                     {% for d in data %}
                     <tr>
-                        <td>{% if d.logo %}<img src="{{ d.logo|thumbnail_url:'mini' }}" title="{{ d.name }}" alt="{{ d.name }}">{% endif %} {{ d.siglum }}</td>
+                        <td>{% if d.mandate__party__logo %}<img src="{{ d.logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %} {{ d.mandate__party__siglum }}</td>
                         <td>{{ d.expensed_average|format_currency }}</td>
                         <td class="details" style="display: none;">{{ d.n_legislators }}</td>
-                        <td class="details" style="display: none;">{{ d.expensed_sum|format_currency }}</td>
+                        <td class="details" style="display: none;">{{ d.expensed|format_currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -71,7 +71,7 @@ $(document).ready(function(){
     $('#menu-per-party').addClass('active').siblings().removeClass('active');
 
 	data = [
-        {% for d in data %}{label: "{{ d.siglum }}", color: "{{ colors|itercycle:forloop.counter0 }}", data: {{ d.expensed_average }}},{% endfor %}
+        {% for d in data %}{label: "{{ d.mandate__party__siglum }}", color: "{{ colors|itercycle:forloop.counter0 }}", data: {{ d.expensed_average }}},{% endfor %}
     ]
 
     function labelFormatter(label, series) {
