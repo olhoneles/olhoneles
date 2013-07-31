@@ -18,13 +18,13 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Tipo de gasto</th>
-                        <th>Parlamentar</th>
-                        <th>Empresa/Pessoa</th>
-                        <th>CNPJ/CPF</th>
-                        <th>Número do Documento</th>
-                        <th>Data</th>
-                        <th>Valor</th>
+                        {% sortable_th "nature__name" "Tipo de gasto" %}
+                        {% sortable_th "mandate__legislator__name" "Parlamentar" %}
+                        {% sortable_th "supplier__name" "Empresa/Pessoa" %}
+                        {% sortable_th "supplier__identifier" "CNPJ/CPF" %}
+                        {% sortable_th "number" "Número do Documento" %}
+                        {% sortable_th "date" "Data" True %}
+                        {% sortable_th "expensed" "Valor" %}
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +44,7 @@
         </div>
     </div>
     <div class="row span12">
-      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
+      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" url='?'|add:request.GET.urlencode %}
     </div>
 </div>
 
@@ -52,6 +52,8 @@
 
 
 {% block footer-extra %}
+
+<script language="javascript" src="{% static 'js/sorting.js' %}"></script>
 
 <script type="text/javascript">
 $(document).ready(function(){

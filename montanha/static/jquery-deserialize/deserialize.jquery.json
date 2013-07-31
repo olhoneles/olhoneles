@@ -1,0 +1,29 @@
+{
+    "name": "deserialize",
+    "title": "jQuery Deserialize",
+    "description": "Convert query strings into objects. And deserialize forms easily.",
+    "version": "1.0.1",
+    "keywords": [
+        "jQuery",
+        "forms",
+        "querystring",
+        "deserialize",
+        "serialize"
+    ],
+    "author": {
+        "name": "Edgar J. Suarez",
+        "url": "http://edgarjs.com"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://www.opensource.org/licenses/mit-license.php"
+        }
+    ],
+    "bugs": "https://github.com/edgarjs/jquery-deserialize/issues",
+    "homepage": "https://github.com/edgarjs/jquery-deserialize",
+    "download": "https://github.com/edgarjs/jquery-deserialize/archive/master.zip",
+    "dependencies": {
+        "jquery": ">=1.4"
+    }
+}

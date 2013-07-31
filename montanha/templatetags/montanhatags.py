@@ -31,3 +31,21 @@ def format_currency(value):
 @register.filter
 def itercycle(iterable, counter):
     return iterable[counter % len(iterable)]
+
+
+@register.simple_tag(takes_context=True)
+def sortable_th(context, tag_id, text, is_default=False):
+    request = context["request"]
+
+    th_tag = '<th id="%s"' % tag_id
+    if request.GET.get("order_by") == tag_id or (is_default and not "order_by" in request.GET):
+        if request.GET.get("asc"):
+            th_tag += ' class="sorted-asc"'
+        else:
+            th_tag += ' class="sorted"'
+
+    th_tag += '>'
+    th_tag += text
+    th_tag += '</th>'
+
+    return mark_safe(th_tag)

@@ -1,0 +1,23 @@
+## jQuery Deserialize
+
+Simple plugin for deserialization of forms.
+
+Converts query strings into objects, and includes helper for element selectors. You can even parse things like `x[y]=1` into `{ x: { y:1 } }`.
+
+### Usage
+
+`$.deserialize("yourString=1")`
+
+or
+
+`$('#form1').deserialize();`
+
+### Options
+
+Accepts the `except` option to exclude keys from the string. For example:
+
+`$.deserialize("x=1&y=2&a[b]=val", {except: ['x', 'a[b]']});` will return only `{y: 2}`
+
+### License
+
+Released under MIT licence. By Edgar J. Suarez

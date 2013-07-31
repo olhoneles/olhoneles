@@ -18,9 +18,9 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Fornecedor</th>
-                        <th>CNPJ</th>
-                        <th>Valor recebido</th>
+                        {% sortable_th "supplier__name" "Fornecedor" %}
+                        {% sortable_th "supplier__identifier" "CNPJ" %}
+                        {% sortable_th "expensed" "Valor recebido" True %}
                     </tr>
                 </thead>
                 <tbody>
@@ -36,7 +36,7 @@
         </div>
     </div>
     <div class="row span12">
-      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
+      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" url='?'|add:request.GET.urlencode %}
     </div>
 </div>
 
@@ -44,6 +44,8 @@
 
 
 {% block footer-extra %}
+
+<script language="javascript" src="{% static 'js/sorting.js' %}"></script>
 
 <script type="text/javascript">
 $(document).ready(function(){

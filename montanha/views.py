@@ -204,13 +204,26 @@ def show_per_party(request, to_disable):
     return render(request, to_disable, 'per_party.html', c)
 
 
+def add_sorting(request, data, default='-expensed'):
+    if 'order_by' in request.GET:
+        order_by_field = request.GET.get('order_by')
+        if not 'asc' in request.GET or not request.GET.get('asc'):
+            order_by_field = '-' + order_by_field
+        data = data.order_by(order_by_field)
+    else:
+        data = data.order_by(default)
+    return data
+
+
 def show_per_supplier(request, to_disable):
 
     data = Expense.objects.all()
     data = exclude_disabled(data, to_disable)
 
     data = data.values('supplier__name', 'supplier__identifier')
-    data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+    data = data.annotate(expensed=Sum('expensed'))
+
+    data = add_sorting(request, data)
 
     paginator = Paginator(data, 10)
     page = request.GET.get('page')
@@ -228,8 +241,10 @@ def show_per_supplier(request, to_disable):
 
 def show_all(request, to_disable):
 
-    data = Expense.objects.all().order_by('-date')
+    data = Expense.objects.all()
     data = exclude_disabled(data, to_disable)
+
+    data = add_sorting(request, data, '-date')
 
     paginator = Paginator(data, 10)
     page = request.GET.get('page')
