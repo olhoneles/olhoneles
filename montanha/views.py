@@ -178,14 +178,7 @@ def show_legislator_detail(request, legislator_id, to_disable):
     return render(request, to_disable, 'detail_legislator.html', c)
 
 
-def show_per_party(request, to_disable):
-
-    data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
-
-    data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
-    data = data.annotate(expensed=Sum('expensed'))
-
+def postprocess_party_data(data):
     for d in list(data):
         if d['mandate__party__siglum']:
             party = PoliticalParty.objects.get(siglum=d['mandate__party__siglum'])
@@ -197,9 +190,20 @@ def show_per_party(request, to_disable):
             d['n_legislators'] = Legislator.objects.filter(mandate__party__siglum=None).count()
             d['expensed_average'] = d['expensed'] / d['n_legislators']
 
-    data = sorted(data, key=lambda d: d['expensed_average'], reverse=True)
+    return sorted(data, key=lambda d: d['expensed_average'], reverse=True)
 
-    c = {'data': data, 'colors': generate_colors(len(data), 0.93, 0.8)}
+
+def show_per_party(request, to_disable):
+
+    data = Expense.objects.all()
+    data = exclude_disabled(data, to_disable)
+
+    data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
+    data = data.annotate(expensed=Sum('expensed'))
+
+    data = postprocess_party_data(data)
+
+    c = {'data': data, 'graph_data': data, 'colors': generate_colors(len(data), 0.93, 0.8)}
 
     return render(request, to_disable, 'per_party.html', c)
 
@@ -247,6 +251,17 @@ def show_supplier_detail(request, supplier_id, to_disable):
     supplier = Supplier.objects.get(pk=supplier_id)
     data = data.filter(supplier=supplier)
 
+    # Data prepared for displaying the per-party graph
+    graph_data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
+    graph_data = graph_data.annotate(expensed=Sum('expensed'))
+    graph_data = postprocess_party_data(graph_data)
+
+    top_buyers = data.values('mandate__legislator__id',
+                             'mandate__legislator__name',
+                             'mandate__party__siglum')
+    top_buyers = top_buyers.annotate(expensed=Sum('expensed')).order_by('-expensed')
+    top_buyers = top_buyers[:15]
+
     data = data.values('nature__name',
                        'mandate__legislator__name', 'mandate__party__siglum',
                        'number', 'date', 'expensed').order_by('-date')
@@ -260,7 +275,11 @@ def show_supplier_detail(request, supplier_id, to_disable):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'supplier': supplier, 'data': data}
+    c = {'supplier': supplier,
+         'data': data,
+         'graph_data': graph_data,
+         'top_buyers': top_buyers,
+         'colors': generate_colors(len(data), 0.93, 0.8)}
 
     return render(request, to_disable, 'detail_supplier.html', c)
 
