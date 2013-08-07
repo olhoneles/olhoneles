@@ -1,0 +1,42 @@
+{% load staticfiles %}
+{% load montanhatags %}
+
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.pie.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.resize.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+
+	data = [
+        {% for d in graph_data %}{label: "{{ d.mandate__party__siglum }}", color: "{{ colors|itercycle:forloop.counter0 }}", data: {{ d.expensed_average }}},{% endfor %}
+    ]
+
+    function labelFormatter(label, series) {
+        return "<div style='font-size:8pt; text-align:center; padding:2px; color:black;'>" + label + "<br/>" + Math.round(series.percent) + "%</div>";
+    }
+
+    $.plot('#placeholder', data, {
+        series: {
+            pie: {
+                show: true,
+                radius: 1,
+                label: {
+                    show: true,
+                    radius: 1,
+                    formatter: labelFormatter,
+                    background: {
+                        opacity: 0.8
+                    }
+                },
+                combine: {
+                    threshold: 0.02,
+                }
+            }
+        },
+        legend: {
+            show: false
+        }
+    });
+
+});
+</script>
