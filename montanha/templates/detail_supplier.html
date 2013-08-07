@@ -10,7 +10,20 @@
 <div class="container">
     <div class="row">
         <div class="span12">
-            <h1>{{ supplier.name }} ({{ supplier.identifier }})</h1>
+            <h1>{{ supplier.name }}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <table class="alert alert-info table-condensed">
+                <tr>
+                    <th class="pull-right">CNPJ:</th>
+                    <td>{{ supplier.identifier }}</td>
+                </tr>
+                <tr>
+                    <th class="pull-right">Total recebido:</th><td>{{ total_expensed|format_currency  }}</td>
+                </tr>
+            </table>
         </div>
     </div>
     <div class="row">
