@@ -3,14 +3,14 @@
 {% load montanhatags %}
 {% load bootstrap_toolkit %}
 
-{% block title %}Por Fornecedor{% endblock %}
+{% block title %}{{ supplier.name }} ({{ supplier.identifier }}{% endblock %}
 
 {% block content %}
 
 <div class="container">
     <div class="row">
         <div class="span12">
-            <h1>Por Fornecedor</h1>
+            <h1>{{ supplier.name }} ({{ supplier.identifier }})</h1>
         </div>
     </div>
     <div class="row">
@@ -18,20 +18,20 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th {% sortable_th "supplier__name" %}>Fornecedor</th>
-                        <th {% sortable_th "supplier__identifier"  %}>CNPJ</th>
-                        <th {% sortable_th "expensed" True %}>Valor recebido</th>
+                        <th>Tipo de gasto</th>
+                        <th>Parlamentar (Partido)</th>
+                        <th>Número do Documento</th>
+                        <th>Data</th>
+                        <th>Valor</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for d in data %}
                     <tr>
-                        <td>
-                          <a href="{% url 'montanha:show-supplier-detail' d.supplier__id %}">
-                            {{ d.supplier__name }}
-                          </a>
-                        </td>
-                        <td>{{ d.supplier__identifier }}</td>
+                        <td>{{ d.nature__name }}</td>
+                        <td>{{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})</td>
+                        <td>{{ d.number }}</td>
+                        <td>{{ d.date|date:"d/m/Y" }}</td>
                         <td>{{ d.expensed|format_currency }}</td>
                     </tr>
                     {% endfor %}
@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="row span12">
-      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" url='?'|add:request.GET.urlencode %}
+      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
     </div>
 </div>
 
@@ -49,11 +49,8 @@
 
 {% block footer-extra %}
 
-<script language="javascript" src="{% static 'js/sorting.js' %}"></script>
-
 <script type="text/javascript">
 $(document).ready(function(){
-
     $('#menu-per-supplier').addClass('active').siblings().removeClass('active');
 });
 </script>
