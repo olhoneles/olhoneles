@@ -220,7 +220,7 @@ def show_per_supplier(request, to_disable):
     data = Expense.objects.all()
     data = exclude_disabled(data, to_disable)
 
-    data = data.values('supplier__name', 'supplier__identifier')
+    data = data.values('supplier__id', 'supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed'))
 
     data = add_sorting(request, data)
@@ -237,6 +237,32 @@ def show_per_supplier(request, to_disable):
     c = {'data': data}
 
     return render(request, to_disable, 'per_supplier.html', c)
+
+
+def show_supplier_detail(request, supplier_id, to_disable):
+
+    data = Expense.objects.all()
+    data = exclude_disabled(data, to_disable)
+
+    supplier = Supplier.objects.get(pk=supplier_id)
+    data = data.filter(supplier=supplier)
+
+    data = data.values('nature__name',
+                       'mandate__legislator__name', 'mandate__party__siglum',
+                       'number', 'date', 'expensed').order_by('-date')
+
+    paginator = Paginator(data, 10)
+    page = request.GET.get('page')
+    try:
+        data = paginator.page(page)
+    except PageNotAnInteger:
+        data = paginator.page(1)
+    except EmptyPage:
+        data = paginator.page(paginator.num_pages)
+
+    c = {'supplier': supplier, 'data': data}
+
+    return render(request, to_disable, 'detail_supplier.html', c)
 
 
 def show_all(request, to_disable):
