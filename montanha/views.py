@@ -262,6 +262,9 @@ def show_supplier_detail(request, supplier_id, to_disable):
     top_buyers = top_buyers.annotate(expensed=Sum('expensed')).order_by('-expensed')
     top_buyers = top_buyers[:15]
 
+    total_expensed = data.values('supplier__name')
+    total_expensed = total_expensed.annotate(total_expensed=Sum('expensed'))[0]['total_expensed']
+
     data = data.values('nature__name',
                        'mandate__legislator__name', 'mandate__party__siglum',
                        'number', 'date', 'expensed').order_by('-date')
@@ -279,6 +282,7 @@ def show_supplier_detail(request, supplier_id, to_disable):
          'data': data,
          'graph_data': graph_data,
          'top_buyers': top_buyers,
+         'total_expensed': total_expensed,
          'colors': generate_colors(len(data), 0.93, 0.8)}
 
     return render(request, to_disable, 'detail_supplier.html', c)
