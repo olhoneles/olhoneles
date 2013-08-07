@@ -18,13 +18,13 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        {% sortable_th "nature__name" "Tipo de gasto" %}
-                        {% sortable_th "mandate__legislator__name" "Parlamentar" %}
-                        {% sortable_th "supplier__name" "Empresa/Pessoa" %}
-                        {% sortable_th "supplier__identifier" "CNPJ/CPF" %}
-                        {% sortable_th "number" "Número do Documento" %}
-                        {% sortable_th "date" "Data" True %}
-                        {% sortable_th "expensed" "Valor" %}
+                        <th {% sortable_th "nature__name" %}>Tipo de gasto</th>
+                        <th {% sortable_th "mandate__legislator__name" %}>Parlamentar</th>
+                        <th {% sortable_th "supplier__name" %}>Empresa/Pessoa </th>
+                        <th {% sortable_th "supplier__identifier" %}>CNPJ/CPF</th>
+                        <th {% sortable_th "number" %}>Número do Documento</th>
+                        <th {% sortable_th "date" True %}>Data</th>
+                        <th {% sortable_th "expensed" %}>Valor</th>
                     </tr>
                 </thead>
                 <tbody>

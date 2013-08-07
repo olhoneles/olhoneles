@@ -18,9 +18,9 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        {% sortable_th "supplier__name" "Fornecedor" %}
-                        {% sortable_th "supplier__identifier" "CNPJ" %}
-                        {% sortable_th "expensed" "Valor recebido" True %}
+                        <th {% sortable_th "supplier__name" %}>Fornecedor</th>
+                        <th {% sortable_th "supplier__identifier"  %}>CNPJ</th>
+                        <th {% sortable_th "expensed" True %}>Valor recebido</th>
                     </tr>
                 </thead>
                 <tbody>
