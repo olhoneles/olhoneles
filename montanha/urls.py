@@ -33,4 +33,7 @@ urlpatterns = patterns(
 
     url(r'^detail-legislator/(\d+)/(no:[^/]+)?/?$', 'show_legislator_detail', name='show-legislator-detail'),
     url(r'^detail-supplier/(\d+)/(no:[^/]+)?/?$', 'show_supplier_detail', name='show-supplier-detail'),
+
+    # What is expenses?
+    url(r'^o-que-e-verba-indenizatoria/(no:[^/]+)?/?$', 'what_is_expenses', name='what-is-expenses'),
 )

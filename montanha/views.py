@@ -307,3 +307,10 @@ def show_all(request, to_disable):
     c = {'data': data}
 
     return render(request, to_disable, 'all_expenses.html', c)
+
+
+def what_is_expenses(request, to_disable):
+
+    c = {}
+
+    return render(request, to_disable, 'what_is_expenses.html', c)
