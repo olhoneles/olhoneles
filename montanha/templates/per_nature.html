@@ -15,21 +15,20 @@
         <div class="span9">
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#table" data-toggle="tab"><i class="icon-list-alt"></i> Tabela</a></li>
-                <li><a href="#graph" data-toggle="tab"><i class="icon-picture"></i> Gráfico</a></li>
+                <li><a href="#graph" data-toggle="tab"><i class="icon-picture"></i> Acumulado no tempo</a></li>
             </ul>
-            <div class="tab-content" id="tab-per-nature">
+            <div class="tab-content" style="overflow: visible;" id="tab-per-nature">
                 <div id="table" class="tab-pane active">
                     <table id="datatable" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th colspan="2">Tipo de Gasto</th>
+                                <th>Tipo de Gasto</th>
                                 <th>Valor ressarcido</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for d in data %}
                             <tr>
-                                <td style="background-color: {{ colors|itercycle:forloop.counter0 }}; opacity: 0.8;"></td>
                                 <td>{{ d.nature__name }}</td>
                                 <td>{{ d.expensed|format_currency }}</td>
                             </tr>
@@ -38,6 +37,7 @@
                     </table>
                 </div>
                 <div id="graph" class="tab-pane">
+                    <div id="legend-placeholder" style="overflow: hidden;" class="span3"></div>
                     <div id="placeholder" class="span5"></div>
                 </div>
             </div>
@@ -64,46 +64,54 @@ $(document).ready(function(){
     $('#menu-per-nature').addClass('active').siblings().removeClass('active');
 
 	data = [
-        {% for d in years_data %}{ "color": "{{ colors|itercycle:forloop.counter0 }}", "data": {{ d }} },{% endfor %}
+        {% for d in years_data %}{ "label": "{{ d.label }}", "color": "{{ colors|itercycle:forloop.counter0 }}", "data": {{ d.data }} },{% endfor %}
     ]
 
-    graph = $.plot('#placeholder', data, {
-        series: {
-            stack: true,
-            lines: {
-                show: true,
-                fill: 0.8,
-            }
-        },
-        legend: {
-            show: false,
-        },
-        xaxis: {
-            mode: 'time',
-            timeformat: "%Y",
-            tickSize: [1, "year"],
-            ticks: (function(data) {
-                var new_data = new Array(data.length);
-                for (var i = 0, len = data.length; i < len; i += 1) {
-                    new_data[i] = data[i][0];
+    function labelFormatter(label, series) {
+        return "<span style='font-size:9pt; text-align: left; padding:0; white-space: nowrap; color:black;'>" + label + "</span>";
+    }
+
+    $('a[href="#graph"]').on('shown', function() {
+        graph = $.plot('#placeholder', data, {
+            series: {
+                stack: true,
+                lines: {
+                    show: true,
+                    fill: 0.8,
                 }
-                return new_data;
-            })(data[0].data),
-        },
-        yaxis: {
-            tickFormatter: format_currency,
-            position: "right",
-        },
-        grid: {
-            borderWidth: {
-                top: 0,
-                bottom: 0,
-                left: 2,
-                right: 0,
             },
-            borderColor: "#f4f4f4",
-            markings: 0,
-        },
+            legend: {
+                show: true,
+                container: $('#legend-placeholder'),
+                labelFormatter: labelFormatter,
+            },
+            xaxis: {
+                mode: 'time',
+                timeformat: "%Y",
+                tickSize: [1, "year"],
+                ticks: (function(data) {
+                    var new_data = new Array(data.length);
+                    for (var i = 0, len = data.length; i < len; i += 1) {
+                        new_data[i] = data[i][0];
+                    }
+                    return new_data;
+                })(data[0].data),
+            },
+            yaxis: {
+                tickFormatter: format_currency,
+                position: "right",
+            },
+            grid: {
+                borderWidth: {
+                    top: 0,
+                    bottom: 0,
+                    left: 2,
+                    right: 0,
+                },
+                borderColor: "#f4f4f4",
+                markings: 0,
+            },
+        });
     });
 });
 </script>
