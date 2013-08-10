@@ -36,4 +36,7 @@ urlpatterns = patterns(
 
     # What is expenses?
     url(r'^o-que-e-verba-indenizatoria/(no:[^/]+)?/?$', 'what_is_expenses', name='what-is-expenses'),
+
+    # Contact us
+    url(r'^fale-conosco/(no:[^/]+)?/?$', 'contact_us', name='contact-us'),
 )

@@ -33,6 +33,8 @@ Dependencies
    we use that are still pending acceptance upstream.
 * Easy Thumbnails (https://github.com/SmileyChris/easy-thumbnails)
 * Python PIL (https://pypi.python.org/pypi/PIL)
+* django-parsley (https://pypi.python.org/pypi/django-parsley)
+* parseleyjs (https://github.com/guillaumepotier/Parsley.js)
 
 
 License

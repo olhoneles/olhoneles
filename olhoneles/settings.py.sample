@@ -177,3 +177,5 @@ THUMBNAIL_ALIASES = {
         'mini': {'size': (20, 20), 'crop': False},
     },
 }
+
+DEFAULT_FROM_EMAIL = "montanha-dev@listas.olhoneles.org"
