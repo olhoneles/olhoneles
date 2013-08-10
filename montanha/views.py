@@ -22,8 +22,10 @@ from datetime import date
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render as original_render
 from django.db.models import Sum, Count
+from django.core.mail import send_mail
+from django.conf import settings
 from montanha.models import *
-
+from montanha.forms import *
 
 locale.setlocale(locale.LC_MONETARY, "pt_BR.UTF-8")
 
@@ -314,3 +316,33 @@ def what_is_expenses(request, to_disable):
     c = {}
 
     return render(request, to_disable, 'what_is_expenses.html', c)
+
+
+def contact_us(request, to_disable):
+
+    contact_us_form = ContactUsForm(request.POST or None)
+    success_message = ''
+
+    if request.POST and contact_us_form.is_valid():
+        subject = '[Montanha Site]: Fale Conosco'
+
+        message = ('Nome: %s\nEmail: %s\nIP: %s\nMensagem:\n\n%s') % (
+            contact_us_form.cleaned_data['name'],
+            contact_us_form.cleaned_data['email'],
+            request.META['REMOTE_ADDR'],
+            contact_us_form.cleaned_data['message'])
+
+        from_field = '%s <%s>' % (contact_us_form.cleaned_data['name'],
+                                  contact_us_form.cleaned_data['email'])
+
+        send_mail(subject, message, from_field, [settings.DEFAULT_FROM_EMAIL])
+
+        success_message = ("""Sua mensagem foi enviada com  sucesso. """
+                           """Em breve entraremos em contato!""")
+
+        contact_us_form = ContactUsForm(None)
+
+    c = {'contact_us_form': contact_us_form,
+         'success_message': success_message}
+
+    return render(request, to_disable, 'contact_us.html', c)

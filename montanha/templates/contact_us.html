@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load bootstrap_toolkit %}
+
+{% block title %}Fale Conosco{% endblock %}
+
+
+{% block content %}
+
+<h1>Fale Conosco</h1>
+
+<p>Caso tenha alguma dúvida ou sugestão mande uma mensagem através do formulário abaixo:</p>
+
+{% if success_message %}
+<div class="alert alert-success">{{ success_message }}</div>
+{% endif %}
+
+<form id="contact-us-form" class="form-horizontal" method="post" action="">
+    {% csrf_token %}
+    {% bootstrap_form contact_us_form layout="vertical" %}
+    <div class="control-group">
+        <label class="control-label"></label>
+        <div class="controls">
+            <button type="submit" class="btn btn-primary">Enviar mensagem</button>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+
+
+{% block footer-extra %}
+
+<script type="text/javascript" src="{% static 'parsley/messages.pt_br.js' %}"></script>
+<script type="text/javascript" src="{% static 'parsley/parsley.min.js' %}"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    var add_form_to_validate = function (obj) {
+        $(obj).parsley({
+            listeners: {
+                onFieldError: function (elem, constraints, ParsleyField) {
+                    $(elem).closest('.control-group').removeClass('success').addClass('error');
+                },
+                onFieldSuccess: function (elem, constraints, ParsleyField) {
+                    $(elem).closest('.control-group').removeClass('error').addClass('success');
+                }
+            },
+            errors: {
+                container: function (elem, isRadioOrCheckbox) {
+                    var $container = $(elem).closest('.controls').find(".parsley-container");
+                    if ($container.length === 0) {
+                        $container = $("<div class='parsley-container'></div>").appendTo($(elem).closest('.controls'));
+                    }
+                    return $container;
+                },
+                errorsWrapper: '<div class="help-inline"></div>',
+                errorElem: '<span></span>'
+            }
+        });
+    }
+
+    $('#menu-contact-us').addClass('active').siblings().removeClass('active');
+
+    add_form_to_validate('#contact-us-form');
+
+});
+</script>
+
+{% endblock %}
