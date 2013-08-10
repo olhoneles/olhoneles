@@ -21,13 +21,29 @@
     </head>
     <body>
         {% include 'header.html' %}
-        {% block content %}{% endblock %}
+
+        <div class="container">
+            <div class="row">
+                <div class="span3">
+                    <ul id="submenu" class="nav nav-list">
+                        {% include 'menu_items.html' %}
+                    </ul>
+                </div>
+                <div class="span9">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+
         {% include 'footer.html' %}
         <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'jquery-deserialize/jquery.deserialize.js' %}"></script>
-        <script>
-            $('.dropdown-menu li').click(function(e) {
+        <script type="text/javascript">
+
+       $('#submenu').affix();
+
+       $('.dropdown-menu li').click(function(e) {
                 var target = $(e.currentTarget);
                 var institution_siglum = target.attr('id');
 

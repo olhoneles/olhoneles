@@ -7,14 +7,13 @@
 
 {% block content %}
 
-<div class="container">
     <div class="row">
-        <div class="span12">
+        <div class="span9">
             <h1>{{ supplier.name }}</h1>
         </div>
     </div>
     <div class="row">
-        <div class="span12">
+        <div class="span9">
             <table class="alert alert-info table-condensed">
                 <tr>
                     <th class="pull-right">CNPJ:</th>
@@ -27,86 +26,87 @@
         </div>
     </div>
     <div class="row">
-        <div class="span12">
-            <h2>Todos os gastos</h2>
+        <div class="span9">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#all-expenses" data-toggle="tab"><i class="icon-list-alt"></i> Todos os gastos</a></li>
+                <li><a href="#top-buyers" data-toggle="tab"><i class="icon-list-alt"></i> Maiores compradores</a></li>
+            </ul>
+            <div class="tab-content" id="tab-detail-supplier">
+                <div id="all-expenses" class="tab-pane active">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tipo de gasto</th>
+                                <th>Parlamentar (Partido)</th>
+                                <th>Número do Documento</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in data %}
+                            <tr>
+                                <td>{{ d.nature__name }}</td>
+                                <td>{{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})</td>
+                                <td>{{ d.number }}</td>
+                                <td>{{ d.date|date:"d/m/Y" }}</td>
+                                <td>{{ d.expensed|format_currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
+                </div>
+                <div id="top-buyers" class="tab-pane">
+                    <div class="span4">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Parlamentar (Partido)</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in top_buyers %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
+                                        {{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})
+                                        </a>
+                                    </td>
+                                    <td>{{ d.expensed|format_currency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="span4">
+                        <div id="placeholder" class="span4"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="row">
-        <div class="span12">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Tipo de gasto</th>
-                        <th>Parlamentar (Partido)</th>
-                        <th>Número do Documento</th>
-                        <th>Data</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for d in data %}
-                    <tr>
-                        <td>{{ d.nature__name }}</td>
-                        <td>{{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})</td>
-                        <td>{{ d.number }}</td>
-                        <td>{{ d.date|date:"d/m/Y" }}</td>
-                        <td>{{ d.expensed|format_currency }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="row span12">
-      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
-    </div>
-    <div class="row">
-        <div class="span6">
-            <h2>Maiores compradores</h2>
-        </div>
-        <div class="span6">
-        </div>
-    </div>
-    <div class="row">
-        <div class="span6">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Parlamentar (Partido)</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for d in top_buyers %}
-                    <tr>
-                        <td>
-                          <a href="{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
-                            {{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})
-                          </a>
-                        </td>
-                        <td>{{ d.expensed|format_currency }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="span6">
-            <div id="placeholder" class="demo-placeholder span6"></div>
-        </div>
-    </div>
-</div>
+
 
 {% endblock %}
 
 
 {% block footer-extra %}
 
+{% include 'per_party_graph.html' %}
+
 <script type="text/javascript">
 $(document).ready(function(){
     $('#menu-per-supplier').addClass('active').siblings().removeClass('active');
+
+    $('a[href="#top-buyers"]').on('shown', function() {
+        plot_per_party_graph();
+    });
+
 });
 </script>
 
-{% include 'per_party_graph.html' %}
+
 
 {% endblock %}

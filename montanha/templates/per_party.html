@@ -22,51 +22,63 @@ function toggle_details()
 }
 </script>
 
-<div class="container">
     <div class="row">
-        <div class="span12">
+        <div class="span9">
             <h1>Por Partido</h1>
         </div>
     </div>
     <div class="row">
-        <div class="span6">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Partido</th>
-                        <th>Média <a id="toggle-details-link" href="javascript:toggle_details()">(Ver detalhes)</a></th>
-                        <th class="details" style="display: none;">Parlamentares</th>
-                        <th class="details" style="display: none;">Valor ressarcido</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for d in data %}
-                    <tr>
-                        <td>{% if d.mandate__party__logo %}<img src="{{ d.logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %} {{ d.mandate__party__siglum }}</td>
-                        <td>{{ d.expensed_average|format_currency }}</td>
-                        <td class="details" style="display: none;">{{ d.n_legislators }}</td>
-                        <td class="details" style="display: none;">{{ d.expensed|format_currency }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="span6">
-            <div id="placeholder" class="demo-placeholder span6"></div>
+        <div class="span9">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#table" data-toggle="tab"><i class="icon-list-alt"></i> Tabela</a></li>
+                <li><a href="#graph" data-toggle="tab"><i class="icon-picture"></i> Gráfico</a></li>
+            </ul>
+            <div class="tab-content" id="tab-per-party">
+                <div id="table" class="tab-pane active">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Partido</th>
+                                <th>Média <a id="toggle-details-link" href="javascript:toggle_details()">(Ver detalhes)</a></th>
+                                <th class="details" style="display: none;">Parlamentares</th>
+                                <th class="details" style="display: none;">Valor ressarcido</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in data %}
+                            <tr>
+                                <td>{% if d.mandate__party__logo %}<img src="{{ d.logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %} {{ d.mandate__party__siglum }}</td>
+                                <td>{{ d.expensed_average|format_currency }}</td>
+                                <td class="details" style="display: none;">{{ d.n_legislators }}</td>
+                                <td class="details" style="display: none;">{{ d.expensed|format_currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div id="graph" class="tab-pane">
+                    <div id="placeholder" class="span8"></div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
 {% endblock %}
 
 {% block footer-extra %}
 
+{% include 'per_party_graph.html' %}
+
 <script type="text/javascript">
 $(document).ready(function(){
+
     $('#menu-per-party').addClass('active').siblings().removeClass('active');
+
+    $('a[href="#graph"]').on('shown', function() {
+        plot_per_party_graph();
+    });
+
 });
 </script>
-
-{% include 'per_party_graph.html' %}
 
 {% endblock %}

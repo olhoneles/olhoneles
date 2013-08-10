@@ -11,8 +11,8 @@
             </button>
             <a class="brand" href="{% url 'montanha:index' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Olho Neles!</a>
             <form class="navbar-form">
-            <div class="nav-collapse collapse">
-                <ul class="nav">
+                <div class="nav-collapse collapse">
+                    <ul class="nav">
                         <li>
                             <a id="houses-dropdown" href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <span class="caret"></span>
@@ -29,10 +29,9 @@
                                 <li class="text-right"><button id="houses-dropdown-apply" class="btn btn-primary" data-toggle="dropdown" data-target="#houses-dropdown" type="button">Aplicar</button></li>
                             </ul>
                         </li>
-                    {% include 'menu_items.html' %}
-                </ul>
+                    </ul>
+                </div>
             </div>
-        </div>
         </form>
     </div>
 </div>

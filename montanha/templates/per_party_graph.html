@@ -15,28 +15,30 @@ $(document).ready(function(){
         return "<div style='font-size:8pt; text-align:center; padding:2px; color:black;'>" + label + "<br/>" + Math.round(series.percent) + "%</div>";
     }
 
-    $.plot('#placeholder', data, {
-        series: {
-            pie: {
-                show: true,
-                radius: 1,
-                label: {
+    plot_per_party_graph = function() {
+        $.plot('#placeholder', data, {
+            series: {
+                pie: {
                     show: true,
                     radius: 1,
-                    formatter: labelFormatter,
-                    background: {
-                        opacity: 0.8
+                    label: {
+                        show: true,
+                        radius: 1,
+                        formatter: labelFormatter,
+                        background: {
+                            opacity: 0.8
+                        }
+                    },
+                    combine: {
+                        threshold: 0.02,
                     }
-                },
-                combine: {
-                    threshold: 0.02,
                 }
+            },
+            legend: {
+                show: false
             }
-        },
-        legend: {
-            show: false
-        }
-    });
+        });
+    }
 
 });
 </script>
