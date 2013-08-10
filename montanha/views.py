@@ -118,7 +118,7 @@ def show_per_nature(request, to_disable):
 
         l = []
         cummulative = .0
-        time_series.append(l)
+        time_series.append(dict(label=nature_name, data=l))
 
         for year in years:
             year_data = Expense.objects.filter(nature=nature)
