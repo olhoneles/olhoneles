@@ -337,7 +337,7 @@ def contact_us(request, to_disable):
 
         send_mail(subject, message, from_field, [settings.DEFAULT_FROM_EMAIL])
 
-        success_message = ("""Sua mensagem foi enviada com  sucesso. """
+        success_message = ("""Sua mensagem foi enviada com sucesso. """
                            """Em breve entraremos em contato!""")
 
         contact_us_form = ContactUsForm(None)
