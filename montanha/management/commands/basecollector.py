@@ -19,9 +19,12 @@
 import time
 import urllib
 from datetime import datetime
+from urllib import urlretrieve
 from urllib2 import urlopen, Request, URLError, HTTPError
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from montanha.models import *
+
+__all__ = ['BaseCollector', 'BeautifulSoup', 'BeautifulStoneSoup', 'Request', 'urlopen', 'urlretrieve']
 
 
 class BaseCollector(object):
