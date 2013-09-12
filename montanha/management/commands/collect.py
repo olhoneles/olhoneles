@@ -65,3 +65,17 @@ class Command(BaseCommand):
             from cmsp import CMSP
             cmsp = CMSP(debug_enabled, full_scan)
             cmsp.update_data()
+
+        if "camara" in args:
+            from camara import Camara
+            camara = Camara(debug_enabled, full_scan)
+            args = args[1:]
+
+            if args[0] == "legislatures":
+                camara.collect_legislatures()
+
+            if args[0] == "legislators":
+                camara.collect_legislators()
+
+            if args[0] == "expenses":
+                camara.collect_expenses()
