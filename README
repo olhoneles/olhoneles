@@ -35,6 +35,7 @@ Dependencies
 * Python PIL (https://pypi.python.org/pypi/PIL)
 * django-parsley (https://pypi.python.org/pypi/django-parsley)
 * parseleyjs (https://github.com/guillaumepotier/Parsley.js)
+* South (http://south.aeracode.org/)
 
 
 License

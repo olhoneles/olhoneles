@@ -137,10 +137,9 @@ INSTALLED_APPS = (
     'bootstrap_toolkit',
     'easy_thumbnails',
     'montanha',
-    # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
+    # South must be the last one, since it is used for migrating models of
+    # all apps, potentially.
+    'south',
 )
 
 # A sample logging configuration. The only tangible logging
