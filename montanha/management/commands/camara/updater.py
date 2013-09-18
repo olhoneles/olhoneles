@@ -15,13 +15,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from montanha.models import *
-from datetime import datetime, date
-
 import os
-
 from django.core.files import File
 from django.db.models import Sum
+from montanha.models import *
 
 
 class CamaraUpdater:
