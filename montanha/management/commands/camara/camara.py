@@ -17,7 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from multiprocessing import Process, Queue, Lock, Event, current_process
+from multiprocessing import Process, Queue, Lock, Event, current_process, cpu_count
 from Queue import Empty
 from datetime import datetime
 from collector import CamaraCollector
@@ -25,11 +25,8 @@ from updater import CamaraUpdater
 from parser import CamaraParser
 
 
-max_legid_producers = 1
-max_legid_consumers = 2
-
-max_collectors = 3
-max_updaters = 1
+max_collectors = cpu_count() * 2
+max_updaters = cpu_count()
 
 
 class Camara:
