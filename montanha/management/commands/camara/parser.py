@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from datetime import datetime, date
+from datetime import datetime
 
 max_legislators = 0
 

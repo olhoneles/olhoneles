@@ -17,23 +17,13 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# from datetime import datetime, date
-# from montanha.models import *
-
+from multiprocessing import Process, Queue, Lock, Event, current_process
 from Queue import Empty
-
-#from urllib2 import HTTPError
-from django.db import DatabaseError
-
+from datetime import datetime
 from collector import CamaraCollector
 from updater import CamaraUpdater
 from parser import CamaraParser
 
-from datetime import datetime, date
-
-from multiprocessing import Process, Queue, JoinableQueue, Lock, Event, current_process
-
-import time
 
 max_legid_producers = 1
 max_legid_consumers = 2
