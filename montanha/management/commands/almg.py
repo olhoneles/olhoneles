@@ -95,7 +95,7 @@ class ALMG(BaseCollector):
             if "vidaProfissionalPolitica" in entry:
                 legislature.legislator.about = entry["vidaProfissionalPolitica"]
 
-            if "emails" in entry:
+            if "emails" in entry and entry["emails"]:
                 email = entry["emails"][0]['endereco']
                 legislature.legislator.email = "%s%s" % (email, "@almg.gov.br")
 
