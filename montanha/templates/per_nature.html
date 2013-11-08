@@ -16,6 +16,7 @@
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#table" data-toggle="tab"><i class="icon-list-alt"></i> Tabela</a></li>
                 <li><a href="#graph" data-toggle="tab"><i class="icon-picture"></i> Acumulado no tempo</a></li>
+                <li><a href="#month-by-month-graph" data-toggle="tab"><i class="icon-picture"></i> Mês a mês</a></li>
             </ul>
             <div class="tab-content" style="overflow: visible;" id="tab-per-nature">
                 <div id="table" class="tab-pane active">
@@ -40,6 +41,16 @@
                     <div id="legend-placeholder" style="overflow: hidden;" class="span3"></div>
                     <div id="placeholder" class="span5"></div>
                 </div>
+                <div id="month-by-month-graph" class="tab-pane">
+                    {% for nature in natures_mbm %}
+                    <div class="row">
+                        <div class="span9">
+                            <h2>{{ nature.name }}</h2>
+                        <div>
+                        <div id="{{ forloop.counter0 }}-mbm-placeholder" class="mbm-graph" style="height: 300px;" class="span9"></div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
         </div>
@@ -50,9 +61,11 @@
 {% block footer-extra %}
 
 <script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.categories.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.stack.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.time.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'jquery-flot/jquery.flot.resize.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.appear.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/accounting.min.js' %}"></script>
 <script type="text/javascript">
 function format_currency(val, axis) {
@@ -71,7 +84,7 @@ $(document).ready(function(){
         return "<span style='font-size:9pt; text-align: left; padding:0; white-space: nowrap; color:black;'>" + label + "</span>";
     }
 
-    $('a[href="#graph"]').on('shown', function() {
+    $('a[href="#graph"]').one('shown', function() {
         graph = $.plot('#placeholder', data, {
             series: {
                 stack: true,
@@ -112,6 +125,57 @@ $(document).ready(function(){
                 markings: 0,
             },
         });
+    });
+
+    // Month by month
+    function graph_appeared(event, appeared) {
+        $(this).off('appear');
+
+        var id = this.id;
+        var my_data = eval('mbm_data_' + id.split('-')[0]);
+
+        graph = $.plot($(this), my_data, {
+            series: {
+                lines: {
+                    show: true,
+                }
+            },
+            legend: {
+                show: true,
+            },
+            xaxis: {
+                mode: "categories",
+            },
+            yaxis: {
+                tickFormatter: format_currency,
+                position: "right",
+            },
+            grid: {
+                borderWidth: {
+                    top: 0,
+                    bottom: 0,
+                    left: 2,
+                    right: 0,
+                },
+                borderColor: "#f4f4f4",
+                markings: 0,
+            },
+        });
+    }
+
+    {% for nature in natures_mbm %}
+    mbm_data_{{ forloop.counter0 }} = [
+        {% for mbm_year in nature.data %}
+            { "label": "{{ mbm_year.label }}", "data": [{% for d in mbm_year.data %}[ "{{ d.month }}", {{ d.data }} ],{% endfor %}] },
+        {% endfor %}
+    ]
+    {% endfor %}
+
+    $('div.mbm-graph').appear();
+    $('div.mbm-graph').one('appear', graph_appeared);
+
+    $('a[href="#month-by-month-graph"]').one('shown', function() {
+        $.force_appear();
     });
 });
 </script>
