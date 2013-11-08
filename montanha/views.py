@@ -137,6 +137,15 @@ def show_per_nature(request, to_disable):
 
             l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 
+    # mbm_years = list of years (3, right now - 2011, 2012, 2013) with 12 months inside
+    # each month in turn carries a dict with month name and value or null.
+    def nature_is_empty(years):
+        for year in years:
+            for month in year['data']:
+                if month['data'] != 'null' and month['data'] > 0.0001:
+                    return False
+        return True
+
     natures_mbm = cache.get(request.get_full_path() + '-natures_mbm')
     if natures_mbm:
         natures_mbm = pickle.loads(natures_mbm)
@@ -144,8 +153,6 @@ def show_per_nature(request, to_disable):
         natures_mbm = []
         for nature in ExpenseNature.objects.all():
             mbm_years = []
-            natures_mbm.append(dict(name=nature.name, data=mbm_years))
-
             last_year = 2013
             for year in [2011, 2012, 2013]:
                 mbm_series = []
@@ -173,6 +180,9 @@ def show_per_nature(request, to_disable):
                     mbm_series.append(dict(month=mname, data=mdata))
 
                 mbm_years.append(dict(label=year, data=mbm_series))
+
+            if not nature_is_empty(mbm_years):
+                natures_mbm.append(dict(name=nature.name, data=mbm_years))
 
         cache.set(request.get_full_path() + '-natures_mbm', pickle.dumps(natures_mbm), 36288000)
 
