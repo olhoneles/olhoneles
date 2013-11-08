@@ -17,17 +17,20 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import locale
+import pickle
 from colorsys import hsv_to_rgb
 from datetime import date
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render as original_render
 from django.db.models import Sum, Count
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings
 from montanha.models import *
 from montanha.forms import *
 
 locale.setlocale(locale.LC_MONETARY, "pt_BR.UTF-8")
+locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
 
 
 def generate_colors(n=7, sat=1.0, val=1.0):
@@ -124,6 +127,7 @@ def show_per_nature(request, to_disable):
 
         for year in years:
             year_data = Expense.objects.filter(nature=nature)
+            year_data = exclude_disabled(year_data, to_disable)
             year_data = year_data.filter(date__year=year)
             year_data = year_data.values("nature__name")
             year_data = year_data.annotate(expensed=Sum("expensed"))
@@ -133,7 +137,46 @@ def show_per_nature(request, to_disable):
 
             l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
 
-    c = {'data': data, 'years_data': time_series, 'colors': generate_colors(len(data), 0.93, 0.8)}
+    natures_mbm = cache.get(request.get_full_path() + '-natures_mbm')
+    if natures_mbm:
+        natures_mbm = pickle.loads(natures_mbm)
+    else:
+        natures_mbm = []
+        for nature in ExpenseNature.objects.all():
+            mbm_years = []
+            natures_mbm.append(dict(name=nature.name, data=mbm_years))
+
+            last_year = 2013
+            for year in [2011, 2012, 2013]:
+                mbm_series = []
+
+                expenses = Expense.objects.filter(nature=nature).filter(date__year=year)
+                expenses = exclude_disabled(expenses, to_disable)
+                last_month = expenses and expenses.order_by('-date')[0].date.month or 0
+
+                for month in range(1, 13):
+                    mname = date(year, month, 1).strftime("%b")
+                    mdata = expenses.filter(date__month=month)
+                    mdata = mdata.values('nature__name')
+                    mdata = mdata.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+                    if mdata:
+                        mdata = mdata[0]['expensed']
+                    else:
+                        # If we reached the last month we have any data for, use null instead of
+                        # 0., so the graph gets cut out.
+                        if last_year and month > last_month:
+                            mdata = 'null'
+                        else:
+                            mdata = 0.
+
+                    mbm_series.append(dict(month=mname, data=mdata))
+
+                mbm_years.append(dict(label=year, data=mbm_series))
+
+        cache.set(request.get_full_path() + '-natures_mbm', pickle.dumps(natures_mbm), 36288000)
+
+    c = {'data': data, 'years_data': time_series, 'natures_mbm': natures_mbm, 'colors': generate_colors(len(data), 0.93, 0.8)}
 
     return render(request, to_disable, 'per_nature.html', c)
 
