@@ -177,4 +177,11 @@ THUMBNAIL_ALIASES = {
     },
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': INSTANCE('../cache'),
+    }
+}
+
 DEFAULT_FROM_EMAIL = "montanha-dev@listas.olhoneles.org"
