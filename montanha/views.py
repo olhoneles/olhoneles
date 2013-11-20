@@ -216,6 +216,15 @@ def show_legislator_detail(request, legislator_id, to_disable):
     legislator = Legislator.objects.get(pk=legislator_id)
     data = data.filter(mandate__legislator=legislator)
 
+    top_suppliers = data.values('supplier__id',
+                                'supplier__identifier',
+                                'supplier__name')
+    top_suppliers = top_suppliers.annotate(expensed=Sum('expensed')).order_by('-expensed')
+    top_suppliers = top_suppliers[:15]
+
+    total_expensed = data.values('supplier__name')
+    total_expensed = total_expensed.annotate(total_expensed=Sum('expensed'))[0]['total_expensed']
+
     data = data.values('nature__name', 'supplier__name', 'supplier__identifier',
                        'number', 'date', 'expensed').order_by('-date')
 
@@ -228,7 +237,7 @@ def show_legislator_detail(request, legislator_id, to_disable):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'legislator': legislator, 'data': data}
+    c = {'legislator': legislator, 'data': data, 'top_suppliers': top_suppliers}
 
     return render(request, to_disable, 'detail_legislator.html', c)
 
