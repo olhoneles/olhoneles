@@ -80,6 +80,14 @@ th.sortable {
     cursor: pointer;
 }
 
+.brand img {
+    margin-top: -4px;
+}
+
+.brand span {
+    font-size: 18px;
+}
+
 /* Large desktop */
 @media (min-width: 980px) {
     body {

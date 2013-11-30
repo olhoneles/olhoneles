@@ -26,7 +26,7 @@ urlpatterns = patterns(
 
     url(r'^all/(no:[^/]+)?/?$', 'show_all', name='show-all'),
 
-    url(r'^per-nature/(no:[^/]+)?/?$', 'show_per_nature', name='per-nature'),
+    url(r'^([^/]+)?/?per-nature/?$', 'show_per_nature', name='per-nature'),
     url(r'^per-legislator/(no:[^/]+)?/?$', 'show_per_legislator', name='per-legislator'),
     url(r'^per-party/(no:[^/]+)?/?$', 'show_per_party', name='per-party'),
     url(r'^per-supplier/(no:[^/]+)?/?$', 'show_per_supplier', name='per-supplier'),

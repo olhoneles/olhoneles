@@ -10,25 +10,15 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="brand" href="{% url 'montanha:index' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Olho Neles!</a>
+            {% if institution %}
+            <a class="brand">
+                <img src="{{ institution.logo|thumbnail_url:'mini' }}"/>
+                <span class="institution">{{ institution.siglum }}</span>
+            </a>
+            {% endif %}
             <form class="navbar-form">
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                        <li>
-                            <a id="houses-dropdown" href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <span class="caret"></span>
-                                Casas Legislativas
-                            </a>
-                            <ul class="dropdown-menu" role="menu">
-                                {% for institution in institutions %}
-                                <li id="{{ institution.siglum }}"><a href="#"><img src="{{ institution.logo|thumbnail_url:'mini' }}"/><strong>{{ institution.name }} <span id="no-{{ institution.siglum }}" {% if not institution.enabled %}class="disabled"{% endif %}></span></strong></a></li>
-                                {% for legislature in institution.legislatures %}
-                                <li class="{{ institution.siglum }} sub-institution"><a href="#">Legislatura de {{ legislature.date_start.year }}-{{ legislature.date_end.year }} <span id="no-{{ institution.siglum }}-{{ legislature.date_start.year }}" {% if not institution.enabled %}class="disabled"{% endif %}></span></a></li>
-                                {% endfor %}
-                                <li class="divider"></li>
-                                {% endfor %}
-                                <li class="text-right"><button id="houses-dropdown-apply" class="btn btn-primary" data-toggle="dropdown" data-target="#houses-dropdown" type="button">Aplicar</button></li>
-                            </ul>
-                        </li>
                         <li id="menu-what-is-expenses"><a href="{% url 'montanha:what-is-expenses' %}">O que é verba indenizatória?</a></li>
                         <li id="menu-contact-us"><a href="{% url 'montanha:contact-us' %}">Fale Conosco</a></li>
                     </ul>
