@@ -109,11 +109,11 @@ def filter_for_institution(data, institution):
     return data
 
 
-def show_index(request, to_disable):
+def show_index(request, institution):
 
     c = {}
 
-    return render(request, to_disable, 'index.html', c)
+    return new_render(request, institution, 'index.html', c)
 
 
 def error_500(request):
@@ -212,10 +212,10 @@ def show_per_nature(request, institution):
     return new_render(request, institution, 'per_nature.html', c)
 
 
-def show_per_legislator(request, to_disable):
+def show_per_legislator(request, institution):
 
     data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
+    data = filter_for_institution(data, institution)
 
     data = data.values('mandate__legislator__id',
                        'mandate__legislator__name',
@@ -226,13 +226,13 @@ def show_per_legislator(request, to_disable):
 
     c = {'data': data}
 
-    return render(request, to_disable, 'per_legislator.html', c)
+    return new_render(request, institution, 'per_legislator.html', c)
 
 
-def show_legislator_detail(request, legislator_id, to_disable):
+def show_legislator_detail(request, institution, legislator_id):
 
     data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
+    data = filter_for_institution(data, institution)
 
     legislator = Legislator.objects.get(pk=legislator_id)
     data = data.filter(mandate__legislator=legislator)
@@ -260,7 +260,7 @@ def show_legislator_detail(request, legislator_id, to_disable):
 
     c = {'legislator': legislator, 'data': data, 'top_suppliers': top_suppliers}
 
-    return render(request, to_disable, 'detail_legislator.html', c)
+    return new_render(request, institution, 'detail_legislator.html', c)
 
 
 def postprocess_party_data(data):
@@ -278,10 +278,10 @@ def postprocess_party_data(data):
     return sorted(data, key=lambda d: d['expensed_average'], reverse=True)
 
 
-def show_per_party(request, to_disable):
+def show_per_party(request, institution):
 
     data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
+    data = filter_for_institution(data, institution)
 
     data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     data = data.annotate(expensed=Sum('expensed'))
@@ -290,7 +290,7 @@ def show_per_party(request, to_disable):
 
     c = {'data': data, 'graph_data': data, 'colors': generate_colors(len(data), 0.93, 0.8)}
 
-    return render(request, to_disable, 'per_party.html', c)
+    return new_render(request, institution, 'per_party.html', c)
 
 
 def add_sorting(request, data, default='-expensed'):
@@ -304,10 +304,10 @@ def add_sorting(request, data, default='-expensed'):
     return data
 
 
-def show_per_supplier(request, to_disable):
+def show_per_supplier(request, institution):
 
     data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
+    data = filter_for_institution(data, institution)
 
     data = data.values('supplier__id', 'supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed'))
@@ -325,13 +325,13 @@ def show_per_supplier(request, to_disable):
 
     c = {'data': data}
 
-    return render(request, to_disable, 'per_supplier.html', c)
+    return new_render(request, institution, 'per_supplier.html', c)
 
 
-def show_supplier_detail(request, supplier_id, to_disable):
+def show_supplier_detail(request, institution, supplier_id):
 
     data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
+    data = filter_for_institution(data, institution)
 
     supplier = Supplier.objects.get(pk=supplier_id)
     data = data.filter(supplier=supplier)
@@ -370,13 +370,13 @@ def show_supplier_detail(request, supplier_id, to_disable):
          'total_expensed': total_expensed,
          'colors': generate_colors(len(data), 0.93, 0.8)}
 
-    return render(request, to_disable, 'detail_supplier.html', c)
+    return new_render(request, institution, 'detail_supplier.html', c)
 
 
-def show_all(request, to_disable):
+def show_all(request, institution):
 
     data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
+    data = filter_for_institution(data, institution)
 
     data = add_sorting(request, data, '-date')
 
@@ -391,17 +391,17 @@ def show_all(request, to_disable):
 
     c = {'data': data}
 
-    return render(request, to_disable, 'all_expenses.html', c)
+    return new_render(request, institution, 'all_expenses.html', c)
 
 
-def what_is_expenses(request, to_disable):
+def what_is_expenses(request, institution):
 
     c = {}
 
-    return render(request, to_disable, 'what_is_expenses.html', c)
+    return new_render(request, institution, 'what_is_expenses.html', c)
 
 
-def contact_us(request, to_disable):
+def contact_us(request, institution):
 
     contact_us_form = ContactUsForm(request.POST or None)
     success_message = ''
@@ -428,4 +428,4 @@ def contact_us(request, to_disable):
     c = {'contact_us_form': contact_us_form,
          'success_message': success_message}
 
-    return render(request, to_disable, 'contact_us.html', c)
+    return new_render(request, institution, 'contact_us.html', c)

@@ -28,7 +28,7 @@
                     {% for d in data %}
                     <tr>
                         <td>
-                          <a href="{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
+                          <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
                             {{ d.mandate__legislator__name }}
                           </a>
                         </td>
