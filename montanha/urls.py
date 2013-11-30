@@ -22,21 +22,21 @@ urlpatterns = patterns(
     'montanha.views',
 
     # Index
-    url(r'^(no:[^/]+)?/?$', 'show_index', name='index'),
+    url(r'^([^/]+)?/?$', 'show_index', name='index'),
 
-    url(r'^all/(no:[^/]+)?/?$', 'show_all', name='show-all'),
+    url(r'^([^/]+)?/?all/?$', 'show_all', name='show-all'),
 
     url(r'^([^/]+)?/?per-nature/?$', 'show_per_nature', name='per-nature'),
-    url(r'^per-legislator/(no:[^/]+)?/?$', 'show_per_legislator', name='per-legislator'),
-    url(r'^per-party/(no:[^/]+)?/?$', 'show_per_party', name='per-party'),
-    url(r'^per-supplier/(no:[^/]+)?/?$', 'show_per_supplier', name='per-supplier'),
+    url(r'^([^/]+)?/?per-legislator/?$', 'show_per_legislator', name='per-legislator'),
+    url(r'^([^/]+)?/?per-party/?$', 'show_per_party', name='per-party'),
+    url(r'^([^/]+)?/?per-supplier/?$', 'show_per_supplier', name='per-supplier'),
 
-    url(r'^detail-legislator/(\d+)/(no:[^/]+)?/?$', 'show_legislator_detail', name='show-legislator-detail'),
-    url(r'^detail-supplier/(\d+)/(no:[^/]+)?/?$', 'show_supplier_detail', name='show-supplier-detail'),
+    url(r'^([^/]+)?/?detail-legislator/(\d+)/?$', 'show_legislator_detail', name='show-legislator-detail'),
+    url(r'^([^/]+)?/?detail-supplier/(\d+)/?$', 'show_supplier_detail', name='show-supplier-detail'),
 
     # What is expenses?
-    url(r'^o-que-e-verba-indenizatoria/(no:[^/]+)?/?$', 'what_is_expenses', name='what-is-expenses'),
+    url(r'^([^/]+)?/?o-que-e-verba-indenizatoria/?$', 'what_is_expenses', name='what-is-expenses'),
 
     # Contact us
-    url(r'^fale-conosco/(no:[^/]+)?/?$', 'contact_us', name='contact-us'),
+    url(r'^([^/]+)?/?fale-conosco/?$', 'contact_us', name='contact-us'),
 )

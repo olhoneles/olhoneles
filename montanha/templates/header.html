@@ -11,7 +11,7 @@
             </button>
             <a class="brand" href="{% url 'montanha:index' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Olho Neles!</a>
             {% if institution %}
-            <a class="brand">
+            <a class="brand" href="/{{ institution.siglum }}">
                 <img src="{{ institution.logo|thumbnail_url:'mini' }}"/>
                 <span class="institution">{{ institution.siglum }}</span>
             </a>
