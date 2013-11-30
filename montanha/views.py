@@ -67,6 +67,18 @@ def render(request, to_disable, template, context):
         institution_dicts.append(d)
     context['institutions'] = institution_dicts
     context['extra_uri'] = to_disable
+
+    # This is just to simplify the conversion to the single-institution-or-all view model,
+    # so that we can reuse templates between both code paths for a while.
+    context['institution'] = None
+
+    return original_render(request, template, context)
+
+
+def new_render(request, institution, template, context):
+    context['institution'] = None
+    if institution:
+        context['institution'] = Institution.objects.get(siglum=institution)
     return original_render(request, template, context)
 
 
@@ -88,6 +100,15 @@ def exclude_disabled(data, to_disable):
     return data
 
 
+def filter_for_institution(data, institution):
+    if not institution:
+        return data
+
+    institution = Institution.objects.get(siglum=institution)
+    data = data.filter(mandate__legislature__institution=institution)
+    return data
+
+
 def show_index(request, to_disable):
 
     c = {}
@@ -105,10 +126,10 @@ def error_404(request):
     return original_render(request, '404.html', c)
 
 
-def show_per_nature(request, to_disable):
+def show_per_nature(request, institution):
 
     data = Expense.objects.all()
-    data = exclude_disabled(data, to_disable)
+    data = filter_for_institution(data, institution)
 
     data = data.values('nature__name')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
@@ -116,7 +137,8 @@ def show_per_nature(request, to_disable):
     years = [d.year for d in Expense.objects.dates('date', 'year')]
 
     # We use the data variable to get our list of expense natures so that we can
-    # match the graph stacking with the order of the table rows
+    # match the graph stacking with the order of the table rows, it also makes
+    # it easier to filter for the institution.
     time_series = []
     for nature_name in [d["nature__name"] for d in data]:
         nature = ExpenseNature.objects.get(name=nature_name)
@@ -127,7 +149,6 @@ def show_per_nature(request, to_disable):
 
         for year in years:
             year_data = Expense.objects.filter(nature=nature)
-            year_data = exclude_disabled(year_data, to_disable)
             year_data = year_data.filter(date__year=year)
             year_data = year_data.values("nature__name")
             year_data = year_data.annotate(expensed=Sum("expensed"))
@@ -158,7 +179,7 @@ def show_per_nature(request, to_disable):
                 mbm_series = []
 
                 expenses = Expense.objects.filter(nature=nature).filter(date__year=year)
-                expenses = exclude_disabled(expenses, to_disable)
+                expenses = filter_for_institution(expenses, institution)
                 last_month = expenses and expenses.order_by('-date')[0].date.month or 0
 
                 for month in range(1, 13):
@@ -188,7 +209,7 @@ def show_per_nature(request, to_disable):
 
     c = {'data': data, 'years_data': time_series, 'natures_mbm': natures_mbm, 'colors': generate_colors(len(data), 0.93, 0.8)}
 
-    return render(request, to_disable, 'per_nature.html', c)
+    return new_render(request, institution, 'per_nature.html', c)
 
 
 def show_per_legislator(request, to_disable):
