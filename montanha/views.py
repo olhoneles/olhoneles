@@ -130,10 +130,33 @@ def error_404(request):
     return original_render(request, '404.html', c)
 
 
+def get_date_ranges_from_data(request, data):
+    """ Takes a data set and returns a dict containing in textual form:
+
+        current_date_from: the start date that is being used for this query
+        current_date_to: the end date that is being used for this query
+    """
+    try:
+        cdf = data.order_by('date')[0].date
+    except:
+        cdf = date.today()
+    cdf = cdf.strftime('%B de %Y')
+
+    try:
+        cdt = data.order_by('-date')[0].date
+    except:
+        cdt = date.today()
+    cdt = cdt.strftime('%B de %Y')
+
+    return dict(current_date_from=cdf, current_date_to=cdt)
+
+
 def show_per_nature(request, institution):
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
+
+    date_ranges = get_date_ranges_from_data(request, data)
 
     data = data.values('nature__name')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
@@ -211,7 +234,10 @@ def show_per_nature(request, institution):
 
         cache.set(request.get_full_path() + '-natures_mbm', pickle.dumps(natures_mbm), 36288000)
 
-    c = {'data': data, 'years_data': time_series, 'natures_mbm': natures_mbm, 'colors': generate_colors(len(data), 0.93, 0.8)}
+    c = {'data': data, 'years_data': time_series, 'natures_mbm': natures_mbm,
+         'colors': generate_colors(len(data), 0.93, 0.8)}
+
+    c.update(date_ranges)
 
     return new_render(request, institution, 'per_nature.html', c)
 
@@ -220,6 +246,8 @@ def show_per_legislator(request, institution):
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
+
+    date_ranges = get_date_ranges_from_data(request, data)
 
     data = data.values('mandate__legislator__id',
                        'mandate__legislator__name',
@@ -230,6 +258,8 @@ def show_per_legislator(request, institution):
 
     c = {'data': data}
 
+    c.update(date_ranges)
+
     return new_render(request, institution, 'per_legislator.html', c)
 
 
@@ -237,6 +267,8 @@ def show_legislator_detail(request, institution, legislator_id):
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
+
+    date_ranges = get_date_ranges_from_data(request, data)
 
     legislator = Legislator.objects.get(pk=legislator_id)
     data = data.filter(mandate__legislator=legislator)
@@ -264,6 +296,8 @@ def show_legislator_detail(request, institution, legislator_id):
 
     c = {'legislator': legislator, 'data': data, 'top_suppliers': top_suppliers}
 
+    c.update(date_ranges)
+
     return new_render(request, institution, 'detail_legislator.html', c)
 
 
@@ -287,12 +321,16 @@ def show_per_party(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
+    date_ranges = get_date_ranges_from_data(request, data)
+
     data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     data = data.annotate(expensed=Sum('expensed'))
 
     data = postprocess_party_data(data)
 
     c = {'data': data, 'graph_data': data, 'colors': generate_colors(len(data), 0.93, 0.8)}
+
+    c.update(date_ranges)
 
     return new_render(request, institution, 'per_party.html', c)
 
@@ -313,6 +351,8 @@ def show_per_supplier(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
+    date_ranges = get_date_ranges_from_data(request, data)
+
     data = data.values('supplier__id', 'supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed'))
 
@@ -329,6 +369,8 @@ def show_per_supplier(request, institution):
 
     c = {'data': data}
 
+    c.update(date_ranges)
+
     return new_render(request, institution, 'per_supplier.html', c)
 
 
@@ -336,6 +378,8 @@ def show_supplier_detail(request, institution, supplier_id):
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
+
+    date_ranges = get_date_ranges_from_data(request, data)
 
     supplier = Supplier.objects.get(pk=supplier_id)
     data = data.filter(supplier=supplier)
@@ -374,6 +418,8 @@ def show_supplier_detail(request, institution, supplier_id):
          'total_expensed': total_expensed,
          'colors': generate_colors(len(data), 0.93, 0.8)}
 
+    c.update(date_ranges)
+
     return new_render(request, institution, 'detail_supplier.html', c)
 
 
@@ -381,6 +427,8 @@ def show_all(request, institution):
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
+
+    date_ranges = get_date_ranges_from_data(request, data)
 
     data = add_sorting(request, data, '-date')
 
@@ -394,6 +442,8 @@ def show_all(request, institution):
         data = paginator.page(paginator.num_pages)
 
     c = {'data': data}
+
+    c.update(date_ranges)
 
     return new_render(request, institution, 'all_expenses.html', c)
 
