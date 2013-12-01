@@ -28,6 +28,10 @@
                     <ul id="submenu" class="nav nav-list">
                         {% include 'submenu_items.html' %}
                     </ul>
+                    <ul id="submenu" class="nav nav-list">
+                        <li id="menu-what-is-expenses"><a href="{% url 'montanha:what-is-expenses' %}">O que é verba indenizatória?</a></li>
+                        <li id="menu-contact-us"><a href="{% url 'montanha:contact-us' %}">Fale Conosco</a></li>
+                    </ul>
                 </div>
                 <div class="span9">
                     {% block content %}{% endblock %}
