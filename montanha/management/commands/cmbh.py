@@ -102,6 +102,32 @@ class CMBH(BaseCollector):
     def update_legislators(self):
         pass
 
+    def _normalize_nature(self, nature):
+        if not hasattr(self, 'nature_map'):
+            self.nature_map = {
+                'Servico ou Produto Postal': 'Serviço ou Produto Postal',
+                'Periodico': 'Periódico',
+                'Material de Escritorio': 'Material de Escritório',
+                'Material de Informatica': 'Material de Informática',
+                'Servico de Escritorio': 'Serviço de Escritório',
+                'Servico de Informatica': 'Serviço de Informática',
+                'Estacionamento': 'Estacionamento',
+                'Lanche': 'Lanche',
+                'Refeic?o': 'Refeicão',
+                'Telecomunicac?o': 'Telecomunicação',
+                'Combustivel': 'Combustivel',
+                'Manutenc?o e Locac?o de Veiculo': 'Manutenção e Locação de Veiculo',
+                'Participac?o em Curso ou Seminario': 'Participação em Curso ou Seminario',
+                'Viagem a Servico': 'Viagem a Serviço',
+                'Consultoria Tecnico-Especializada': 'Consultoria Técnico-Especializada',
+                'Apoio a Promoc?o de Eventos Oficiais': 'Apoio a Promoção de Eventos Oficiais',
+                'Escritorio Representac?o Parlamentar': 'Escritorio Representação Parlamentar',
+                'Servico Grafico': 'Serviço Gráfico',
+                'Divulgac?o de Atividade Parlamentar': 'Divulgação de Atividade Parlamentar'
+            }
+
+        return self.nature_map.get(nature, nature)
+
     def update_data_for_legislator(self, month, legislator, code):
         expense_types = self.retrieve_expense_types(month, legislator, code)
 
@@ -138,6 +164,7 @@ class CMBH(BaseCollector):
             date = parse_cmbh_date(base64.decodestring(month).strip().decode('utf-8'))
 
             nature = base64.decodestring(nature).strip().decode('utf-8')
+            nature = self._normalize_nature(nature)
             try:
                 nature = ExpenseNature.objects.get(name=nature)
             except ExpenseNature.DoesNotExist:
