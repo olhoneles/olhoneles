@@ -88,6 +88,23 @@ th.sortable {
     font-size: 18px;
 }
 
+.institution-selector {
+    margin-top: 40px;
+}
+
+.main-title {
+    font-size: 80px;
+    margin-bottom: 40px;
+}
+
+.main-title a {
+    color: black;
+}
+
+footer {
+    margin-top: 40px;
+}
+
 /* Large desktop */
 @media (min-width: 980px) {
     body {

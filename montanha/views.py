@@ -113,6 +113,10 @@ def show_index(request, institution):
 
     c = {}
 
+    if institution:
+        c['img'] = institution.lower() + '.png'
+        return new_render(request, institution, 'institution.html', c)
+
     return new_render(request, institution, 'index.html', c)
 
 
@@ -394,14 +398,14 @@ def show_all(request, institution):
     return new_render(request, institution, 'all_expenses.html', c)
 
 
-def what_is_expenses(request, institution):
+def what_is_expenses(request):
 
     c = {}
 
-    return new_render(request, institution, 'what_is_expenses.html', c)
+    return original_render(request, 'what_is_expenses.html', c)
 
 
-def contact_us(request, institution):
+def contact_us(request):
 
     contact_us_form = ContactUsForm(request.POST or None)
     success_message = ''
@@ -428,4 +432,4 @@ def contact_us(request, institution):
     c = {'contact_us_form': contact_us_form,
          'success_message': success_message}
 
-    return new_render(request, institution, 'contact_us.html', c)
+    return original_render(request, 'contact_us.html', c)
