@@ -1,27 +1,28 @@
-{% extends "base.html" %}
+{% extends "content.html" %}
 
 {% block content %}
 
-<h1>Olho neles!</h1>
-
-<p>Você sabia que os parlamentares que você, que nós, elegemos gastam
-dinheiro público teoricamente no uso do "poder". Apresentam nota e pedem
-ressarcimento às casas legisladoras? Autopromoção ganha disparado:
-quesito "divulgação de atividade parlamentar". Onze milhões gastos em
-dois anos e meio!</p>
-
-<p>O Montanha reúne essas informações procê. Imagina um desses seguranças,
-grandes, musculosos, dois por dois... "olhando" o que fazem nossos
-parlamentares, esse é o Montanha.</p>
-
-<p>Hoje no Montanha você encontra os dados da Assembléia Legislativa de
-Minas Gerais. Um dia teremos dados do Brasil todo."</p>
-
-<p>Como o vereador que você elegeu ou pensa em eleger gastou o dinheiro
-público (dele? nosso?) a vida política toda? Hum, e aí, você aprova?
-Elege de novo?</p>
-
-<p>É isso que sonhamos para o Montanha. Termos os dados de cada um dos
-parlamentares.</p>
+<div class="row">
+    <div class="span12">
+        <p>O olho neles é uma coletânea de dados de gasto com
+        <a href="{% url 'montanha:what-is-expenses' %}">verba indenizatória</a> de algumas
+        das casas legislativas brasileiras. Ele permite ver de maneira mais simples em que
+        os parlamentares estão gastando, quem está gastando mais, quem está recebendo e por
+        aí vai. Escolha a casa legislativa que você gostaria de explorar e vamos lá!</p>
+    </div>
+</div>
+<div class="row">
+    <div class="span12 text-center">
+        <div class="row institution-selector">
+            <div class="offset3 span3">
+                <a href="/ALMG{% url 'montanha:per-nature' %}"><img src="/static/almg.png"/></a>
+            </div>
+            <div class="span3">
+                <a href="/CMBH{% url 'montanha:per-nature' %}"><img src="/static/cmbh.png"/></a>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
+

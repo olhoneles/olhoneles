@@ -21,9 +21,6 @@ from django.conf.urls import patterns, url
 urlpatterns = patterns(
     'montanha.views',
 
-    # Index
-    url(r'^([^/]+)?/?$', 'show_index', name='index'),
-
     url(r'^([^/]+)?/?all/?$', 'show_all', name='show-all'),
 
     url(r'^([^/]+)?/?per-nature/?$', 'show_per_nature', name='per-nature'),
@@ -35,8 +32,11 @@ urlpatterns = patterns(
     url(r'^([^/]+)?/?detail-supplier/(\d+)/?$', 'show_supplier_detail', name='show-supplier-detail'),
 
     # What is expenses?
-    url(r'^([^/]+)?/?o-que-e-verba-indenizatoria/?$', 'what_is_expenses', name='what-is-expenses'),
+    url(r'^o-que-e-verba-indenizatoria/?$', 'what_is_expenses', name='what-is-expenses'),
 
     # Contact us
-    url(r'^([^/]+)?/?fale-conosco/?$', 'contact_us', name='contact-us'),
+    url(r'^fale-conosco/?$', 'contact_us', name='contact-us'),
+
+    # Index
+    url(r'^([^/]+)?/?$', 'show_index', name='index'),
 )
