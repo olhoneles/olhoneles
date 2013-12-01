@@ -43,30 +43,6 @@ footer .icon-chevron-right {
     height: 560px;
 }
 
-.dropdown-menu img {
-    padding-right: 10px;
-}
-
-.dropdown-menu .sub-institution {
-    margin-left: 15px;
-}
-
-.dropdown-menu li span {
-    margin-left: 10px;
-}
-
-.dropdown-menu li span:after {
-    content: "✔"
-}
-
-.dropdown-menu span.disabled:after {
-    content: "✗"
-}
-
-.dropdown-menu button {
-    margin-right: 10px;
-}
-
 th.sorted:after {
     content: "↑";
     float: right;
