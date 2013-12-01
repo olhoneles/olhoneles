@@ -16,11 +16,12 @@
                 <span class="institution">{{ institution.siglum }}</span>
             </a>
             {% endif %}
-            <form class="navbar-form">
+            <form class="navbar-form pull-right">
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                        <li id="menu-what-is-expenses"><a href="{% url 'montanha:what-is-expenses' %}">O que é verba indenizatória?</a></li>
-                        <li id="menu-contact-us"><a href="{% url 'montanha:contact-us' %}">Fale Conosco</a></li>
+                        <li class="text-center">
+                            <p class="navbar-text">Dados de {{ current_date_from }} a {{ current_date_to }}</p>
+	                    </li>
                     </ul>
                 </div>
             </form>
