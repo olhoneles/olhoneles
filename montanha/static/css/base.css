@@ -1,3 +1,4 @@
+
 /** -*- coding: utf-8 -*-
 *
 * Copyright (©) 2013 Marcelo Jorge Vieira <metal@alucinados.com>
@@ -116,13 +117,17 @@ footer {
     }
 }
 
-/* Tablet */
+/* Tablet / Phone */
 @media (max-width: 767px) {
     #submenu.affix {
         position: static;
         width: auto;
         top: 0;
     }
+
+  [class*="span3"]{
+      margin-bottom: 20px;
+  }
 }
 
 /* Desktop large */
