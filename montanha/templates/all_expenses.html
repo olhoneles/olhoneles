@@ -14,42 +14,21 @@
     </div>
     <div class="row">
         <div class="span9">
-            {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" url='?'|add:request.GET.urlencode %}
-        </div>
-    </div>
-    <div class="row">
-        <div class="span9">
-            <table class="table table-bordered table-striped">
+            <table id="all-expenses-table" class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th {% sortable_th "nature__name" %}>Tipo de gasto</th>
-                        <th {% sortable_th "mandate__legislator__name" %}>Parlamentar</th>
-                        <th {% sortable_th "supplier__name" %}>Empresa/Pessoa </th>
-                        <th {% sortable_th "supplier__identifier" %}>CNPJ/CPF</th>
-                        <th {% sortable_th "number" %}>Número do Documento</th>
-                        <th {% sortable_th "date" True %}>Data</th>
-                        <th {% sortable_th "expensed" %}>Valor</th>
+                        <th>Tipo de gasto</th>
+                        <th>Parlamentar</th>
+                        <th>Empresa/Pessoa </th>
+                        <th>CNPJ/CPF</th>
+                        <th>N° Doc.</th>
+                        <th>Data</th>
+                        <th>Valor</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for d in data %}
-                    <tr>
-                        <td>{{ d.nature.name }}</td>
-                        <td>{{ d.mandate.legislator.name }} ({{ d.mandate.legislator.party }})</td>
-                        <td>{{ d.supplier.name }}</td>
-                        <td>{{ d.supplier.identifier }}</td>
-                        <td>{{ d.number }}</td>
-                        <td>{{ d.date|date:"d/m/Y" }}</td>
-                        <td>{{ d.expensed|format_currency }}</td>
-                    </tr>
-                    {% endfor %}
                 </tbody>
             </table>
-        </div>
-    </div>
-    <div class="row">
-        <div class="span9">
-            {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" url='?'|add:request.GET.urlencode %}
         </div>
     </div>
 
@@ -63,8 +42,62 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-
     $('#menu-all').addClass('active').siblings().removeClass('active');
+
+    $(document).ready(function() {
+        aoColumns = [
+            null, /* nautre */
+            null, /* legislator */
+            null, /* supplier name */
+            null, /* supplier id */
+            null, /* number */
+            null, /* date */
+            { sType: 'money' } /* expensed */
+        ];
+        $('#all-expenses-table').dataTable({
+            sAjaxSource: '{% if institution %}/{{ institution.siglum }}{% endif %}/q/all',
+            aoColumns: aoColumns,
+            aaSorting: [[aoColumns.length - 1, 'desc']],
+            bPaginate: true,
+            bProcessing: true,
+            bServerSide: true,
+            fnServerData: function (source, data, fnCallback) {
+			    $.getJSON(source, data, function (json) {
+			        console.log(json['current_date_from']);
+			        $('#current-date-from').html(json['current_date_from']);
+			        $('#current-date-to').html(json['current_date_to']);
+				    fnCallback(json)
+			    });
+	        },
+            sDom: "<'row'<'span3'l><'span6 text-right'f>r>t<'row'<'span4'i><'span5 text-right'p>>",
+            sPaginationType: 'bootstrap_ellipses',
+            oLanguage: { 'sUrl': '/static/dtptbr.txt' },
+            aLengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+            iDisplayLength: 5,
+            fnFormatNumber: function (number) {
+                if (number < 1000)
+                    return number;
+
+                var s = (number + ""), a = s.split(""), out = "";
+                for (var i = 0; i < s.length; i++) {
+                    if (i % 3 === 0 && i !== 0)
+                        out = "." + out;
+
+                    out = a[s.length -i -1] + out;
+                }
+
+                return out;
+            },
+            fnCreatedRow: function (row, data, index) {
+                var cols = $('td', row);
+                for (var i = 0; i < cols.length; i++) {
+                    var column = $(cols[i]);
+                    var html = column.html();
+                    column.html('<div class="data-tables-column">' + html + '</div>');
+                }
+            },
+        });
+    });
 });
 </script>
 

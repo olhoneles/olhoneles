@@ -42,10 +42,17 @@
         {% include 'footer.html' %}
         <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/datatables-bootstrap-pagination.js' %}"></script>
         <script type="text/javascript" src="{% static 'jquery-deserialize/jquery.deserialize.js' %}"></script>
 
         <script type="text/javascript">
         $('#submenu').affix();
+
+        // Properly align the form elements.
+        $.extend($.fn.dataTableExt.oStdClasses, {
+            "sWrapper": "dataTables_wrapper form-inline"
+        });
         </script>
 
         {% block footer-extra %}{% endblock %}
