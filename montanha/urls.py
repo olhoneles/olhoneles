@@ -21,6 +21,9 @@ from django.conf.urls import patterns, url
 urlpatterns = patterns(
     'montanha.views',
 
+    # JSON queries
+    url(r'^([^/]+)?/?q/all/?$', 'query_all', name='query-all'),
+
     url(r'^([^/]+)?/?all/?$', 'show_all', name='show-all'),
 
     url(r'^([^/]+)?/?per-nature/?$', 'show_per_nature', name='per-nature'),

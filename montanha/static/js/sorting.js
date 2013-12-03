@@ -32,8 +32,7 @@ function set_sort(th, ascending) {
     window.location = new_uri;
 }
 
-$('th').addClass('sortable');
-$('th').click(function(e) {
+$('th.sortable').click(function(e) {
     var th = e.currentTarget;
     if ($(th).hasClass("sorted"))
         set_sort(th, true);

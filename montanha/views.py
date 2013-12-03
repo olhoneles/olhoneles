@@ -18,11 +18,13 @@
 
 import locale
 import pickle
+import json
 from colorsys import hsv_to_rgb
 from datetime import date
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render as original_render
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
+from django.http import HttpResponse
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings
@@ -423,17 +425,73 @@ def show_supplier_detail(request, institution, supplier_id):
     return new_render(request, institution, 'detail_supplier.html', c)
 
 
-def show_all(request, institution):
+def deep_getattr(obj, attr):
+    return reduce(getattr, attr.split('.'), obj)
+
+
+def convert_data_to_list(data, columns):
+    data_list = []
+    for item in data:
+        sublist = []
+        for field, field_type in columns:
+            value = deep_getattr(item, field)
+
+            if field_type == 'm':
+                value = locale.currency(value, grouping=True).replace(" ", "&nbsp;")
+
+            if isinstance(value, date):
+                value = value.strftime('%d/%m/%Y')
+
+            sublist.append(value)
+        data_list.append(sublist)
+    return data_list
+
+
+def query_all(request, institution):
+
+    columns = (
+        ('nature.name', 's',),
+        ('mandate.legislator.name', 's',),
+        ('supplier.name', 's',),
+        ('supplier.identifier', 's',),
+        ('number', 's',),
+        ('date', 'd',),
+        ('expensed', 'm'),
+    )
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
     date_ranges = get_date_ranges_from_data(request, data)
 
-    data = add_sorting(request, data, '-date')
+    total_results = data.count()
 
-    paginator = Paginator(data, 10)
-    page = request.GET.get('page')
+    search_string = request.GET.get('sSearch').decode('utf-8')
+    if search_string:
+        data = data.filter(Q(nature__name__icontains=search_string) |
+                           Q(mandate__legislator__name__icontains=search_string) |
+                           Q(supplier__name__icontains=search_string) |
+                           Q(supplier__identifier__icontains=search_string) |
+                           Q(number__icontains=search_string) |
+                           Q(expensed__icontains=search_string))
+
+    displayed_results = data.count()
+
+    # Sort by expense by default.
+    sort_col = int(request.GET.get('iSortCol_0', 6))
+    order_by_field = columns[sort_col][0].replace('.', '__')
+
+    sort_direction = request.GET.get('sSortDir_0', 'asc')
+    if sort_direction == 'desc':
+        order_by_field = '-' + order_by_field
+
+    data = data.order_by(order_by_field)
+
+    per_page = int(request.GET.get('iDisplayLength', 10))
+    starting_at = int(request.GET.get('iDisplayStart', 0))
+    page = starting_at > 0 and starting_at / per_page + 1 or 1
+
+    paginator = Paginator(data, per_page)
     try:
         data = paginator.page(page)
     except PageNotAnInteger:
@@ -441,9 +499,21 @@ def show_all(request, institution):
     except EmptyPage:
         data = paginator.page(paginator.num_pages)
 
-    c = {'data': data}
+    data = convert_data_to_list(data, columns)
 
-    c.update(date_ranges)
+    response = dict(sEcho=int(request.GET.get('sEcho', 0)),
+                    iTotalRecords=total_results,
+                    iTotalDisplayRecords=displayed_results,
+                    aaData=data)
+
+    response.update(date_ranges)
+
+    return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+def show_all(request, institution):
+
+    c = {}
 
     return new_render(request, institution, 'all_expenses.html', c)
 
