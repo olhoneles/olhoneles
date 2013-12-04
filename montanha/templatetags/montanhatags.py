@@ -39,9 +39,11 @@ def sortable_th(context, tag_id, is_default=False):
 
     th_attr = 'id="%s"' % tag_id
     if request.GET.get("order_by") == tag_id or (is_default and not "order_by" in request.GET):
+        th_attr += ' class="sortable'
         if request.GET.get("asc"):
-            th_attr += ' class="sorted-asc"'
+            th_attr += ' sorted-asc'
         else:
-            th_attr += ' class="sorted"'
+            th_attr += ' sorted'
+        th_attr += '"'
 
     return mark_safe(th_attr)
