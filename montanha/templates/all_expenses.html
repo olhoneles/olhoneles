@@ -8,12 +8,7 @@
 {% block content %}
 
     <div class="row">
-        <div class="span10">
-            <h1>Todos os gastos</h1>
-        </div>
-    </div>
-    <div class="row">
-        <div class="span9">
+        <div class="span12">
             <table id="all-expenses-table" class="table table-bordered table-striped">
                 <thead>
                     <tr>
@@ -69,7 +64,7 @@ $(document).ready(function(){
 				    fnCallback(json)
 			    });
 	        },
-            sDom: "<'row'<'span3'l><'span6 text-right'f>r>t<'row'<'span4'i><'span5 text-right'p>>",
+            sDom: "<'row'<'offset6 span4 text-right'f><'span2 pull-right'l>r>t<'row'<'span4'i><'span5 text-right'p>>",
             sPaginationType: 'bootstrap_ellipses',
             oLanguage: { 'sUrl': '/static/dtptbr.txt' },
             aLengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],

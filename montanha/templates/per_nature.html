@@ -7,12 +7,12 @@
 {% block content %}
 
     <div class="row">
-        <div class="span9">
+        <div class="span12">
             <h1>Por Tipo de Gasto</h1>
         </div>
     </div>
     <div class="row">
-        <div class="span9">
+        <div class="span12">
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#table" data-toggle="tab"><i class="icon-list-alt"></i> Tabela</a></li>
                 <li><a href="#graph" data-toggle="tab"><i class="icon-picture"></i> Acumulado no tempo</a></li>
@@ -38,16 +38,16 @@
                     </table>
                 </div>
                 <div id="graph" class="tab-pane">
-                    <div id="legend-placeholder" style="overflow: hidden;" class="span3"></div>
-                    <div id="placeholder" class="span5"></div>
+                    <div id="legend-placeholder" style="overflow: hidden;" class="span4"></div>
+                    <div id="placeholder" class="span7"></div>
                 </div>
                 <div id="month-by-month-graph" class="tab-pane">
                     {% for nature in natures_mbm %}
                     <div class="row">
-                        <div class="span9">
+                        <div class="span12">
                             <h2>{{ nature.name }}</h2>
                         <div>
-                        <div id="{{ forloop.counter0 }}-mbm-placeholder" class="mbm-graph" style="height: 300px;" class="span9"></div>
+                        <div id="{{ forloop.counter0 }}-mbm-placeholder" class="mbm-graph" style="height: 300px;" class="span12"></div>
                     </div>
                     {% endfor %}
                 </div>

@@ -24,16 +24,7 @@
 
         <div class="container">
             <div class="row">
-                <div class="span3">
-                    <ul id="submenu" class="nav nav-list">
-                        {% include 'submenu_items.html' %}
-                    </ul>
-                    <ul id="submenu" class="nav nav-list">
-                        <li id="menu-what-is-expenses"><a href="{% url 'montanha:what-is-expenses' %}">O que é verba indenizatória?</a></li>
-                        <li id="menu-contact-us"><a href="{% url 'montanha:contact-us' %}">Fale Conosco</a></li>
-                    </ul>
-                </div>
-                <div class="span9">
+                <div class="span12">
                     {% block content %}{% endblock %}
                 </div>
             </div>
@@ -47,8 +38,6 @@
         <script type="text/javascript" src="{% static 'jquery-deserialize/jquery.deserialize.js' %}"></script>
 
         <script type="text/javascript">
-        $('#submenu').affix();
-
         // Properly align the form elements.
         $.extend($.fn.dataTableExt.oStdClasses, {
             "sWrapper": "dataTables_wrapper form-inline"

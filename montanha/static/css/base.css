@@ -92,8 +92,8 @@ footer {
 
 .dataTables_processing {
     position: fixed;
-    top: 20%;
-    left: 50%;
+    top: 15%;
+    left: 45%;
     font-size: 20px;
     background-color: white;
     opacity: 0.8;
