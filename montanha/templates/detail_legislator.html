@@ -8,12 +8,12 @@
 {% block content %}
 
     <div class="row">
-        <div class="span9">
+        <div class="span12">
             <h1>{{ legislator.name }} ({{ legislator.party }})</h1>
         </div>
     </div>
     <div class="row">
-        <div class="span9">
+        <div class="span12">
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#all-expenses" data-toggle="tab"><i class="icon-list-alt"></i> Todos os gastos</a></li>
                 <li><a href="#top-suppliers" data-toggle="tab"><i class="icon-list-alt"></i> Maiores fornecedores</a></li>
@@ -47,33 +47,28 @@
                     {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
                 </div>
                 <div id="top-suppliers" class="tab-pane">
-                    <div class="span6">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Fornecedor</th>
-                                    <th>CNPJ / CPF</th>
-                                    <th>Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for d in top_suppliers %}
-                                <tr>
-                                    <td>
-                                        <a href="{% url 'montanha:show-supplier-detail' d.supplier__id %}">
-                                        {{ d.supplier__name }}
-                                        </a>
-                                    </td>
-                                    <td>{{ d.supplier__identifier }}</td>
-                                    <td>{{ d.expensed|format_currency }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="span4">
-                        <div id="placeholder" class="span4"></div>
-                    </div>
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Fornecedor</th>
+                                <th>CNPJ / CPF</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in top_suppliers %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'montanha:show-supplier-detail' d.supplier__id %}">
+                                    {{ d.supplier__name }}
+                                    </a>
+                                </td>
+                                <td>{{ d.supplier__identifier }}</td>
+                                <td>{{ d.expensed|format_currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

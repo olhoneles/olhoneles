@@ -23,18 +23,13 @@ function toggle_details()
 </script>
 
     <div class="row">
-        <div class="span9">
+        <div class="span12">
             <h1>Por Partido</h1>
         </div>
     </div>
     <div class="row">
-        <div class="span9">
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="#table" data-toggle="tab"><i class="icon-list-alt"></i> Tabela</a></li>
-                <li><a href="#graph" data-toggle="tab"><i class="icon-picture"></i> Gráfico</a></li>
-            </ul>
-            <div class="tab-content" id="tab-per-party">
-                <div id="table" class="tab-pane active">
+        <div class="span12">
+                <div class="span5">
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
@@ -56,9 +51,7 @@ function toggle_details()
                         </tbody>
                     </table>
                 </div>
-                <div id="graph" class="tab-pane">
-                    <div id="placeholder" class="span8"></div>
-                </div>
+                <div id="placeholder" class="span6"></div>
             </div>
         </div>
     </div>
@@ -74,9 +67,7 @@ $(document).ready(function(){
 
     $('#menu-per-party').addClass('active').siblings().removeClass('active');
 
-    $('a[href="#graph"]').on('shown', function() {
-        plot_per_party_graph();
-    });
+    plot_per_party_graph();
 
 });
 </script>
