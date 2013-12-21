@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (©) 2010-2013 Gustavo Noronha Silva
+# Copyright (©) 2013 Marcelo Jorge Vieira <metal@alucinados.com>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -23,9 +24,14 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-                       url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-                       url(r'^admin/', include(admin.site.urls)),
-                       url(r'^', include('montanha.urls', namespace='montanha', app_name='montanha')))
+    #Admin
+    url(r'^admin/', include(admin.site.urls)),
+
+    # Montanha
+    url(r'^', include('montanha.urls',
+                      namespace='montanha',
+                      app_name='montanha')),
+)
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
