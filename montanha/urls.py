@@ -15,6 +15,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.views.generic import TemplateView
 from django.conf.urls import patterns, url
 from django.views.defaults import page_not_found
 
@@ -38,8 +39,9 @@ urlpatterns = patterns(
     # favicon
     url(r'^favicon.ico$', page_not_found, name='page-not-found'),
 
-    # robots.txt
-    url(r'^robots.txt$', 'show_robots_txt', name='show-robots-txt'),
+    # Robots.txt
+    (r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt',
+                                            content_type='text/plain')),
 
     # What is expenses?
     url(r'^o-que-e-verba-indenizatoria/?$', 'what_is_expenses', name='what-is-expenses'),
