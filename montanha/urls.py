@@ -38,6 +38,9 @@ urlpatterns = patterns(
     # favicon
     url(r'^favicon.ico$', page_not_found, name='page-not-found'),
 
+    # robots.txt
+    url(r'^robots.txt$', 'show_robots_txt', name='show-robots-txt'),
+
     # What is expenses?
     url(r'^o-que-e-verba-indenizatoria/?$', 'what_is_expenses', name='what-is-expenses'),
 

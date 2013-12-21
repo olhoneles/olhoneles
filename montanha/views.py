@@ -122,6 +122,10 @@ def show_index(request, institution):
     return new_render(request, institution, 'index.html', c)
 
 
+def show_robots_txt(request):
+    return HttpResponse('User-Agent: *\nAllow: /\n')
+
+
 def error_500(request):
     c = {}
     return original_render(request, '500.html', c)
