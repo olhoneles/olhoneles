@@ -35,6 +35,32 @@
   opacity: .25;
 }
 
+.olhoneles_jumbotron {
+    background-color: #eee;
+    border-radius: 6px;
+    color: inherit;
+    font-size: 18px;
+    font-weight: 200;
+    line-height: 30px;
+    margin-bottom: 30px;
+    padding: 30px;
+    margin: 10px 0;
+}
+
+.olhoneles_jumbotron .destaque {
+    padding-bottom: 20px;
+    text-align: center;
+    font-size: 25px;
+}
+
+.olhoneles_jumbotron a:hover img {
+   -webkit-transform: scale(1.1, 1.1);
+    -moz-transform:scale(1.1, 1.1);
+    opacity: 1;
+    -webkit-opacity: 1;
+    -moz-opacity: 1;
+}
+
 footer .icon-chevron-right {
     display: none;
 }
