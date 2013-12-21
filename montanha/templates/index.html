@@ -1,4 +1,5 @@
 {% extends "content.html" %}
+{% load staticfiles %}
 
 {% block content %}
 
@@ -20,13 +21,12 @@
     </div>
     <div class="row">
         <div class="offset3 span3">
-            <a href="/ALMG{% url 'montanha:per-nature' %}"><img src="/static/almg.png" alt="Clique Aqui: Assembléia de Minas Gerais" title="Clique Aqui: Assembléia de Minas Gerais" /></a>
+            <a href="/ALMG{% url 'montanha:per-nature' %}"><img src="{% static 'almg.png' %}" alt="Clique Aqui: Assembléia de Minas Gerais" title="Clique Aqui: Assembléia de Minas Gerais" /></a>
         </div>
         <div class="span3">
-            <a href="/CMBH{% url 'montanha:per-nature' %}"><img src="/static/cmbh.png" alt="Clique Aqui: Câmara Municipal de Belo Horizonte" title="Clique Aqui: Câmara Municipal de Belo Horizonte" /></a>
+            <a href="/CMBH{% url 'montanha:per-nature' %}"><img src="{% static 'cmbh.png' %}" alt="Clique Aqui: Câmara Municipal de Belo Horizonte" title="Clique Aqui: Câmara Municipal de Belo Horizonte" /></a>
         </div>
     </div>
 </div>
 
 {% endblock %}
-
