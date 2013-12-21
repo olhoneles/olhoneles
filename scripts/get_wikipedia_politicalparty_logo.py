@@ -26,6 +26,8 @@ from montanha.models import *
 
 
 for pp in PoliticalParty.objects.all():
+    if not pp.wikipedia:
+        continue
     req = urllib2.Request(pp.wikipedia, headers={"User-Agent": "Mozilla/5.0"})
     html = urllib2.urlopen(req)
     doc = BeautifulSoup(html)
