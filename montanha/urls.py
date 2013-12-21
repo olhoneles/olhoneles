@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls import patterns, url
+from django.views.defaults import page_not_found
 
 
 urlpatterns = patterns(
@@ -33,6 +34,9 @@ urlpatterns = patterns(
 
     url(r'^([^/]+)?/?detail-legislator/(\d+)/?$', 'show_legislator_detail', name='show-legislator-detail'),
     url(r'^([^/]+)?/?detail-supplier/(\d+)/?$', 'show_supplier_detail', name='show-supplier-detail'),
+
+    # favicon
+    url(r'^favicon.ico$', page_not_found, name='page-not-found'),
 
     # What is expenses?
     url(r'^o-que-e-verba-indenizatoria/?$', 'what_is_expenses', name='what-is-expenses'),
