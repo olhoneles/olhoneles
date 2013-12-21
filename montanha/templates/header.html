@@ -34,9 +34,11 @@
                         <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-all' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Todos</a>
                     </li>
                 </ul>
+                {% if current_date_from %}
                 <form class="navbar-form pull-right">
                     <p class="navbar-text">Dados de <span id="current-date-from">{{ current_date_from }}</span> a <span id="current-date-to">{{ current_date_to }}</span></p>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>
