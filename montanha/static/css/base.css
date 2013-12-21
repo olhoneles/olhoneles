@@ -182,6 +182,10 @@ table.table thead .sorting_desc_disabled { background: url('/static/sort_desc_di
   [class*="span3"]{
       margin-bottom: 20px;
   }
+
+  .olhoneles_jumbotron img {
+      margin-bottom: 20px;
+  }
 }
 
 /* Desktop large */
