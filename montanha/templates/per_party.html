@@ -42,7 +42,7 @@ function toggle_details()
                         <tbody>
                             {% for d in data %}
                             <tr>
-                                <td>{% if d.mandate__party__logo %}<img src="{{ d.logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %} {{ d.mandate__party__siglum }}</td>
+                                <td>{% if d.mandate__party__logo %}<img src="{{ d.mandate__party__logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %} {{ d.mandate__party__siglum }}</td>
                                 <td>{{ d.expensed_average|format_currency }}</td>
                                 <td class="details" style="display: none;">{{ d.n_legislators }}</td>
                                 <td class="details" style="display: none;">{{ d.expensed|format_currency }}</td>
