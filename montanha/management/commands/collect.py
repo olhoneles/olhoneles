@@ -60,3 +60,8 @@ class Command(BaseCommand):
             cmbh = CMBH(debug_enabled, full_scan)
             cmbh.update_legislators()
             cmbh.update_data()
+
+        if "cmsp" in args:
+            from cmsp import CMSP
+            cmsp = CMSP(debug_enabled, full_scan)
+            cmsp.update_data()
