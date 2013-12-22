@@ -181,7 +181,7 @@ class Senado(BaseCollector):
 
     def update_data(self):
         if self.full_scan:
-            for year in range(self.legislature.date_start.year, datetime.now().year + 1):
+            for year in range(self.legislature.date_start.year, self.legislature.date_end.year + 1):
                 self.update_data_for_year(year)
         else:
             self.update_data_for_year(datetime.now().year)
