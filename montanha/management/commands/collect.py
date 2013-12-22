@@ -43,6 +43,13 @@ class Command(BaseCommand):
             almg.update_data()
             almg.update_legislators_data()
 
+        if "senado" in args:
+            from senado import Senado
+            senado = Senado(debug_enabled, full_scan)
+            senado.update_legislators()
+            senado.update_data()
+            #senado.update_legislators_data()
+
         if "cmbh" in args:
             from cmbh import CMBH
             cmbh = CMBH(debug_enabled, full_scan)
