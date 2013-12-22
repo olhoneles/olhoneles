@@ -44,8 +44,8 @@ class Senado(BaseCollector):
 
         institution, _ = Institution.objects.get_or_create(siglum='Senado', name=u'Senado Federal')
         self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
-                                                                date_start=datetime(2007, 1, 1),
-                                                                date_end=datetime(2010, 12, 31))
+                                                                date_start=datetime(2011, 1, 1),
+                                                                date_end=datetime(2014, 12, 31))
 
     def retrieve_legislators(self):
         uri = 'http://www.senado.gov.br/transparencia/'
@@ -181,7 +181,7 @@ class Senado(BaseCollector):
 
     def update_data(self):
         if self.full_scan:
-            for year in range(2009, datetime.now().year + 1):
+            for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                 self.update_data_for_year(year)
         else:
             self.update_data_for_year(datetime.now().year)
