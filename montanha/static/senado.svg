@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="senado-logo.svg"
+   inkscape:export-filename="/home/kov/src/montanha/montanha/static/senado-logo.png"
+   inkscape:export-xdpi="28.066172"
+   inkscape:export-ydpi="28.066172">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3922">
+      <stop
+         style="stop-color:#120861;stop-opacity:1;"
+         offset="0"
+         id="stop3924" />
+      <stop
+         id="stop3930"
+         offset="0.65277779"
+         style="stop-color:#105fae;stop-opacity:1;" />
+      <stop
+         style="stop-color:#087bc8;stop-opacity:1;"
+         offset="0.7974537"
+         id="stop3934" />
+      <stop
+         style="stop-color:#0098e3;stop-opacity:1;"
+         offset="1"
+         id="stop3926" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3922"
+       id="linearGradient3928"
+       x1="596.14746"
+       y1="416.83743"
+       x2="596.14746"
+       y2="571.45337"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8651694"
+     inkscape:cx="663.58312"
+     inkscape:cy="512.82485"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1014"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3763"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="102.13599,886.08047"
+       id="guide3770" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="522.64311,686.24739"
+       id="guide3798" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Camada 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g3896">
+      <g
+         transform="translate(-3.6591216,-6.5111069)"
+         id="g3765">
+        <rect
+           style="fill:#f0f0f0;fill-opacity:1;stroke:none"
+           id="rect2989"
+           width="638.3916"
+           height="208.43599"
+           x="34.739334"
+           y="168.9906" />
+      </g>
+      <rect
+         y="166.46727"
+         x="35.007473"
+         height="199.70552"
+         width="457.47238"
+         id="rect3759"
+         style="fill:#0174c5;fill-opacity:1;stroke:none" />
+      <path
+         sodipodi:nodetypes="cccccccc"
+         inkscape:connector-curvature="0"
+         id="rect3761"
+         d="m 508.90823,166.31773 156.31902,0 0,154.40491 -39.07976,0 -39.07975,0 -39.07976,0 -39.07975,0 z"
+         style="fill:#120861;fill-opacity:1;stroke:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3775"
+         d="m 524.76975,320.89258 c 0,-19.88536 28.49873,-36.00564 63.6537,-36.00564 35.15497,0 63.6537,16.12028 63.6537,36.00564 l -63.6537,0 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+      <rect
+         y="320.77255"
+         x="508.85577"
+         height="14.641394"
+         width="156.2475"
+         id="rect3778"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+      <rect
+         y="335.21002"
+         x="508.83957"
+         height="30.803913"
+         width="156.2475"
+         id="rect3778-1"
+         style="fill:#029f36;fill-opacity:1;stroke:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3800"
+         y="255.49286"
+         x="70.074043"
+         style="font-size:64px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-size:60px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#ffffff;font-family:Arial;-inkscape-font-specification:Arial Bold"
+           y="255.49286"
+           x="70.074043"
+           id="tspan3802"
+           sodipodi:role="line">SENADO</tspan><tspan
+           style="font-size:60px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#ffffff;font-family:Arial;-inkscape-font-specification:Arial Bold"
+           id="tspan3804"
+           y="330.49286"
+           x="70.074043"
+           sodipodi:role="line">FEDERAL</tspan></text>
+    </g>
+    <g
+       id="g3936"
+       inkscape:export-filename="/home/kov/src/montanha/montanha/static/senado-logo.png"
+       inkscape:export-xdpi="29.294489"
+       inkscape:export-ydpi="29.294489">
+      <path
+         sodipodi:nodetypes="cccccccc"
+         inkscape:connector-curvature="0"
+         id="rect3761-5"
+         d="m 511.72648,417.46664 156.31902,0 0,154.40491 -39.07976,0 -39.07975,0 -39.07976,0 -39.07975,0 z"
+         style="fill:url(#linearGradient3928);fill-opacity:1;stroke:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3775-3"
+         d="m 521.588,572.04149 c 0,-17.57226 28.49873,-31.81741 63.6537,-31.81741 35.15497,0 63.6537,14.24515 63.6537,31.81741 l -63.6537,0 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+      <rect
+         y="571.92151"
+         x="511.67404"
+         height="14.641394"
+         width="156.2475"
+         id="rect3778-8"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+      <rect
+         y="586.35895"
+         x="511.65781"
+         height="30.803913"
+         width="156.2475"
+         id="rect3778-1-8"
+         style="fill:#029f36;fill-opacity:1;stroke:none" />
+      <rect
+         y="446.69073"
+         x="652.00079"
+         height="128.25319"
+         width="12.429824"
+         id="rect3908"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+      <rect
+         y="496.41003"
+         x="663.3006"
+         height="2.82496"
+         width="4.7861409"
+         id="rect3910"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+      <rect
+         y="503.75494"
+         x="662.73566"
+         height="6.7799044"
+         width="5.3476667"
+         id="rect3912"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    </g>
+  </g>
+</svg>

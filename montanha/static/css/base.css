@@ -61,6 +61,11 @@
     -moz-opacity: 1;
 }
 
+.olhoneles_jumbotron div.row {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
 footer .icon-chevron-right {
     display: none;
 }
@@ -89,10 +94,6 @@ th.sortable {
 
 .brand span {
     font-size: 18px;
-}
-
-.institution-selector {
-    margin-top: 40px;
 }
 
 .main-title {
