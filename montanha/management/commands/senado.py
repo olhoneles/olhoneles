@@ -192,3 +192,47 @@ class Senado(BaseCollector):
         legislators = Legislator.objects.filter(mandate__legislature=self.legislature).all()
         for legislator in legislators:
             self.update_data_for_legislator(legislator, year)
+
+    def _normalize_name(self, name):
+        names_map = {
+            'Gim': 'Gim Argello',
+        }
+        return names_map.get(name, name)
+
+    def update_legislators_extra_data(self):
+        data = self.retrieve_uri('http://www.senado.gov.br/senadores/')
+        table = data.find(id='senadores')
+        for row in table.findAll('tr'):
+            columns = row.findAll('td')
+            if not columns:
+                continue
+
+            name = self._normalize_name(columns[0].getText())
+
+            legislator = Legislator.objects.filter(name=name)
+            legislator = legislator.filter(mandate__legislature=self.legislature)
+            legislator = legislator.order_by("-mandate__date_start")[0]
+
+            mandate = legislator.mandate_set.order_by("-date_start")[0]
+            if mandate.legislature != self.legislature:
+                print 'Legislature found for %s is not the same as the one we need, ignoring.' % legislator.name
+                continue
+
+            party = columns[1].getText()
+            mandate.party, _ = PoliticalParty.objects.get_or_create(siglum=party)
+            mandate.save()
+
+            href = columns[6].findChild().get('href')
+            if href:
+                legislator.email = href.split(':')[1]
+
+            href = columns[7].findChild().get('href')
+            if href:
+                legislator.site = href.split(':')[1]
+
+            legislator.save()
+
+            self.debug('Updated data for %s: %s, %s, %s' % (legislator.name,
+                                                            mandate.party.name,
+                                                            legislator.email,
+                                                            legislator.site))
