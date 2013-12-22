@@ -85,5 +85,4 @@ class BaseCollector(object):
                 contents = contents.decode('iso-8859-1')
             except Exception:
                 pass
-
-        return BeautifulSoup(contents)
+        return BeautifulSoup(contents, convertEntities=BeautifulStoneSoup.ALL_ENTITIES)

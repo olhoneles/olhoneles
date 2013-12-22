@@ -48,7 +48,7 @@ class Command(BaseCommand):
             senado = Senado(debug_enabled, full_scan)
             senado.update_legislators()
             senado.update_data()
-            #senado.update_legislators_data()
+            senado.update_legislators_extra_data()
 
         if "cmbh" in args:
             from cmbh import CMBH
