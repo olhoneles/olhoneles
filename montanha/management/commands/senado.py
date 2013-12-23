@@ -19,8 +19,9 @@
 import base64
 import csv
 import re
-from basecollector import BaseCollector
 from datetime import datetime, date
+from django.db import reset_queries
+from basecollector import BaseCollector
 from montanha.models import *
 
 
@@ -178,6 +179,11 @@ class Senado(BaseCollector):
                 self.debug("New expense found: %s" % unicode(expense))
             else:
                 self.debug("Existing expense found: %s" % unicode(expense))
+
+            # This makes django release its queries cache; when running Django itself,
+            # the queries are cleared for each request, not the case here, so we need
+            # to do it ourselves.
+            reset_queries()
 
     def update_data(self):
         if self.full_scan:
