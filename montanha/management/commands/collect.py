@@ -15,6 +15,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# This hack makes django less memory hungry (it caches queries when running
+# with debug enabled.
+from django.conf import settings
+settings.DEBUG = False
+
 from django.core.management.base import BaseCommand, CommandError
 
 
