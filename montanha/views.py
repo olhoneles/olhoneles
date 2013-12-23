@@ -168,10 +168,23 @@ def get_date_ranges_from_data(request, institution, data):
     if cdt > max_date:
         cdt = max_date
 
-    cdf = cdf.strftime('%B de %Y')
-    cdt = cdt.strftime('%B de %Y')
+    cdf_string = cdf.strftime('%B de %Y')
+    cdt_string = cdt.strftime('%B de %Y')
 
-    return dict(current_date_from=cdf, current_date_to=cdt)
+    return dict(current_date_from=cdf_string, current_date_to=cdt_string,
+                cdf=cdf, cdt=cdt)
+
+
+def ensure_years_in_range(date_ranges, years):
+    nyears = []
+    cdf = date_ranges['cdf']
+    cdt = date_ranges['cdt']
+    for y in years:
+        d = date(y, 1, 1)
+        if d < cdf or d > cdt:
+            continue
+        nyears.append(y)
+    return nyears
 
 
 def show_per_nature(request, institution):
@@ -185,6 +198,7 @@ def show_per_nature(request, institution):
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
     years = [d.year for d in Expense.objects.dates('date', 'year')]
+    years = ensure_years_in_range(date_ranges, years)
 
     # We use the data variable to get our list of expense natures so that we can
     # match the graph stacking with the order of the table rows, it also makes
