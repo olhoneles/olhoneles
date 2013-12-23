@@ -136,7 +136,7 @@ def error_404(request):
     return original_render(request, '404.html', c)
 
 
-def get_date_ranges_from_data(request, data):
+def get_date_ranges_from_data(request, institution, data):
     """ Takes a data set and returns a dict containing in textual form:
 
         current_date_from: the start date that is being used for this query
@@ -146,12 +146,29 @@ def get_date_ranges_from_data(request, data):
         cdf = data.order_by('date')[0].date
     except:
         cdf = date.today()
-    cdf = cdf.strftime('%B de %Y')
 
     try:
         cdt = data.order_by('-date')[0].date
     except:
         cdt = date.today()
+
+    institution = Institution.objects.get(siglum=institution)
+
+    # Bound dates to the start of the first legislature to the end
+    # of the last, which makes more sense to our purposes.
+    first = institution.legislature_set.order_by('date_start')[0]
+    last = institution.legislature_set.order_by('-date_end')[0]
+
+    min_date = first.date_start
+    max_date = last.date_end
+
+    if cdf < min_date:
+        cdf = min_date
+
+    if cdt > max_date:
+        cdt = max_date
+
+    cdf = cdf.strftime('%B de %Y')
     cdt = cdt.strftime('%B de %Y')
 
     return dict(current_date_from=cdf, current_date_to=cdt)
@@ -162,7 +179,7 @@ def show_per_nature(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data)
 
     data = data.values('nature__name')
     data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
@@ -253,7 +270,7 @@ def show_per_legislator(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data)
 
     data = data.values('mandate__legislator__id',
                        'mandate__legislator__name',
@@ -274,7 +291,7 @@ def show_legislator_detail(request, institution, legislator_id):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data)
 
     legislator = Legislator.objects.get(pk=legislator_id)
     data = data.filter(mandate__legislator=legislator)
@@ -327,7 +344,7 @@ def show_per_party(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data)
 
     data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     data = data.annotate(expensed=Sum('expensed'))
@@ -357,7 +374,7 @@ def show_per_supplier(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data)
 
     data = data.values('supplier__id', 'supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed'))
@@ -385,7 +402,7 @@ def show_supplier_detail(request, institution, supplier_id):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data)
 
     supplier = Supplier.objects.get(pk=supplier_id)
     data = data.filter(supplier=supplier)
@@ -466,7 +483,7 @@ def query_all(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data)
 
     total_results = data.count()
 
