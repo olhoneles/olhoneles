@@ -59,7 +59,7 @@
                             {% for d in top_suppliers %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'montanha:show-supplier-detail' d.supplier__id %}">
+                                    <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-supplier-detail' d.supplier__id %}">
                                     {{ d.supplier__name }}
                                     </a>
                                 </td>
