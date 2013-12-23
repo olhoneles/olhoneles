@@ -136,7 +136,7 @@ def error_404(request):
     return original_render(request, '404.html', c)
 
 
-def get_date_ranges_from_data(request, institution, data):
+def get_date_ranges_from_data(request, institution, data, include_date_objects=True):
     """ Takes a data set and returns a dict containing in textual form:
 
         current_date_from: the start date that is being used for this query
@@ -171,8 +171,11 @@ def get_date_ranges_from_data(request, institution, data):
     cdf_string = cdf.strftime('%B de %Y')
     cdt_string = cdt.strftime('%B de %Y')
 
-    return dict(current_date_from=cdf_string, current_date_to=cdt_string,
-                cdf=cdf, cdt=cdt)
+    d = dict(current_date_from=cdf_string, current_date_to=cdt_string)
+    if include_date_objects:
+        d.update(dict(cdf=cdf, cdt=cdt))
+
+    return d
 
 
 def ensure_years_in_range(date_ranges, years):
@@ -482,6 +485,11 @@ def convert_data_to_list(data, columns):
     return data_list
 
 
+def cleanup_date_ranges(date_ranges):
+    del date_ranges['cdf']
+    del date_ranges['cdt']
+
+
 def query_all(request, institution):
 
     columns = (
@@ -497,7 +505,7 @@ def query_all(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(request, institution, data, False)
 
     total_results = data.count()
 
