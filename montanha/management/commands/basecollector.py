@@ -65,7 +65,10 @@ class BaseCollector(object):
                 resp = urlopen(req)
                 return self.post_process_uri(resp.read())
             except HTTPError, e:
-                if e.getcode() >= 499:
+                if e.getcode() == 404:
+                    print "Unable to retrieve %s." % (uri)
+                    return None
+                elif e.getcode() >= 499:
                     print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
                     count += 1
                 else:
