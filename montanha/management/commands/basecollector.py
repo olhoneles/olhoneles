@@ -55,8 +55,7 @@ class BaseCollector(object):
             self.update_data_for_month(mandate, year, month)
 
     def retrieve_uri(self, uri, data={}, headers={}):
-        resp = None
-
+        count = 0
         while True:
             try:
                 if data:
@@ -64,17 +63,21 @@ class BaseCollector(object):
                 else:
                     req = Request(uri, headers=headers)
                 resp = urlopen(req)
-                break
+                return self.post_process_uri(resp.read())
             except HTTPError, e:
-                if e.getcode() != 404:
-                    print 'Failing URI:', uri
-                    raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
+                if e.getcode() >= 499:
+                    print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
+                    count += 1
+                else:
+                     raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
             except URLError:
                 print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
+                count += 1
+
+            if count > 10:
+                raise "Error: Unable to retrieve %s; Tried 10 times." % uri
 
             time.sleep(10)
-
-        return self.post_process_uri(resp.read())
 
     def post_process_uri(self, contents):
         # Some sites are not in utf-8.
