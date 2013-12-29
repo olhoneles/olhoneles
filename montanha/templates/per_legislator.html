@@ -33,8 +33,13 @@
                           </a>
                         </td>
                         <td>
-                            {% if d.mandate__party__logo %}<img src="{{ d.mandate__party__logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %}
-                            {% if d.mandate__party__siglum %} {{ d.mandate__party__siglum }} {% else %} Não informado {% endif %}
+                            {% for p in d.parties %}
+                                {% if forloop.counter0 %}
+                                    /
+                                {% endif %}
+                                {% if p.logo %}<img src="{{ p.logo|thumbnail_url:'mini' }}" title="{{ p.name }}" alt="{{ p.name }}">{% endif %}
+                                {% if p.siglum %} {{ p.siglum }} {% else %} Não informado {% endif %} ({{ p.year }}-{{ p.year_end }})
+                            {% endfor %}
                         </td>
                         <td>{{ d.expensed|format_currency }}</td>
                     </tr>
