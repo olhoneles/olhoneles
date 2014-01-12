@@ -33,8 +33,6 @@
 
 {% block footer-extra %}
 
-<script language="javascript" src="{% static 'js/sorting.js' %}"></script>
-
 <script type="text/javascript">
 $(document).ready(function(){
     $('#menu-all').addClass('active').siblings().removeClass('active');
@@ -58,7 +56,6 @@ $(document).ready(function(){
             bServerSide: true,
             fnServerData: function (source, data, fnCallback) {
 			    $.getJSON(source, data, function (json) {
-			        console.log(json['current_date_from']);
 			        $('#current-date-from').html(json['current_date_from']);
 			        $('#current-date-to').html(json['current_date_to']);
 				    fnCallback(json)
