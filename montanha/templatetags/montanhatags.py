@@ -17,6 +17,7 @@
 
 import locale
 from django import template
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
 
@@ -47,3 +48,20 @@ def sortable_th(context, tag_id, is_default=False):
         th_attr += '"'
 
     return mark_safe(th_attr)
+
+
+@register.simple_tag
+def expenses_table(*args):
+    return render_to_string('expenses_table.html', dict(columns=args))
+
+
+@register.simple_tag(takes_context=True)
+def expenses_data_table(context, query_name, col_types):
+    columns = []
+    for c in col_types:
+        if c == 'm':
+            columns.append("{ sType: 'money' }")
+        else:
+            columns.append('null')
+    c = dict(institution=context['institution'], query_name=query_name, columns=columns)
+    return render_to_string('expenses_data_table.html', c)

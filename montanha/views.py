@@ -490,17 +490,7 @@ def cleanup_date_ranges(date_ranges):
     del date_ranges['cdt']
 
 
-def query_all(request, institution):
-
-    columns = (
-        ('nature.name', 's',),
-        ('mandate.legislator.name', 's',),
-        ('supplier.name', 's',),
-        ('supplier.identifier', 's',),
-        ('number', 's',),
-        ('date', 'd',),
-        ('expensed', 'm'),
-    )
+def data_tables_query(request, institution, columns):
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
@@ -511,17 +501,19 @@ def query_all(request, institution):
 
     search_string = request.GET.get('sSearch').decode('utf-8')
     if search_string:
-        data = data.filter(Q(nature__name__icontains=search_string) |
-                           Q(mandate__legislator__name__icontains=search_string) |
-                           Q(supplier__name__icontains=search_string) |
-                           Q(supplier__identifier__icontains=search_string) |
-                           Q(number__icontains=search_string) |
-                           Q(expensed__icontains=search_string))
+        filter_expression = None
+        for name, _ in columns:
+            exp = Q(**{name.replace('.', '__') + '__icontains': search_string})
+            if filter_expression:
+                filter_expression |= exp
+            else:
+                filter_expression = exp
+        data = data.filter(filter_expression)
 
     displayed_results = data.count()
 
-    # Sort by expense by default.
-    sort_col = int(request.GET.get('iSortCol_0', 6))
+    # Sort by expense by default, assumed to be the last column.
+    sort_col = int(request.GET.get('iSortCol_0', len(columns) - 1))
     order_by_field = columns[sort_col][0].replace('.', '__')
 
     sort_direction = request.GET.get('sSortDir_0', 'asc')
@@ -552,6 +544,22 @@ def query_all(request, institution):
     response.update(date_ranges)
 
     return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+def query_all(request, institution):
+    columns = (
+        ('nature.name', 's'),
+        ('mandate.legislator.name', 's'),
+        ('supplier.name', 's'),
+        ('supplier.identifier', 's'),
+        ('number', 's'),
+        ('date', 'd'),
+        ('expensed', 'm'),
+    )
+
+    return data_tables_query(request, institution, columns)
+
+    return data_tables_query(request, institution, columns)
 
 
 def show_all(request, institution):
