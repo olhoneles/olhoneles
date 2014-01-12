@@ -7,90 +7,17 @@
 
 {% block content %}
 
-    <div class="row">
-        <div class="span12">
-            <table id="all-expenses-table" class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Tipo de gasto</th>
-                        <th>Parlamentar</th>
-                        <th>Empresa/Pessoa </th>
-                        <th>CNPJ/CPF</th>
-                        <th>N° Doc.</th>
-                        <th>Data</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
+<div class="row">
+    <div class="span12">
+        {% expenses_table "Tipo de gasto" "Parlamentar" "Empresa/Pessoa" "CNPJ/CPF" "N° Doc." "Data" "Valor" %}
     </div>
-
+</div>
 
 {% endblock %}
 
 
 {% block footer-extra %}
 
-<script type="text/javascript">
-$(document).ready(function(){
-    $('#menu-all').addClass('active').siblings().removeClass('active');
-
-    $(document).ready(function() {
-        aoColumns = [
-            null, /* nautre */
-            null, /* legislator */
-            null, /* supplier name */
-            null, /* supplier id */
-            null, /* number */
-            null, /* date */
-            { sType: 'money' } /* expensed */
-        ];
-        $('#all-expenses-table').dataTable({
-            sAjaxSource: '{% if institution %}/{{ institution.siglum }}{% endif %}/q/all',
-            aoColumns: aoColumns,
-            aaSorting: [[aoColumns.length - 1, 'desc']],
-            bPaginate: true,
-            bProcessing: true,
-            bServerSide: true,
-            fnServerData: function (source, data, fnCallback) {
-			    $.getJSON(source, data, function (json) {
-			        $('#current-date-from').html(json['current_date_from']);
-			        $('#current-date-to').html(json['current_date_to']);
-				    fnCallback(json)
-			    });
-	        },
-            sDom: "<'row'<'offset6 span4 text-right'f><'span2 pull-right'l>r>t<'row'<'span4'i><'span5 text-right'p>>",
-            sPaginationType: 'bootstrap_ellipses',
-            oLanguage: { 'sUrl': '/static/dtptbr.txt' },
-            aLengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
-            iDisplayLength: 5,
-            fnFormatNumber: function (number) {
-                if (number < 1000)
-                    return number;
-
-                var s = (number + ""), a = s.split(""), out = "";
-                for (var i = 0; i < s.length; i++) {
-                    if (i % 3 === 0 && i !== 0)
-                        out = "." + out;
-
-                    out = a[s.length -i -1] + out;
-                }
-
-                return out;
-            },
-            fnCreatedRow: function (row, data, index) {
-                var cols = $('td', row);
-                for (var i = 0; i < cols.length; i++) {
-                    var column = $(cols[i]);
-                    var html = column.html();
-                    column.html('<div class="data-tables-column">' + html + '</div>');
-                }
-            },
-        });
-    });
-});
-</script>
+{% expenses_data_table 'all' 'ttttttm' %}
 
 {% endblock %}
