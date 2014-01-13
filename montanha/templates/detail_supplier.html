@@ -33,29 +33,7 @@
             </ul>
             <div class="tab-content" id="tab-detail-supplier">
                 <div id="all-expenses" class="tab-pane active">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Tipo de gasto</th>
-                                <th>Parlamentar (Partido)</th>
-                                <th>Número do Documento</th>
-                                <th>Data</th>
-                                <th>Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for d in data %}
-                            <tr>
-                                <td>{{ d.nature__name }}</td>
-                                <td>{{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})</td>
-                                <td>{{ d.number }}</td>
-                                <td>{{ d.date|date:"d/m/Y" }}</td>
-                                <td>{{ d.expensed|format_currency }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
+                    {% expenses_table "Tipo de gasto" "Parlamentar (Partido)" "Número do Documento" "Data" "Valor" %}
                 </div>
                 <div id="top-buyers" class="tab-pane">
                     <div class="span4">
@@ -96,6 +74,8 @@
 
 {% include 'per_party_graph.html' %}
 
+{% expenses_data_table 'supplier_all' 'ttttm' %}
+
 <script type="text/javascript">
 $(document).ready(function(){
     $('#menu-per-supplier').addClass('active').siblings().removeClass('active');
@@ -106,7 +86,5 @@ $(document).ready(function(){
 
 });
 </script>
-
-
 
 {% endblock %}
