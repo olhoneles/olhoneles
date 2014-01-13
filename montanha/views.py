@@ -559,6 +559,16 @@ def query_all(request, institution):
 
     return data_tables_query(request, institution, columns)
 
+
+def query_supplier_all(request, institution):
+    columns = (
+        ('nature.name', 's'),
+        ('mandate.legislator.name', 's'),
+        ('number', 's'),
+        ('date', 'd'),
+        ('expensed', 'm'),
+    )
+
     return data_tables_query(request, institution, columns)
 
 
