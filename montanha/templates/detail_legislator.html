@@ -20,31 +20,7 @@
             </ul>
             <div class="tab-content" id="tab-detail-supplier">
                 <div id="all-expenses" class="tab-pane active">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Tipo de gasto</th>
-                                <th>Empresa/Pessoa</th>
-                                <th>CNPJ/CPF</th>
-                                <th>Número do Documento</th>
-                                <th>Data</th>
-                                <th>Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for d in data %}
-                            <tr>
-                                <td>{{ d.nature__name }}</td>
-                                <td>{{ d.supplier__name }}</td>
-                                <td>{{ d.supplier__identifier }}</td>
-                                <td>{{ d.number }}</td>
-                                <td>{{ d.date|date:"d/m/Y" }}</td>
-                                <td>{{ d.expensed|format_currency }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" %}
+                    {% expenses_table "Tipo de gasto" "Empresa/Pessoa" "CNPJ/CPF" "Número do Documento" "Data" "Valor" %}
                 </div>
                 <div id="top-suppliers" class="tab-pane">
                     <table class="table table-bordered table-striped">
@@ -78,6 +54,8 @@
 
 
 {% block footer-extra %}
+
+{% expenses_data_table 'legislator_all' 'tttttm' %}
 
 <script type="text/javascript">
 $(document).ready(function(){
