@@ -25,7 +25,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     #Admin
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin', include(admin.site.urls)),
 
     # Montanha
     url(r'^', include('montanha.urls',
