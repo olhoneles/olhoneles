@@ -530,9 +530,17 @@ def data_tables_query(request, institution, columns):
 
     search_string = request.GET.get('sSearch').decode('utf-8')
     if search_string:
+        def format_for_column_type(col_type, search_string):
+            if col_type == 'm':
+                search_string = search_string.replace('.', '').replace(',', '.')
+                search_string = search_string.replace('R$', '')
+                return search_string.strip()
+            return search_string
+
         filter_expression = None
-        for name, _ in columns:
-            exp = Q(**{name.replace('.', '__') + '__icontains': search_string})
+        for name, col_type in columns:
+            actual_search_string = format_for_column_type(col_type, search_string)
+            exp = Q(**{name.replace('.', '__') + '__icontains': actual_search_string})
             if filter_expression:
                 filter_expression |= exp
             else:
