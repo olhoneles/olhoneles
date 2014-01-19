@@ -205,6 +205,12 @@ class Senado(BaseCollector):
         }
         return names_map.get(name, name)
 
+    def _normalize_party_name(self, name):
+        names_map = {
+            'PCdoB': 'PC do B',
+        }
+        return names_map.get(name, name)
+
     def update_legislators_extra_data(self):
         data = self.retrieve_uri('http://www.senado.gov.br/senadores/')
         table = data.find(id='senadores')
@@ -224,7 +230,7 @@ class Senado(BaseCollector):
                 print 'Legislature found for %s is not the same as the one we need, ignoring.' % legislator.name
                 continue
 
-            party = columns[1].getText()
+            party = self._normalize_party_name(columns[1].getText())
             mandate.party, _ = PoliticalParty.objects.get_or_create(siglum=party)
             mandate.save()
 
