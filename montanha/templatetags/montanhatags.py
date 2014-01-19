@@ -56,12 +56,13 @@ def expenses_table(*args):
 
 
 @register.simple_tag(takes_context=True)
-def expenses_data_table(context, query_name, col_types):
+def expenses_data_table(context, query_name, col_types, item_id=None):
     columns = []
     for c in col_types:
         if c == 'm':
             columns.append("{ sType: 'money' }")
         else:
             columns.append('null')
-    c = dict(institution=context['institution'], query_name=query_name, columns=columns)
+    c = dict(institution=context['institution'], item_id=item_id,
+             query_name=query_name, columns=columns)
     return render_to_string('expenses_data_table.html', c)
