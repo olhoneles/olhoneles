@@ -370,16 +370,20 @@ def show_legislator_detail(request, institution, legislator_id):
     return new_render(request, institution, 'detail_legislator.html', c)
 
 
-def postprocess_party_data(data):
+def postprocess_party_data(institution, data):
+    institution = Institution.objects.get(siglum=institution)
     for d in list(data):
         if d['mandate__party__siglum']:
             party = PoliticalParty.objects.get(siglum=d['mandate__party__siglum'])
-            d['n_legislators'] = party.mandate_set.values('legislator').count()
+            mandates = party.mandate_set.filter(legislature__institution=institution)
+            d['n_legislators'] = mandates.values('legislator').count()
             d['expensed_average'] = d['expensed'] / d['n_legislators']
         else:
             d['mandate__party__siglum'] = 'NC'
             d['mandate__party__name'] = 'Desconhecido'
-            d['n_legislators'] = Legislator.objects.filter(mandate__party__siglum=None).count()
+            mandates = Mandate.objects.filter(party__siglum=None)
+            mandates = mandates.filter(legislature__institution=institution)
+            d['n_legislators'] = mandates.values('legislator').count()
             d['expensed_average'] = d['expensed'] / d['n_legislators']
 
     return sorted(data, key=lambda d: d['expensed_average'], reverse=True)
@@ -395,7 +399,7 @@ def show_per_party(request, institution):
     data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     data = data.annotate(expensed=Sum('expensed'))
 
-    data = postprocess_party_data(data)
+    data = postprocess_party_data(institution, data)
 
     c = {'data': data, 'graph_data': data, 'colors': generate_colors(len(data), 0.93, 0.8)}
 
