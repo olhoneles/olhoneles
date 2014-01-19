@@ -519,10 +519,13 @@ def cleanup_date_ranges(date_ranges):
     del date_ranges['cdt']
 
 
-def data_tables_query(request, institution, columns):
+def data_tables_query(request, institution, columns, filter_function=None):
 
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
+
+    if filter_function:
+        data = filter_function(data)
 
     date_ranges = get_date_ranges_from_data(request, institution, data, False)
 
@@ -598,6 +601,10 @@ def query_all(request, institution):
 
 
 def query_supplier_all(request, institution):
+    def filter_function(data):
+        supplier = Supplier.objects.get(id=request.GET['item_id'])
+        return data.filter(supplier=supplier)
+
     columns = (
         ('nature.name', 's'),
         ('mandate.legislator.name', 's'),
@@ -606,10 +613,14 @@ def query_supplier_all(request, institution):
         ('expensed', 'm'),
     )
 
-    return data_tables_query(request, institution, columns)
+    return data_tables_query(request, institution, columns, filter_function)
 
 
 def query_legislator_all(request, institution):
+    def filter_function(data):
+        legislator = Legislator.objects.get(id=request.GET['item_id'])
+        return data.filter(mandate__legislator=legislator)
+
     columns = (
         ('nature.name', 's'),
         ('supplier.name', 's'),
@@ -619,7 +630,7 @@ def query_legislator_all(request, institution):
         ('expensed', 'm'),
     )
 
-    return data_tables_query(request, institution, columns)
+    return data_tables_query(request, institution, columns, filter_function)
 
 
 def show_all(request, institution):

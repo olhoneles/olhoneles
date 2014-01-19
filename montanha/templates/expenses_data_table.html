@@ -16,6 +16,10 @@ $(document).ready(function(){
             bProcessing: true,
             bServerSide: true,
             fnServerData: function (source, data, fnCallback) {
+                {% if item_id %}
+                data.push({ 'name': 'item_id', 'value': {{ item_id }} });
+                {% endif %}
+                console.log(data);
 			    $.getJSON(source, data, function (json) {
 			        $('#current-date-from').html(json['current_date_from']);
 			        $('#current-date-to').html(json['current_date_to']);
