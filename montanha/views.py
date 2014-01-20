@@ -311,7 +311,7 @@ def show_per_legislator(request, institution):
                  'year': d['mandate__date_start'].year,
                  'year_end': ''}
         if d['mandate__date_end']:
-            party['year_end'] = d['mandate__date_end']
+            party['year_end'] = d['mandate__date_end'].year
 
         if key in data_dict:
             data_dict[key]['expensed'] + d['expensed']
