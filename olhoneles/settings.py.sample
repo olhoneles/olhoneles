@@ -185,3 +185,5 @@ CACHES = {
 }
 
 DEFAULT_FROM_EMAIL = "montanha-dev@listas.olhoneles.org"
+
+CONTACT_US_EMAIL = "montanha@olhoneles.org"

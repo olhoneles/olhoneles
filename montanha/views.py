@@ -677,7 +677,7 @@ def contact_us(request):
         from_field = '%s <%s>' % (contact_us_form.cleaned_data['name'],
                                   contact_us_form.cleaned_data['email'])
 
-        send_mail(subject, message, from_field, [settings.DEFAULT_FROM_EMAIL])
+        send_mail(subject, message, from_field, [settings.CONTACT_US_EMAIL])
 
         success_message = ("""Sua mensagem foi enviada com sucesso. """
                            """Em breve entraremos em contato!""")
