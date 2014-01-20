@@ -152,12 +152,16 @@ def get_date_ranges_from_data(request, institution, data, include_date_objects=T
     except:
         cdt = date.today()
 
-    institution = Institution.objects.get(siglum=institution)
+    if institution:
+        institution = Institution.objects.get(siglum=institution)
 
-    # Bound dates to the start of the first legislature to the end
-    # of the last, which makes more sense to our purposes.
-    first = institution.legislature_set.order_by('date_start')[0]
-    last = institution.legislature_set.order_by('-date_end')[0]
+        # Bound dates to the start of the first legislature to the end
+        # of the last, which makes more sense to our purposes.
+        first = institution.legislature_set.order_by('date_start')[0]
+        last = institution.legislature_set.order_by('-date_end')[0]
+    else:
+        first = Legislature.objects.order_by('date_start')[0]
+        last = Legislature.objects.order_by('-date_end')[0]
 
     min_date = first.date_start
     max_date = last.date_end
@@ -335,7 +339,9 @@ def show_per_legislator(request, institution):
 def show_legislator_detail(request, institution, legislator_id):
 
     data = Expense.objects.all()
-    data = filter_for_institution(data, institution)
+
+    if institution:
+        data = filter_for_institution(data, institution)
 
     date_ranges = get_date_ranges_from_data(request, institution, data)
 
@@ -371,18 +377,21 @@ def show_legislator_detail(request, institution, legislator_id):
 
 
 def postprocess_party_data(institution, data):
-    institution = Institution.objects.get(siglum=institution)
+    if institution:
+        institution = Institution.objects.get(siglum=institution)
     for d in list(data):
         if d['mandate__party__siglum']:
             party = PoliticalParty.objects.get(siglum=d['mandate__party__siglum'])
-            mandates = party.mandate_set.filter(legislature__institution=institution)
+            if institution:
+                mandates = party.mandate_set.filter(legislature__institution=institution)
             d['n_legislators'] = mandates.values('legislator').count()
             d['expensed_average'] = d['expensed'] / d['n_legislators']
         else:
             d['mandate__party__siglum'] = 'NC'
             d['mandate__party__name'] = 'Desconhecido'
             mandates = Mandate.objects.filter(party__siglum=None)
-            mandates = mandates.filter(legislature__institution=institution)
+            if institution:
+                mandates = mandates.filter(legislature__institution=institution)
             d['n_legislators'] = mandates.values('legislator').count()
             d['expensed_average'] = d['expensed'] / d['n_legislators']
 
