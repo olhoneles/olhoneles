@@ -460,7 +460,7 @@ def show_supplier_detail(request, institution, supplier_id):
     # Data prepared for displaying the per-party graph
     graph_data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     graph_data = graph_data.annotate(expensed=Sum('expensed'))
-    graph_data = postprocess_party_data(graph_data)
+    graph_data = postprocess_party_data(institution, graph_data)
 
     top_buyers = data.values('mandate__legislator__id',
                              'mandate__legislator__name',
