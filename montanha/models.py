@@ -207,11 +207,23 @@ class ExpenseNature(models.Model):
         return u"%s" % self.name
 
 
-class Expense(models.Model):
+class CollectionRun(models.Model):
 
     class Meta:
-        verbose_name = _("Expense")
-        verbose_name_plural = _("Expenses")
+        verbose_name = _("Collection")
+        verbose_name = _("Collections")
+
+    date = models.DateField(verbose_name=_("Collection date"))
+    legislature = models.ForeignKey("Legislature")
+
+    def __unicode__(self):
+        return u"Collection run on %s for %s" % (self.date, unicode(self.legislature))
+
+
+class AbstractExpense(models.Model):
+
+    class Meta:
+        abstract = True
 
     original_id = models.CharField(blank=True, null=True,
                                    max_length=512,
@@ -245,6 +257,27 @@ class Expense(models.Model):
                                                            self.mandate.legislator.name,
                                                            str(self.date),
                                                            self.number)
+
+
+class Expense(AbstractExpense):
+
+    class Meta:
+        verbose_name = _("Expense")
+        verbose_name_plural = _("Expenses")
+
+    def save(self, *args, **kwargs):
+        if hasattr(self, 'locked_for_collection'):
+            raise RuntimeError("You should not touch Expense while collecting, use ArchivedExpense instead.")
+        super(Model, self).save(*args, **kwargs)
+
+
+class ArchivedExpense(AbstractExpense):
+
+    class Meta:
+        verbose_name = _("Archived expense")
+        verbose_name_plural = _("Archived expenses")
+
+    collection_run = models.ForeignKey("CollectionRun")
 
 
 class Supplier(models.Model):
