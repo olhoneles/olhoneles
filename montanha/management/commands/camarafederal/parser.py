@@ -32,7 +32,7 @@ def parse_date(string):
     return datetime.strptime(string, '%Y-%m-%d %H:%M:%S.%f').date()
 
 
-class CamaraParser:
+class CamaraFederalParser:
     def parse_legislatures(self, content):
         select = content.find('select', {'name': 'Legislatura'})
 

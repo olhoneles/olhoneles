@@ -18,7 +18,7 @@
 from ..basecollector import *
 
 
-class CamaraCollector (BaseCollector):
+class CamaraFederalCollector (BaseCollector):
     def retrieve_legislatures(self):
         uri = 'http://www2.camara.leg.br/deputados/pesquisa'
         headers = {

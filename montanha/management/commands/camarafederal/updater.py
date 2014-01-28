@@ -21,7 +21,7 @@ from django.db.models import Sum
 from montanha.models import *
 
 
-class CamaraUpdater:
+class CamaraFederalUpdater:
     def __init__(self, debug_enabled=False):
         self.debug_enabled = debug_enabled
 
@@ -107,7 +107,7 @@ class CamaraUpdater:
             legislator.save()
 
             if 'picture' in leg.keys():
-                filename = 'camara-%s' % os.path.basename(leg['picture_uri'])
+                filename = 'camarafederal-%s' % os.path.basename(leg['picture_uri'])
                 self.debug("Saving picture %s for %s (%d)" % (filename, leg['name'], leg['original_id']))
                 legislator.picture.save(filename, File(open(leg['picture'])))
                 legislator.save()
