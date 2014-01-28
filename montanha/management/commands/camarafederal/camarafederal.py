@@ -26,7 +26,7 @@ from parser import CamaraFederalParser
 
 
 max_collectors = cpu_count() * 2
-max_updaters = cpu_count()
+max_updaters = 1
 
 
 class CamaraFederal(object):
