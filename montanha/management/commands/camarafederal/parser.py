@@ -125,7 +125,7 @@ class CamaraFederalParser:
 
         return natures
 
-    def __parse_expenses_table__(self, expenses_table, nature, year, month):
+    def _parse_expenses_table(self, expenses_table, nature, year, month):
         expenses = []
 
         rows = expenses_table.findAll('tr')[1:-1]
@@ -174,7 +174,7 @@ class CamaraFederalParser:
             raise Exception("Invalid legislator expenses content")
 
         expenses_table = grid.find('table', {'class': 'tabela-1', 'width': '100%'})
-        expenses = self.__parse_expenses_table__(expenses_table, nature, year, month)
+        expenses = self._parse_expenses_table(expenses_table, nature, year, month)
 
         return expenses
 
