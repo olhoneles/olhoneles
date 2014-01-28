@@ -28,7 +28,7 @@ class CamaraFederalUpdater:
         try:
             institution = Institution.objects.get(siglum='CDF')
         except Institution.DoesNotExist:
-            institution = Institution(siglum='CDF', name=u'Câmara dos Deputados')
+            institution = Institution(siglum='CDF', name=u'Câmara dos Deputados Federais')
             institution.save()
 
         try:
@@ -128,16 +128,16 @@ class CamaraFederalUpdater:
 
         for nature in natures:
             try:
-                nature = ExpenseNature.objects.get(institution=institution, original_id=nature['original_id'])
+                nature = ExpenseNature.objects.get(original_id=nature['original_id'])
             except ExpenseNature.DoesNotExist:
-                nature = ExpenseNature(institution=institution, original_id=nature['original_id'], name=nature['name'])
+                nature = ExpenseNature(original_id=nature['original_id'], name=nature['name'])
                 nature.save()
 
                 self.debug("New nature found: %s" % unicode(nature))
 
     def update_nature_expenses(self, mandate, nature_id, expenses):
         institution = Institution.objects.get(siglum='CDF')
-        nature = ExpenseNature.objects.get(institution=institution, original_id=nature_id)
+        nature = ExpenseNature.objects.get(original_id=nature_id)
 
         for expense in expenses:
             try:
