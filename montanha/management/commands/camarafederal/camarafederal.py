@@ -29,7 +29,7 @@ max_collectors = cpu_count() * 2
 max_updaters = cpu_count()
 
 
-class CamaraFederal:
+class CamaraFederal(object):
     def __init__(self, debug_enabled, full_scan):
         self.full_scan = full_scan
         self.collector = CamaraFederalCollector()
@@ -38,15 +38,13 @@ class CamaraFederal:
         self.stdout_mutex = Lock()
 
     # Paralell Collector helpers
-    def __fill_queue__(self, items, attr, queue):
-        for i in items:
-            queue.put(i[attr])
-
-    def __fill_queue_from_list__(self, items, queue):
+    @staticmethod
+    def _fill_queue_from_list(items, queue):
         for i in items:
             queue.put(i)
 
-    def __start_collectors__(self, function, input_queue, output_queue=None):
+    @staticmethod
+    def _start_collectors(function, input_queue, output_queue=None):
         process_list = []
 
         for i in range(max_collectors):
@@ -56,7 +54,8 @@ class CamaraFederal:
 
         return process_list
 
-    def __start_updaters__(self, function, input_queue, finished_event):
+    @staticmethod
+    def _start_updaters(function, input_queue, finished_event):
         process_list = []
 
         for i in range(max_updaters):
@@ -67,23 +66,15 @@ class CamaraFederal:
 
         return process_list
 
-    def __wait__(self, collectors, finished_event):
-        with self.stdout_mutex:
-            print '[CamaraFederal] Waiting for collectors to finish...'
-
+    @staticmethod
+    def _wait(collectors, finished_event):
         for p in collectors:
             p.join()
 
-        with self.stdout_mutex:
-            print '[CamaraFederal] Collectors finished. Waiting for updater to finish...'
-
         finished_event.wait()
 
-        with self.stdout_mutex:
-            print '[CamaraFederal] updater finished.'
-
     # Paralel Collector implementation
-    def __collect_pictures__(self, picture_uri_queue, picture_queue):
+    def _collect_pictures(self, picture_uri_queue, picture_queue):
         myname = current_process().name
         with self.stdout_mutex:
             print '[%s] started' % (myname)
@@ -106,7 +97,7 @@ class CamaraFederal:
         with self.stdout_mutex:
             print '[%s] finished. %d items processed.' % (myname, items)
 
-    def __update_legislators__(self, picture_queue, finished):
+    def _update_legislators(self, picture_queue, finished):
         myname = current_process().name
         informed_empty = False
         total_legislators = self.total_legislators
@@ -166,13 +157,13 @@ class CamaraFederal:
         picture_queue = Queue()
         updater_finished = Event()
 
-        self.__fill_queue_from_list__(legislators, picture_uri_queue)
+        self._fill_queue_from_list(legislators, picture_uri_queue)
 
-        process_list = self.__start_collectors__(self.__collect_pictures__, picture_uri_queue, picture_queue)
+        process_list = self._start_collectors(self._collect_pictures, picture_uri_queue, picture_queue)
 
-        self.__start_updaters__(self.__update_legislators__, picture_queue, updater_finished)
+        self._start_updaters(self._update_legislators, picture_queue, updater_finished)
 
-        self.__wait__(process_list, updater_finished)
+        self._wait(process_list, updater_finished)
 
         print '[CamaraFederal] Collected %s legislators' % self.total_legislators
 
