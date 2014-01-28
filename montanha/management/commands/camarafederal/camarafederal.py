@@ -85,7 +85,7 @@ class CamaraFederal(object):
                 legislator = picture_uri_queue.get(block=False)
                 uri = legislator['picture_uri']
             except Empty:
-                # if Empty was raised by timeout, keep collecting...
+                # Empty is also raised if queue item is not available, so checking...
                 if not picture_uri_queue.empty():
                     continue
                 break
