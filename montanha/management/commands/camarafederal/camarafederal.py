@@ -20,21 +20,21 @@
 from multiprocessing import Process, Queue, Lock, Event, current_process, cpu_count
 from Queue import Empty
 from datetime import datetime
-from collector import CamaraCollector
-from updater import CamaraUpdater
-from parser import CamaraParser
+from collector import CamaraFederalCollector
+from updater import CamaraFederalUpdater
+from parser import CamaraFederalParser
 
 
 max_collectors = cpu_count() * 2
 max_updaters = cpu_count()
 
 
-class Camara:
+class CamaraFederal:
     def __init__(self, debug_enabled, full_scan):
         self.full_scan = full_scan
-        self.collector = CamaraCollector()
-        self.parser = CamaraParser()
-        self.updater = CamaraUpdater(debug_enabled)
+        self.collector = CamaraFederalCollector()
+        self.parser = CamaraFederalParser()
+        self.updater = CamaraFederalUpdater(debug_enabled)
         self.stdout_mutex = Lock()
 
     # Paralell Collector helpers
@@ -69,18 +69,18 @@ class Camara:
 
     def __wait__(self, collectors, finished_event):
         with self.stdout_mutex:
-            print '[Camara] Waiting for collectors to finish...'
+            print '[CamaraFederal] Waiting for collectors to finish...'
 
         for p in collectors:
             p.join()
 
         with self.stdout_mutex:
-            print '[Camara] Collectors finished. Waiting for updater to finish...'
+            print '[CamaraFederal] Collectors finished. Waiting for updater to finish...'
 
         finished_event.wait()
 
         with self.stdout_mutex:
-            print '[Camara] updater finished.'
+            print '[CamaraFederal] updater finished.'
 
     # Paralel Collector implementation
     def __collect_pictures__(self, picture_uri_queue, picture_queue):
@@ -135,13 +135,13 @@ class Camara:
 
     # Collector api used by Collect command
     def collect_legislatures(self):
-        print '[Camara] Retrieving legislatures'
+        print '[CamaraFederal] Retrieving legislatures'
 
         content = self.collector.retrieve_legislatures()
         legislatures = self.parser.parse_legislatures(content)
         self.updater.update_legislatures(legislatures)
 
-        print '[Camara] Retrieved %d legislatures' % len(legislatures)
+        print '[CamaraFederal] Retrieved %d legislatures' % len(legislatures)
 
     def collect_legislators(self, legislature_id=None):
         # Sequential collect
@@ -154,7 +154,7 @@ class Camara:
         self.updater.legislature = legislature
 
         with self.stdout_mutex:
-            print '[Camara] Retrieving legislators'
+            print '[CamaraFederal] Retrieving legislators'
 
         content = self.collector.retrieve_legislators(legislature)
         legislators = self.parser.parse_legislators(content)
@@ -174,7 +174,7 @@ class Camara:
 
         self.__wait__(process_list, updater_finished)
 
-        print '[Camara] Collected %s legislators' % self.total_legislators
+        print '[CamaraFederal] Collected %s legislators' % self.total_legislators
 
     def collect_expenses(self, legislature_id=None):
         if legislature_id is None:
@@ -186,7 +186,7 @@ class Camara:
         self.updater.legislature = legislature
 
         with self.stdout_mutex:
-            print '[Camara] Retrieving expenses'
+            print '[CamaraFederal] Retrieving expenses'
 
         year = datetime.now().year
         month = 1
@@ -202,9 +202,9 @@ class Camara:
             for nature in natures:
                 db_total = self.updater.get_nature_total(mandate, nature['original_id'], year, month)
                 if db_total is None or nature['total'] - db_total > 0.01:
-                    print '[Camara] Retrieving expenses with %s by %s on %d-%d' % (nature['name'], unicode(mandate.legislator), year, month)
+                    print '[CamaraFederal] Retrieving expenses with %s by %s on %d-%d' % (nature['name'], unicode(mandate.legislator), year, month)
                     content = self.collector.retrieve_nature_expenses(mandate.legislator, nature['original_id'], year, month)
                     expenses = self.parser.parse_nature_expenses(content, nature, year, month)
                     self.updater.update_nature_expenses(mandate, nature['original_id'], expenses)
                 else:
-                    print '[Camara] Expenses with %s by %s on %d-%d are up to date' % (nature['name'], unicode(mandate.legislator), year, month)
+                    print '[CamaraFederal] Expenses with %s by %s on %d-%d are up to date' % (nature['name'], unicode(mandate.legislator), year, month)
