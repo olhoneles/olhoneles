@@ -38,8 +38,8 @@ def parse_date(string):
 
 
 class Senado(BaseCollector):
-    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
-        super(Senado, self).__init__(collection_runs, debug_enabled, full_scan)
+    def __init__(self, collection_runs, debug_enabled=False):
+        super(Senado, self).__init__(collection_runs, debug_enabled)
 
         self.csv_regex = re.compile('http://www.senado.leg.br/transparencia/LAI/verba/2[0-9]{3}_SEN_[^\.]+.csv')
 

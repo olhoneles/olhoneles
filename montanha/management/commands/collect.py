@@ -28,7 +28,6 @@ from django.db import transaction
 from montanha.models import ArchivedExpense, Expense
 
 
-full_scan = False
 debug_enabled = False
 
 
@@ -39,7 +38,6 @@ class Command(BaseCommand):
     @transaction.commit_manually
     def handle(self, *args, **options):
         global debug_enabled
-        global full_scan
 
         settings.expense_locked_for_collection = True
 
@@ -47,9 +45,6 @@ class Command(BaseCommand):
 
         if "debug" in args:
             debug_enabled = True
-
-        if "full-scan" in args:
-            full_scan = True
 
         def signal_handler(signal, frame):
             transaction.rollback()
@@ -59,27 +54,27 @@ class Command(BaseCommand):
         try:
             if "almg" in args:
                 from almg import ALMG
-                almg = ALMG(collection_runs, debug_enabled, full_scan)
+                almg = ALMG(collection_runs, debug_enabled)
                 almg.update_legislators()
                 almg.update_data()
                 almg.update_legislators_data()
 
             if "senado" in args:
                 from senado import Senado
-                senado = Senado(collection_runs, debug_enabled, full_scan)
+                senado = Senado(collection_runs, debug_enabled)
                 senado.update_legislators()
                 senado.update_data()
                 senado.update_legislators_extra_data()
 
             if "cmbh" in args:
                 from cmbh import CMBH
-                cmbh = CMBH(collection_runs, debug_enabled, full_scan)
+                cmbh = CMBH(collection_runs, debug_enabled)
                 cmbh.update_legislators()
                 cmbh.update_data()
 
             if "cmsp" in args:
                 from cmsp import CMSP
-                cmsp = CMSP(collection_runs, debug_enabled, full_scan)
+                cmsp = CMSP(collection_runs, debug_enabled)
                 cmsp.update_data()
 
             settings.expense_locked_for_collection = False
