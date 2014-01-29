@@ -40,8 +40,8 @@ def parse_cmbh_date(date_string):
 
 
 class CMBH(BaseCollector):
-    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
-        super(CMBH, self).__init__(collection_runs, debug_enabled, full_scan)
+    def __init__(self, collection_runs, debug_enabled=False):
+        super(CMBH, self).__init__(collection_runs, debug_enabled)
 
         try:
             institution = Institution.objects.get(siglum='CMBH')
@@ -223,11 +223,8 @@ class CMBH(BaseCollector):
 
     def update_data(self):
         self.collection_run = self.create_collection_run(self.legislature)
-        if self.full_scan:
-            for year in range(self.legislature.date_start.year, datetime.now().year + 1):
-                self.update_data_for_year(year)
-        else:
-            self.update_data_for_year(datetime.now().year)
+        for year in range(self.legislature.date_start.year, datetime.now().year + 1):
+            self.update_data_for_year(year)
 
     def update_data_for_year(self, year=datetime.now().year):
         self.debug("Updating data for year %d" % year)

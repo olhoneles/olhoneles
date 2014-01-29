@@ -26,8 +26,8 @@ from montanha.models import *
 
 
 class ALMG(BaseCollector):
-    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
-        super(ALMG, self).__init__(collection_runs, debug_enabled, full_scan)
+    def __init__(self, collection_runs, debug_enabled=False):
+        super(ALMG, self).__init__(collection_runs, debug_enabled)
 
         try:
             institution = Institution.objects.get(siglum='ALMG')

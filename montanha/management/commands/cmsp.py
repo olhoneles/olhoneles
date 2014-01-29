@@ -41,8 +41,8 @@ def parse_cmsp_date(month, year):
 
 
 class CMSP(BaseCollector):
-    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
-        super(CMSP, self).__init__(collection_runs, debug_enabled, full_scan)
+    def __init__(self, collection_runs, debug_enabled=False):
+        super(CMSP, self).__init__(collection_runs, debug_enabled)
 
         institution, institution_created = Institution.objects.get_or_create(
             siglum='CMSP',

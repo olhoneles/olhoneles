@@ -25,9 +25,8 @@ from montanha.models import *
 
 
 class BaseCollector(object):
-    def __init__(self, collection_runs, debug_enabled, full_scan):
+    def __init__(self, collection_runs, debug_enabled):
         self.debug_enabled = debug_enabled
-        self.full_scan = full_scan
         self.collection_runs = collection_runs
 
     def debug(self, message):
@@ -62,11 +61,8 @@ class BaseCollector(object):
     def update_data(self):
         self.collection_run = self.create_collection_run(self.legislature)
         for mandate in Mandate.objects.filter(date_start__year=self.legislature.date_start.year, legislature=self.legislature):
-            if self.full_scan:
-                for year in range(self.legislature.date_start.year, datetime.now().year + 1):
-                    self.update_data_for_year(mandate, year)
-            else:
-                self.update_data_for_year(mandate, datetime.now().year)
+            for year in range(self.legislature.date_start.year, datetime.now().year + 1):
+                self.update_data_for_year(mandate, year)
 
     def retrieve_uri(self, uri, data={}, headers={}):
         count = 0
