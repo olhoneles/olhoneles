@@ -38,9 +38,9 @@ def parse_date(string):
 
 
 class Senado(BaseCollector):
-    def __init__(self, debug_enabled=False, full_scan=False):
-        self.debug_enabled = debug_enabled
-        self.full_scan = full_scan
+    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
+        super(Senado, self).__init__(collection_runs, debug_enabled, full_scan)
+
         self.csv_regex = re.compile('http://www.senado.leg.br/transparencia/LAI/verba/2[0-9]{3}_SEN_[^\.]+.csv')
 
         institution, _ = Institution.objects.get_or_create(siglum='Senado', name=u'Senado Federal')
@@ -99,8 +99,10 @@ class Senado(BaseCollector):
 
                 self.debug("New legislator found: %s" % unicode(legislator))
 
-    def update_data_for_legislator(self, legislator, year):
-        data = self.retrieve_data_for_year(legislator, year)
+    def update_data_for_year(self, mandate, year=datetime.now().year):
+        self.debug("Updating data for year %d" % year)
+
+        data = self.retrieve_data_for_year(mandate.legislator, year)
 
         csv_data = None
         anchor = data.find('a', href=self.csv_regex)
@@ -108,7 +110,7 @@ class Senado(BaseCollector):
             csv_data = unicode(self.retrieve_uri(anchor.get('href')))
 
         if not csv_data:
-            self.debug("Legislator %s does not have expenses for year %d" % (legislator.name, year))
+            self.debug("Legislator %s does not have expenses for year %d" % (mandate.legislator.name, year))
             return
 
         csv_data = [l.encode('utf-8') for l in csv_data.split('\n')]
@@ -126,8 +128,6 @@ class Senado(BaseCollector):
             if actual_header != header:
                 print u'Bad CSV: expected header %s, got %s' % (header, actual_header)
                 return
-
-        mandate = self.mandate_for_legislator(legislator, None)
 
         for row in csv.reader(csv_data[2:], delimiter=";"):
             # Last row?
@@ -169,35 +169,18 @@ class Senado(BaseCollector):
                 supplier = Supplier(identifier=cnpj, name=supplier_name)
                 supplier.save()
 
-            expense, created = Expense.objects.get_or_create(number=docnumber,
-                                                             nature=nature,
-                                                             date=expense_date,
-                                                             expensed=expensed,
-                                                             mandate=mandate,
-                                                             supplier=supplier)
-            if created:
-                self.debug("New expense found: %s" % unicode(expense))
-            else:
-                self.debug("Existing expense found: %s" % unicode(expense))
+            expense = ArchivedExpense(number=docnumber,
+                                      nature=nature,
+                                      date=expense_date,
+                                      expensed=expensed,
+                                      mandate=mandate,
+                                      supplier=supplier)
+            self.debug("New expense found: %s" % unicode(expense))
 
             # This makes django release its queries cache; when running Django itself,
             # the queries are cleared for each request, not the case here, so we need
             # to do it ourselves.
             reset_queries()
-
-    def update_data(self):
-        if self.full_scan:
-            for year in range(self.legislature.date_start.year, self.legislature.date_end.year + 1):
-                self.update_data_for_year(year)
-        else:
-            self.update_data_for_year(datetime.now().year)
-
-    def update_data_for_year(self, year=datetime.now().year):
-        self.debug("Updating data for year %d" % year)
-
-        legislators = Legislator.objects.filter(mandate__legislature=self.legislature).all()
-        for legislator in legislators:
-            self.update_data_for_legislator(legislator, year)
 
     def _normalize_name(self, name):
         names_map = {
