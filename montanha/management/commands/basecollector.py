@@ -18,13 +18,18 @@
 
 import time
 import urllib
-from datetime import datetime
+from datetime import datetime, date
 from urllib2 import urlopen, Request, URLError, HTTPError
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from montanha.models import *
 
 
 class BaseCollector(object):
+    def __init__(self, collection_runs, debug_enabled, full_scan):
+        self.debug_enabled = debug_enabled
+        self.full_scan = full_scan
+        self.collection_runs = collection_runs
+
     def debug(self, message):
         if self.debug_enabled:
             print message
@@ -41,18 +46,27 @@ class BaseCollector(object):
     def update_legislators(self):
         exception("Not implemented.")
 
+    def create_collection_run(self, legislature):
+        collection_run, created = CollectionRun.objects.get_or_create(date=date.today(),
+                                                                      legislature=legislature)
+        self.collection_runs.append(collection_run)
+
+        # Keep only one run for a day. If one exists, we delete the existing collection data
+        # before we start this one.
+        if not created:
+            self.debug("Collection run for %s already exists for legislature %s, clearing." % (date.today().strftime("%F"), legislature))
+            ArchivedExpense.objects.filter(collection_run=collection_run).delete()
+
+        return collection_run
+
     def update_data(self):
-        for mandate in Mandate.objects.filter(date_start__year=self.legislature.date_start.year):
+        self.collection_run = self.create_collection_run(self.legislature)
+        for mandate in Mandate.objects.filter(date_start__year=self.legislature.date_start.year, legislature=self.legislature):
             if self.full_scan:
                 for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                     self.update_data_for_year(mandate, year)
             else:
                 self.update_data_for_year(mandate, datetime.now().year)
-
-    def update_data_for_year(self, mandate, year):
-        self.debug("Updating data for year %d" % year)
-        for month in range(1, 13):
-            self.update_data_for_month(mandate, year, month)
 
     def retrieve_uri(self, uri, data={}, headers={}):
         count = 0
@@ -72,7 +86,7 @@ class BaseCollector(object):
                     print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
                     count += 1
                 else:
-                     raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
+                    raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
             except URLError:
                 print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
                 count += 1

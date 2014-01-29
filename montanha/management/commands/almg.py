@@ -21,14 +21,14 @@ import json
 import re
 import datetime
 from basecollector import BaseCollector
-from datetime import datetime, date
+from datetime import datetime
 from montanha.models import *
 
 
 class ALMG(BaseCollector):
-    def __init__(self, debug_enabled=False, full_scan=False):
-        self.debug_enabled = debug_enabled
-        self.full_scan = full_scan
+    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
+        super(ALMG, self).__init__(collection_runs, debug_enabled, full_scan)
+
         try:
             institution = Institution.objects.get(siglum='ALMG')
         except Institution.DoesNotExist:
@@ -111,6 +111,11 @@ class ALMG(BaseCollector):
 
             legislature.legislator.save()
 
+    def update_data_for_year(self, mandate, year):
+        self.debug("Updating data for year %d" % year)
+        for month in range(1, 13):
+            self.update_data_for_month(mandate, year, month)
+
     def update_data_for_month(self, mandate, year, month):
         self.debug("Updating data for %d-%d - %s" % (year, month, unicode(mandate)))
         uri = "http://dadosabertos.almg.gov.br/ws/prestacao_contas/verbas_indenizatorias/deputados/%s/%d/%d?formato=json" % (mandate.legislator.original_id, year, month)
@@ -138,25 +143,15 @@ class ALMG(BaseCollector):
                 value = details["valorDespesa"]
                 expensed = details["valorReembolsado"]
 
-                try:
-                    expense = Expense.objects.get(original_id=details["id"],
-                                                  number=number,
-                                                  nature=nature,
-                                                  date=date,
-                                                  value=value,
-                                                  expensed=expensed,
-                                                  mandate=mandate,
-                                                  supplier=supplier)
-                    self.debug("Existing expense found: %s" % unicode(expense))
-                except Expense.DoesNotExist:
-                    expense = Expense(original_id=details["id"],
-                                      number=number,
-                                      nature=nature,
-                                      date=date,
-                                      value=value,
-                                      expensed=expensed,
-                                      mandate=mandate,
-                                      supplier=supplier)
-                    expense.save()
+                expense = ArchivedExpense(original_id=details["id"],
+                                          number=number,
+                                          nature=nature,
+                                          date=date,
+                                          value=value,
+                                          expensed=expensed,
+                                          mandate=mandate,
+                                          supplier=supplier,
+                                          collection_run=self.collection_run)
+                expense.save()
 
-                    self.debug("New expense found: %s" % unicode(expense))
+                self.debug("New expense found: %s" % unicode(expense))

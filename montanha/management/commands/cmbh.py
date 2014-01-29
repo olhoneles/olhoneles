@@ -40,9 +40,9 @@ def parse_cmbh_date(date_string):
 
 
 class CMBH(BaseCollector):
-    def __init__(self, debug_enabled=False, full_scan=False):
-        self.debug_enabled = debug_enabled
-        self.full_scan = full_scan
+    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
+        super(CMBH, self).__init__(collection_runs, debug_enabled, full_scan)
+
         try:
             institution = Institution.objects.get(siglum='CMBH')
         except Institution.DoesNotExist:
@@ -210,26 +210,19 @@ class CMBH(BaseCollector):
                 docnumber = columns[2].getText()
                 expensed = parse_money(columns[3].getText())
 
-                try:
-                    expense = Expense.objects.get(number=docnumber,
-                                                  nature=nature,
-                                                  date=date,
-                                                  expensed=expensed,
-                                                  mandate=mandate,
-                                                  supplier=supplier)
-                    self.debug("Existing expense found: %s" % unicode(expense))
-                except Expense.DoesNotExist:
-                    expense = Expense(number=docnumber,
-                                      nature=nature,
-                                      date=date,
-                                      expensed=expensed,
-                                      mandate=mandate,
-                                      supplier=supplier)
-                    expense.save()
+                expense = ArchivedExpense(number=docnumber,
+                                          nature=nature,
+                                          date=date,
+                                          expensed=expensed,
+                                          mandate=mandate,
+                                          supplier=supplier,
+                                          collection_run=self.collection_run)
+                expense.save()
 
-                    self.debug("New expense found: %s" % unicode(expense))
+                self.debug("New expense found: %s" % unicode(expense))
 
     def update_data(self):
+        self.collection_run = self.create_collection_run(self.legislature)
         if self.full_scan:
             for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                 self.update_data_for_year(year)

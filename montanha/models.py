@@ -15,6 +15,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext as _
 from easy_thumbnails.fields import ThumbnailerImageField
@@ -266,9 +267,9 @@ class Expense(AbstractExpense):
         verbose_name_plural = _("Expenses")
 
     def save(self, *args, **kwargs):
-        if hasattr(self, 'locked_for_collection'):
+        if settings.expense_locked_for_collection:
             raise RuntimeError("You should not touch Expense while collecting, use ArchivedExpense instead.")
-        super(Model, self).save(*args, **kwargs)
+        super(Expense, self).save(*args, **kwargs)
 
 
 class ArchivedExpense(AbstractExpense):

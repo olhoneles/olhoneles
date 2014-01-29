@@ -41,9 +41,8 @@ def parse_cmsp_date(month, year):
 
 
 class CMSP(BaseCollector):
-    def __init__(self, debug_enabled=False, full_scan=False):
-        self.debug_enabled = debug_enabled
-        self.full_scan = full_scan
+    def __init__(self, collection_runs, debug_enabled=False, full_scan=False):
+        super(CMSP, self).__init__(collection_runs, debug_enabled, full_scan)
 
         institution, institution_created = Institution.objects.get_or_create(
             siglum='CMSP',
@@ -149,7 +148,7 @@ class CMSP(BaseCollector):
                 mandate.save()
                 self.debug('Updating legislator party: %s' % party_siglum)
 
-    def process_expenses(self, month, year, legislature):
+    def process_expenses(self, month, year, legislature, collection_run):
         data = self.retrieve_expenses(month, year)
         if not data:
             return
@@ -223,18 +222,16 @@ class CMSP(BaseCollector):
 
                     expensed = parse_money(j.find('vl_desp').getText())
 
-                    expense, expense_created = Expense.objects.get_or_create(
-                        number='None',
-                        nature=nature,
-                        date=date,
-                        expensed=expensed,
-                        mandate=mandate,
-                        supplier=supplier)
+                    expense = ArchivedExpense(number='None',
+                                              nature=nature,
+                                              date=date,
+                                              expensed=expensed,
+                                              mandate=mandate,
+                                              supplier=supplier,
+                                              collection_run=collection_run)
+                    expense.save()
 
-                    if expense_created:
-                        self.debug(u'New expense found: %s' % expense)
-                    else:
-                        self.debug(u'Found existing expense: %s' % expense)
+                    self.debug(u'New expense found: %s' % expense)
 
     def get_legislature(self, year):
         start_year = end_year = year
@@ -266,10 +263,11 @@ class CMSP(BaseCollector):
     def process_all_expenses(self):
         for year in xrange(2007, 2014):
             legislature = self.get_legislature(year)
+            collection_run = self.create_collection_run(legislature)
             for m in xrange(1, 13):
                 month = '%02d' % m
                 self.debug('Adding expenses from %s/%s' % (month, year))
-                self.process_expenses(month, year, legislature)
+                self.process_expenses(month, year, legislature, collection_run)
 
     def process_current_legislators(self):
         current_legislature = self.get_legislature(2013)
