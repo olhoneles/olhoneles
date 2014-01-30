@@ -55,8 +55,7 @@ class CamaraFederalCollector (BaseCollector):
             'Origin': 'http://www.camara.leg.br',
         }
 
-        req = Request(uri, headers=headers)
-        resp = urlopen(req)
+        resp = BaseCollector.retrieve_uri(self, uri, headers, post_process=False)
         return int(resp.geturl().split('=')[1])
 
     def retrieve_total_expenses_per_nature(self, legislator, year, month):

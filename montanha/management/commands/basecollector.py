@@ -67,7 +67,7 @@ class BaseCollector(object):
             for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                 self.update_data_for_year(mandate, year)
 
-    def retrieve_uri(self, uri, data={}, headers={}):
+    def retrieve_uri(self, uri, data={}, headers={}, post_process=True):
         count = 0
         while True:
             try:
@@ -76,7 +76,9 @@ class BaseCollector(object):
                 else:
                     req = Request(uri, headers=headers)
                 resp = urlopen(req)
-                return self.post_process_uri(resp.read())
+                if post_process:
+                    return self.post_process_uri(resp.read())
+                return resp
             except HTTPError, e:
                 if e.getcode() == 404:
                     print "Unable to retrieve %s." % (uri)
