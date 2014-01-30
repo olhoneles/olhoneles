@@ -56,6 +56,13 @@ class CamaraFederalParser:
 
         return legislatures
 
+    # FIXME: copied from senado's collector, should be shared!
+    def _normalize_party_name(self, name):
+        names_map = {
+            'PCdoB': 'PC do B',
+        }
+        return names_map.get(name, name)
+
     def parse_legislators(self, content):
         table = content.find('table', {'class': 'cor', 'width': '100%'})
 
