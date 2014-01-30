@@ -201,18 +201,17 @@ class CamaraFederal(object):
         with self.stdout_mutex:
             print '[CamaraFederal] Retrieving expenses'
 
-        year = legislature.date_start.year
-        month = 1
-
         mandates = self.updater.get_mandates()
 
         for mandate in mandates:
-            content = self.collector.retrieve_total_expenses_per_nature(mandate.legislator, year, month)
-            natures = self.parser.parse_total_expenses_per_nature(content)
-            self.updater.update_expense_natures(natures)
+            for year in range(legislature.date_start.year, legislature.date_end.year + 1):
+                for month in range(1, 13):
+                    content = self.collector.retrieve_total_expenses_per_nature(mandate.legislator, year, month)
+                    natures = self.parser.parse_total_expenses_per_nature(content)
+                    self.updater.update_expense_natures(natures)
 
-            for nature in natures:
-                print '[CamaraFederal] Retrieving expenses with %s by %s on %d-%d' % (nature['name'], unicode(mandate.legislator), year, month)
-                content = self.collector.retrieve_nature_expenses(mandate.legislator, nature['original_id'], year, month)
-                expenses = self.parser.parse_nature_expenses(content, nature, year, month)
-                self.updater.update_nature_expenses(mandate, nature['original_id'], expenses)
+                    for nature in natures:
+                        print '[CamaraFederal] Retrieving expenses with %s by %s on %d-%d' % (nature['name'], unicode(mandate.legislator), year, month)
+                        content = self.collector.retrieve_nature_expenses(mandate.legislator, nature['original_id'], year, month)
+                        expenses = self.parser.parse_nature_expenses(content, nature, year, month)
+                        self.updater.update_nature_expenses(mandate, nature['original_id'], expenses)
