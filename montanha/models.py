@@ -139,6 +139,10 @@ class Legislature(models.Model):
 
     institution = models.ForeignKey("Institution")
 
+    original_id = models.CharField(blank=True, null=True,
+                                   max_length=512,
+                                   verbose_name=_("Original ID"))
+
     date_start = models.DateField(verbose_name=_("Date started"),
                                   help_text=_("""Date in which this legislature started."""))
 
