@@ -94,7 +94,7 @@ class CamaraFederalParser:
             email = info[4].text.strip()
             picture_uri = td.find('img')['src']
 
-            legislators.append({'original_id': original_id, 'name': name, 'party': party,
+            legislators.append({'original_id': original_id, 'name': name.title(), 'party': self._normalize_party_name(party),
                                 'state': state, 'office': office, 'phone': phone,
                                 'fax': fax, 'email': email, 'picture_uri': picture_uri})
 

@@ -130,7 +130,7 @@ class CamaraFederalUpdater:
             try:
                 nature = ExpenseNature.objects.get(original_id=nature['original_id'])
             except ExpenseNature.DoesNotExist:
-                nature = ExpenseNature(original_id=nature['original_id'], name=nature['name'])
+                nature = ExpenseNature(original_id=nature['original_id'], name=nature['name'].title())
                 nature.save()
 
                 self.debug("New nature found: %s" % unicode(nature))
