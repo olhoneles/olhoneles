@@ -77,6 +77,20 @@ class Command(BaseCommand):
                 cmsp = CMSP(collection_runs, debug_enabled)
                 cmsp.update_data()
 
+            if "camarafederal" in args:
+                from camarafederal import CamaraFederal
+                camarafederal = CamaraFederal(collection_runs, debug_enabled)
+                args = args[1:]
+
+                if args[0] == "legislatures":
+                    camarafederal.collect_legislatures()
+
+                if args[0] == "legislators":
+                    camarafederal.collect_legislators()
+
+                if args[0] == "expenses":
+                    camarafederal.collect_expenses()
+
             settings.expense_locked_for_collection = False
 
             for run in collection_runs:
