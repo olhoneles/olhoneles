@@ -19,6 +19,7 @@
 import time
 import urllib
 from datetime import datetime
+from httplib import BadStatusLine, IncompleteRead
 from urllib import urlretrieve
 from urllib2 import urlopen, Request, URLError, HTTPError
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
@@ -79,15 +80,19 @@ class BaseCollector(object):
                 if post_process:
                     return self.post_process_uri(resp.read())
                 return resp
-            except HTTPError, e:
-                if e.getcode() == 404:
-                    print "Unable to retrieve %s." % (uri)
-                    return None
-                elif e.getcode() >= 499:
+            except (HTTPError, BadStatusLine, IncompleteRead), e:
+                if isinstance(e, HTTPError):
+                    if e.getcode() == 404:
+                        print "Unable to retrieve %s." % (uri)
+                        return None
+                    elif e.getcode() >= 499:
+                        print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
+                        count += 1
+                    else:
+                        raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
+                else:
                     print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
                     count += 1
-                else:
-                    raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
             except URLError:
                 print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
                 count += 1
