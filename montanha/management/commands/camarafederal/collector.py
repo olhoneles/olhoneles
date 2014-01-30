@@ -87,17 +87,3 @@ class CamaraFederalCollector (BaseCollector):
         }
 
         return BaseCollector.retrieve_uri(self, uri, headers)
-
-    def retrieve_legislator_expenses_per_nature(self, idleg, year, month):
-        referer = 'http://www.camara.gov.br/cota-parlamentar/cota-sumarizado?'\
-            'nuDeputadoId=%s&mesAnoConsulta=%s-%s' % (idleg, month, year)
-
-        uri = 'http://www.camara.gov.br/cota-parlamentar/cota-analitico?'\
-            'nuDeputadoId=%s&numMes=%s&numAno=%s&numSubCota=' % (idleg, month, year)
-
-        headers = {
-            'Referer': referer,
-            'Origin': 'http://www.camara.leg.br',
-        }
-
-        return BaseCollector.retrieve_uri(self, uri, headers)
