@@ -97,7 +97,7 @@ class CamaraFederalUpdater:
             self.debug("New party: %s" % unicode(party))
 
         try:
-            legislator = Legislator.objects.get(original_id=leg["original_id"])
+            legislator = Legislator.objects.get(name=leg["name"])
             self.debug("Found existing legislator: %s" % unicode(legislator))
 
             mandate = self.mandate_for_legislator(legislator, party)
@@ -106,17 +106,17 @@ class CamaraFederalUpdater:
             legislator = Legislator(name=leg["name"], original_id=leg["original_id"])
             legislator.save()
 
-            if 'picture' in leg.keys():
-                filename = 'camarafederal-%s' % os.path.basename(leg['picture_uri'])
-                self.debug("Saving picture %s for %s (%d)" % (filename, leg['name'], leg['original_id']))
-                legislator.picture.save(filename, File(open(leg['picture'])))
-                legislator.save()
-
             mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start,
                               party=party, legislature=self.legislature)
             mandate.save()
 
             self.debug("New legislator found: %s" % unicode(legislator))
+
+        if 'picture' in leg.keys():
+            filename = 'camarafederal-%s' % os.path.basename(leg['picture_uri'])
+            self.debug("Saving picture %s for %s (%d)" % (filename, leg['name'], leg['original_id']))
+            legislator.picture.save(filename, File(open(leg['picture'])))
+            legislator.save()
 
     def update_legislator_picture(self, legislator):
         leg = Legislator.objects.get(original_id=legislator['original_id'])
