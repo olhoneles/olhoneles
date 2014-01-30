@@ -60,6 +60,7 @@ class CamaraFederalParser:
     def _normalize_party_name(self, name):
         names_map = {
             'PCdoB': 'PC do B',
+            'PTdoB': 'PT do B',
         }
         return names_map.get(name, name)
 
