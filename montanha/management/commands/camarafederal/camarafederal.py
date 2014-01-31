@@ -38,6 +38,7 @@ class CamaraFederal(object):
         self.parser = CamaraFederalParser()
         self.updater = CamaraFederalUpdater(debug_enabled)
         self.stdout_mutex = Lock()
+        self.expenses_mutex = Lock()
 
     # Paralell Collector helpers
     @staticmethod
@@ -188,7 +189,72 @@ class CamaraFederal(object):
         return collection_run
     # end copied block
 
+    def _collect_expenses(self, legislator_queue, expenses_queue):
+        myname = current_process().name
+        with self.stdout_mutex:
+            print '[%s] started' % (myname)
+
+        items = 0
+        while True:
+            try:
+                mandate = legislator_queue.get(block=False)
+                legislator = mandate.legislator
+            except Empty:
+                # Empty is also raised if queue item is not available, so checking...
+                if not legislator_queue.empty():
+                    continue
+                break
+            else:
+                for year in range(self.updater.legislature.date_start.year, self.updater.legislature.date_end.year + 1):
+                    for month in range(1, 13):
+                        content = self.collector.retrieve_total_expenses_per_nature(legislator, year, month)
+                        natures = self.parser.parse_total_expenses_per_nature(content)
+                        self.updater.update_expense_natures(natures)
+
+                        for nature in natures:
+                            with self.stdout_mutex:
+                                print '[%s] Retrieving expenses with %s by %s on %d-%d' % (myname, nature['name'], unicode(legislator), year, month)
+                            content = self.collector.retrieve_nature_expenses(mandate.legislator, nature['original_id'], year, month)
+                            expenses = self.parser.parse_nature_expenses(content, nature, year, month)
+                            items += len(expenses)
+                            item = {'mandate': mandate, 'nature': nature, 'expenses': expenses}
+                            expenses_queue.put(item)
+
+        with self.expenses_mutex:
+            self.total_expenses += items
+
+        with self.stdout_mutex:
+            print '[%s] finished. %s: %d expenses collected.' % (myname, unicode(legislator), total)
+
+    def _update_expenses(self, expenses_queue, finished):
+        myname = current_process().name
+
+        with self.stdout_mutex:
+            print '[%s] started' % (myname)
+
+        items = 0
+
+        informed = False
+        while items < self.total_expenses:
+            try:
+                item = expenses_queue.get(block=False)
+                informed = False
+            except Empty:
+                pass
+            else:
+                items += 1
+                self.updater.update_nature_expenses(item['mandate'], item['nature'].original_id, item['expenses'])
+                if not informed and (items % 100 == 0 or items > (total_expenses - 10)):
+                    with self.stdout_mutex:
+                        print('[%s] %d items processed.' % (myname, items))
+                    informed = True
+
+        finished.set()
+
     def collect_expenses(self, legislature_id=None):
+        with self.expenses_mutex:
+            self.total_expenses = 0
+
         if legislature_id is None:
             legislature = self.updater.last_legislature()
         else:
@@ -201,17 +267,17 @@ class CamaraFederal(object):
         with self.stdout_mutex:
             print '[CamaraFederal] Retrieving expenses'
 
+        # Parallel collect
+        legislator_queue = Queue()
+        expenses_queue = Queue()
+        updater_finished = Event()
+
         mandates = self.updater.get_mandates()
+        self._fill_queue_from_list(mandates, legislator_queue)
 
-        for mandate in mandates:
-            for year in range(legislature.date_start.year, legislature.date_end.year + 1):
-                for month in range(1, 13):
-                    content = self.collector.retrieve_total_expenses_per_nature(mandate.legislator, year, month)
-                    natures = self.parser.parse_total_expenses_per_nature(content)
-                    self.updater.update_expense_natures(natures)
+        process_list = self._start_collectors(self._collect_expenses, legislator_queue, expenses_queue)
+        self._start_updaters(self._update_expenses, expenses_queue, updater_finished)
+        self._wait(process_list, updater_finished)
 
-                    for nature in natures:
-                        print '[CamaraFederal] Retrieving expenses with %s by %s on %d-%d' % (nature['name'], unicode(mandate.legislator), year, month)
-                        content = self.collector.retrieve_nature_expenses(mandate.legislator, nature['original_id'], year, month)
-                        expenses = self.parser.parse_nature_expenses(content, nature, year, month)
-                        self.updater.update_nature_expenses(mandate, nature['original_id'], expenses)
+        with self.stdout_mutex:
+            print '[CamaraFederal] Finished retrieving expenses' % self.total_legislators
