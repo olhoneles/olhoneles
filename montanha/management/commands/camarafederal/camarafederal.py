@@ -40,7 +40,7 @@ class CamaraFederal(object):
         self.stdout_mutex = Lock()
         self.expenses_mutex = Lock()
 
-    # Paralell Collector helpers
+    # Parallel Collector helpers
     @staticmethod
     def _fill_queue_from_list(items, queue):
         for i in items:
@@ -76,7 +76,7 @@ class CamaraFederal(object):
 
         finished_event.wait()
 
-    # Paralel Collector implementation
+    # Parallel Collector implementation
     def _collect_pictures(self, picture_uri_queue, picture_queue):
         myname = current_process().name
         with self.stdout_mutex:
@@ -155,7 +155,7 @@ class CamaraFederal(object):
 
         self.total_legislators = len(legislators)
 
-        # Paralell collect
+        # Parallel collect
         picture_uri_queue = Queue()
         picture_queue = Queue()
         updater_finished = Event()
