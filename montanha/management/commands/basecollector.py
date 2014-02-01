@@ -27,6 +27,8 @@ from montanha.models import *
 
 __all__ = ['BaseCollector', 'BeautifulSoup', 'BeautifulStoneSoup', 'Request', 'urlopen', 'urlretrieve']
 
+MAX_TRIES = 100
+
 
 class BaseCollector(object):
     def __init__(self, collection_runs, debug_enabled):
@@ -97,8 +99,8 @@ class BaseCollector(object):
                 print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
                 count += 1
 
-            if count > 10:
-                raise RuntimeError("Error: Unable to retrieve %s; Tried 10 times." % uri)
+            if count > MAX_TRIES:
+                raise RuntimeError("Error: Unable to retrieve %s; Tried %d times." % (uri, MAX_TRIES))
 
             time.sleep(10)
 
