@@ -98,7 +98,7 @@ class BaseCollector(object):
                 count += 1
 
             if count > 10:
-                raise "Error: Unable to retrieve %s; Tried 10 times." % uri
+                raise RuntimeError("Error: Unable to retrieve %s; Tried 10 times." % uri)
 
             time.sleep(10)
 
