@@ -17,6 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import socket
 import urllib
 from datetime import datetime
 from httplib import BadStatusLine, IncompleteRead
@@ -27,6 +28,7 @@ from montanha.models import *
 
 __all__ = ['BaseCollector', 'BeautifulSoup', 'BeautifulStoneSoup', 'Request', 'urlopen', 'urlretrieve']
 
+socket.setdefaulttimeout(20)
 MAX_TRIES = 100
 
 
@@ -82,7 +84,7 @@ class BaseCollector(object):
                 if post_process:
                     return self.post_process_uri(resp.read())
                 return resp
-            except (HTTPError, BadStatusLine, IncompleteRead), e:
+            except (HTTPError, BadStatusLine, IncompleteRead, socket.timeout), e:
                 if isinstance(e, HTTPError):
                     if e.getcode() == 404:
                         print "Unable to retrieve %s." % (uri)
