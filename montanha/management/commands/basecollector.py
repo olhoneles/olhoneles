@@ -102,7 +102,7 @@ class BaseCollector(object):
                 count += 1
 
             if count > MAX_TRIES:
-                raise RuntimeError("Error: Unable to retrieve %s; Tried %d times." % (uri, MAX_TRIES))
+                raise RuntimeError("Error: Unable to retrieve %s; Tried %d times.\nLast exception: %s" % (uri, MAX_TRIES, e.message))
 
             time.sleep(10)
 
