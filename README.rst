@@ -1,8 +1,7 @@
 Olho Neles
 ==========
 
-A simple software to allow easier watching of the activities of the legislators
-from the brazilian State of Minas Gerais.
+Tool to monitor Brazilian legislators expenses while in the exercise of their mandates.
 
 
 Install
