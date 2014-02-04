@@ -666,7 +666,7 @@ def contact_us(request):
     success_message = ''
 
     if request.POST and contact_us_form.is_valid():
-        subject = '[Montanha Site]: Fale Conosco'
+        subject = '[Olho Neles]: Fale Conosco'
 
         message = ('Nome: %s\nEmail: %s\nIP: %s\nMensagem:\n\n%s') % (
             contact_us_form.cleaned_data['name'],
