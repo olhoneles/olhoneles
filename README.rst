@@ -36,6 +36,20 @@ Install
     python manage.py runserver
 
 
+Collecting the data
+-------------------
+
+After setting up, you can collect one of the supported legislative houses
+(cmbh, almg, cmsp, senado) by using the collect command like this:
+
+    python manage.py collect <house>
+
+You can add ``debug`` after the name of the house to get a more verbose
+output. Note that the collection process happens in a transaction and that
+the expenses are not added to the main Expense table while the collection
+is running, so you will not see partial data in the site while collecting.
+
+
 Contribute
 ----------
 
