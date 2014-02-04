@@ -7,7 +7,7 @@ data:
 	python manage.py syncdb --migrate
 
 setup:
-	pip install -r requirements.txt
+	@pip install -U -e .\[tests\]
 
 tests:
 	@coverage run --source='.' manage.py test
