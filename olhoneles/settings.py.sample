@@ -137,6 +137,7 @@ INSTALLED_APPS = (
     'bootstrap_toolkit',
     'easy_thumbnails',
     'montanha',
+    'cms',
     # South must be the last one, since it is used for migrating models of
     # all apps, potentially.
     'south',
