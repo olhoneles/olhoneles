@@ -1,5 +1,8 @@
 *.pyc
 *~
-data.db
+*.db
+*.sqlite3
 olhoneles/settings.py
 media
+.idea
+
