@@ -53,7 +53,7 @@ is running, so you will not see partial data in the site while collecting.
 Contribute
 ----------
 
-Join us at the `dev-mailing list <http://listas.olhoneles.org/cgi-bin/mailman/subscribe/montanha-dev>`_ and at
+Join us at the `dev-mailing list <http://listas.olhoneles.org/cgi-bin/mailman/listinfo/montanha-dev>`_ and at
 `#olhoneles <irc://irc.freenode.net:6667/olhoneles>`_ on Freenode.
 
 Fork the repository and send your pull-requests.
