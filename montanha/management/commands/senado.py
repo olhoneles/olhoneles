@@ -205,30 +205,37 @@ class Senado(BaseCollector):
 
             name = self._normalize_name(columns[0].getText())
 
-            legislator = Legislator.objects.filter(name=name)
-            legislator = legislator.filter(mandate__legislature=self.legislature)
-            legislator = legislator.order_by("-mandate__date_start")[0]
+            legislator = Legislator.objects.filter(name=name).filter(
+                mandate__legislature=self.legislature
+            ).order_by("-mandate__date_start")
 
-            mandate = legislator.mandate_set.order_by("-date_start")[0]
-            if mandate.legislature != self.legislature:
-                print 'Legislature found for %s is not the same as the one we need, ignoring.' % legislator.name
-                continue
+            # Check if query returned a legislator
+            if legislator.exists():
+                # Get the first row of the query result
+                legislator = legislator[0]
 
-            party = self._normalize_party_name(columns[1].getText())
-            mandate.party, _ = PoliticalParty.objects.get_or_create(siglum=party)
-            mandate.save()
+                mandate = legislator.mandate_set.order_by("-date_start")[0]
+                if mandate.legislature != self.legislature:
+                    print 'Legislature found for %s is not the same as the one we need, ignoring.' % legislator.name
+                    continue
 
-            href = columns[6].findChild().get('href')
-            if href:
-                legislator.email = href.split(':')[1]
+                party = self._normalize_party_name(columns[1].getText())
+                mandate.party, _ = PoliticalParty.objects.get_or_create(siglum=party)
+                mandate.save()
 
-            href = columns[7].findChild().get('href')
-            if href:
-                legislator.site = href.split(':')[1]
+                href = columns[6].findChild().get('href')
+                if href:
+                    legislator.email = href.split(':')[1]
 
-            legislator.save()
+                href = columns[7].findChild().get('href')
+                if href:
+                    legislator.site = href.split(':')[1]
 
-            self.debug('Updated data for %s: %s, %s, %s' % (legislator.name,
-                                                            mandate.party.name,
-                                                            legislator.email,
-                                                            legislator.site))
+                legislator.save()
+
+                self.debug('Updated data for %s: %s, %s, %s' % (legislator.name,
+                                                                mandate.party.name,
+                                                                legislator.email,
+                                                                legislator.site))
+            else:
+                self.debug('Legislator found on site but not on database: %s' % name)
