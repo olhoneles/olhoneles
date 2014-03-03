@@ -173,7 +173,9 @@ class Senado(BaseCollector):
                                       date=expense_date,
                                       expensed=expensed,
                                       mandate=mandate,
-                                      supplier=supplier)
+                                      supplier=supplier,
+                                      collection_run=self.collection_run)
+            expense.save()
             self.debug("New expense found: %s" % unicode(expense))
 
             # This makes django release its queries cache; when running Django itself,
