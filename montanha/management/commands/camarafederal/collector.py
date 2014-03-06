@@ -55,7 +55,12 @@ class CamaraFederalCollector (BaseCollector):
             'Origin': 'http://www.camara.leg.br',
         }
 
-        resp = BaseCollector.retrieve_uri(self, uri, headers, post_process=False)
+        resp = None
+        while not resp:
+            resp = BaseCollector.retrieve_uri(self, uri, headers, post_process=False)
+            if not resp:
+                print "Failed to retrieve %s - Retrying..." % (uri)
+
         return int(resp.geturl().split('=')[1])
 
     def retrieve_total_expenses_per_nature(self, legislator, year, month):
@@ -85,4 +90,9 @@ class CamaraFederalCollector (BaseCollector):
             'Origin': 'http://www.camara.leg.br',
         }
 
-        return BaseCollector.retrieve_uri(self, uri, headers)
+        while True:
+            content = BaseCollector.retrieve_uri(self, uri, headers)
+            if not content or 'foi possível obter o dado para sua consulta' in content:
+                continue
+            break
+        return content
