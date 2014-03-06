@@ -18,7 +18,7 @@ Install
 
 #. Install dependencies::
 
-    pip install -r requirements.txt
+    make setup
 
 #. Create your ``settings.py``::
 
@@ -28,11 +28,11 @@ Install
 
 #. Create your database::
 
-    python manage.py syncdb --migrate
+    make data
 
 #. Run it::
 
-    python manage.py runserver
+    make run
 
 
 Collecting the data
