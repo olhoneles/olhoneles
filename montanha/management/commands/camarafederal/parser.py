@@ -136,7 +136,10 @@ class CamaraFederalParser:
     def _parse_expenses_table(self, expenses_table, nature, year, month):
         expenses = []
 
-        rows = expenses_table.findAll('tr')[1:-1]
+        try:
+            rows = expenses_table.findAll('tr')[1:-1]
+        except:
+            rows = []
 
         nature_total = 0
         for row in rows:
