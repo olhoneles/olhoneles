@@ -90,15 +90,15 @@ class BaseCollector(object):
                         print "Unable to retrieve %s." % (uri)
                         return None
                     elif e.getcode() >= 499:
-                        print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
+                        print "Unable to retrieve %s try(%d) - will try again in 10 seconds." % (uri, count)
                         count += 1
                     else:
                         raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
                 else:
-                    print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
+                    print "Unable to retrieve %s try(%d) - will try again in 10 seconds." % (uri, count)
                     count += 1
             except URLError:
-                print "Unable to retrieve %s; will try again in 10 seconds." % (uri)
+                print "Unable to retrieve %s try(%d) - will try again in 10 seconds." % (uri, count)
                 count += 1
 
             if count > MAX_TRIES:
