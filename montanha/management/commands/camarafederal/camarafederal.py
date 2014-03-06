@@ -17,6 +17,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import pickle
+from django.core.cache import cache
+from django.db import transaction
 from multiprocessing import Process, Queue, Lock, Event, current_process, cpu_count
 from Queue import Empty
 from datetime import datetime, date
@@ -194,14 +197,23 @@ class CamaraFederal(object):
         else:
             legislature = self.updater.get_legislature(legislature_id)
 
-        # set the collection run and the legislature in the updater
-        self.updater.collection_run = self.create_collection_run(legislature)
+        pending_collection = cache.get('pending-cdf-collection')
+        if pending_collection:
+            pending_collection = pickle.loads(pending_collection)
+            self.updater.collection_run = CollectionRun.objects.get(id=pending_collection['collection_run_id'])
+        else:
+            self.updater.collection_run = self.create_collection_run(legislature)
         self.updater.legislature = legislature
 
         with self.stdout_mutex:
             print '[CamaraFederal] Retrieving expenses'
 
         mandates = self.updater.get_mandates()
+
+        if pending_collection:
+            mandates = [m for m in mandates if m.id not in pending_collection['processed_mandates']]
+        else:
+            pending_collection = dict(collection_run_id=self.updater.collection_run.id, processed_mandates=[])
 
         for mandate in mandates:
             for year in range(legislature.date_start.year, legislature.date_end.year + 1):
@@ -215,3 +227,7 @@ class CamaraFederal(object):
                         content = self.collector.retrieve_nature_expenses(mandate.legislator, nature['original_id'], year, month)
                         expenses = self.parser.parse_nature_expenses(content, nature, year, month)
                         self.updater.update_nature_expenses(mandate, nature['original_id'], expenses)
+            transaction.commit()
+            pending_collection['processed_mandates'].append(mandate.id)
+            cache.set('pending-cdf-collection', pickle.dumps(pending_collection))
+        cache.delete('pending-cdf-collection')
