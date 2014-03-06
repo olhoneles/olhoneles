@@ -650,6 +650,14 @@ def show_all(request, institution):
 
     c = {}
 
+    data = Expense.objects.all()
+
+    if institution:
+        data = filter_for_institution(data, institution)
+
+    date_ranges = get_date_ranges_from_data(request, institution, data)
+    c.update(date_ranges)
+
     return new_render(request, institution, 'all_expenses.html', c)
 
 
