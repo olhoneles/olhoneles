@@ -29,7 +29,7 @@ from montanha.models import *
 __all__ = ['BaseCollector', 'BeautifulSoup', 'BeautifulStoneSoup', 'Request', 'urlopen', 'urlretrieve']
 
 socket.setdefaulttimeout(20)
-MAX_TRIES = 100
+MAX_TRIES = 100000
 
 
 class BaseCollector(object):
