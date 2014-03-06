@@ -19,7 +19,7 @@
 import time
 import socket
 import urllib
-from datetime import datetime
+from datetime import datetime, date
 from httplib import BadStatusLine, IncompleteRead
 from urllib import urlretrieve
 from urllib2 import urlopen, Request, URLError, HTTPError
