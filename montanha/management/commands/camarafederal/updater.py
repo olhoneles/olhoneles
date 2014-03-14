@@ -123,6 +123,12 @@ class CamaraFederalUpdater:
         leg.picture.save(os.path.basename(legislator['picture_uri']), File(open(legislator['picture'])))
         leg.save()
 
+    def normalize_nature_name(self, nature_name):
+        if nature_name.startswith(u'Passagens Aéreas ') and nature_name.endswith(u'*'):
+            nature_name = u'Passagens Aéreas'
+
+        return nature_name.title()
+
     def update_expense_natures(self, natures):
         institution = Institution.objects.get(siglum='CDF')
 
@@ -130,7 +136,7 @@ class CamaraFederalUpdater:
             try:
                 nature = ExpenseNature.objects.get(original_id=nature['original_id'])
             except ExpenseNature.DoesNotExist:
-                nature = ExpenseNature(original_id=nature['original_id'], name=nature['name'].title())
+                nature = ExpenseNature(original_id=nature['original_id'], name=self.normalize_nature_name(nature['name']))
                 nature.save()
 
                 self.debug("New nature found: %s" % unicode(nature))
