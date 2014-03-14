@@ -24,7 +24,7 @@ from django.conf import settings
 settings.DEBUG = False
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import connection, transaction
 from montanha.models import ArchivedExpense, Expense
 
 
@@ -96,15 +96,16 @@ class Command(BaseCommand):
             for run in collection_runs:
                 legislature = run.legislature
                 Expense.objects.filter(mandate__legislature=legislature).delete()
-                for expense in ArchivedExpense.objects.filter(collection_run=run).all():
-                    Expense(original_id=expense.original_id,
-                            number=expense.number,
-                            nature=expense.nature,
-                            date=expense.date,
-                            value=expense.value,
-                            expensed=expense.expensed,
-                            mandate=expense.mandate,
-                            supplier=expense.supplier).save()
+
+                columns = "number, nature_id, date, value, expensed, mandate_id, supplier_id"
+
+                cursor = connection.cursor()
+                cursor.execute("insert into montanha_expense (%s) select %s from montanha_archivedexpense where collection_run_id=%d" % (columns, columns, run.id))
+                cursor.close()
+
+                # FIXME: this is not required in django 1.6.
+                transaction.commit_unless_managed()
+
         except Exception:
             transaction.rollback()
             raise
