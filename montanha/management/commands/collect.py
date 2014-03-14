@@ -32,7 +32,7 @@ debug_enabled = False
 
 
 class Command(BaseCommand):
-    args = "<source> [mandate_start_year]"
+    args = "<source> [debug]"
     help = "Collects data for a number of sources"
 
     @transaction.commit_manually
