@@ -2,6 +2,7 @@
 #
 # Copyright (©) 2010-2013 Estêvão Samuel Procópio
 # Copyright (©) 2010-2013 Gustavo Noronha Silva
+# Copyright (©) 2014 Lúcio Flávio Corrêa
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -16,26 +17,22 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
-import socket
-import urllib
 from datetime import datetime, date
-from httplib import BadStatusLine, IncompleteRead
-from urllib import urlretrieve
-from urllib2 import urlopen, Request, URLError, HTTPError
+import time
+import requests
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
-from montanha.models import *
-
-__all__ = ['BaseCollector', 'BeautifulSoup', 'BeautifulStoneSoup', 'Request', 'urlopen', 'urlretrieve']
-
-socket.setdefaulttimeout(20)
-MAX_TRIES = 100000
+from montanha.models import Mandate, CollectionRun, ArchivedExpense
 
 
 class BaseCollector(object):
     def __init__(self, collection_runs, debug_enabled):
         self.debug_enabled = debug_enabled
         self.collection_runs = collection_runs
+        self.collection_run = None
+
+        self.default_timeout = 20
+        self.max_tries = 10
+        self.try_again_timer = 10
 
     def debug(self, message):
         if self.debug_enabled:
@@ -45,13 +42,14 @@ class BaseCollector(object):
         try:
             mandate = Mandate.objects.get(legislator=legislator, date_start=self.legislature.date_start)
         except Mandate.DoesNotExist:
-            mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=party, legislature=self.legislature)
+            mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=party,
+                              legislature=self.legislature)
             mandate.save()
             self.debug("Mandate starting on %s did not exist, created." % self.legislature.date_start.strftime("%F"))
         return mandate
 
     def update_legislators(self):
-        exception("Not implemented.")
+        raise Exception("Not implemented.")
 
     def create_collection_run(self, legislature):
         collection_run, created = CollectionRun.objects.get_or_create(date=date.today(),
@@ -68,51 +66,32 @@ class BaseCollector(object):
 
     def update_data(self):
         self.collection_run = self.create_collection_run(self.legislature)
-        for mandate in Mandate.objects.filter(date_start__year=self.legislature.date_start.year, legislature=self.legislature):
+        for mandate in Mandate.objects.filter(date_start__year=self.legislature.date_start.year,
+                                              legislature=self.legislature):
             for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                 self.update_data_for_year(mandate, year)
 
-    def retrieve_uri(self, uri, data={}, headers={}, post_process=True):
-        count = 0
-        while True:
+    def retrieve_uri(self, uri, data=None, headers=None, post_process=True):
+        retries = 0
+
+        while retries < self.max_tries:
             try:
-                if data:
-                    req = Request(uri, urllib.urlencode(data), headers)
-                else:
-                    req = Request(uri, headers=headers)
-                resp = urlopen(req)
+                r = requests.get(uri, data=data, headers=headers,
+                                 timeout=self.default_timeout)
+                if r.status_code == requests.codes.not_found:
+                    return False
                 if post_process:
-                    return self.post_process_uri(resp.read())
-                return resp
-            except (HTTPError, BadStatusLine, IncompleteRead, socket.timeout), e:
-                if isinstance(e, HTTPError):
-                    if e.getcode() == 404:
-                        print "Unable to retrieve %s." % (uri)
-                        return None
-                    elif e.getcode() >= 499:
-                        print "Unable to retrieve %s try(%d) - will try again in 10 seconds." % (uri, count)
-                        count += 1
-                    else:
-                        raise HTTPError(e.url, e.code, e.msg, e.headers, e.fp)
+                    return self.post_process_uri(r.text)
                 else:
-                    print "Unable to retrieve %s try(%d) - will try again in 10 seconds." % (uri, count)
-                    count += 1
-            except URLError:
-                print "Unable to retrieve %s try(%d) - will try again in 10 seconds." % (uri, count)
-                count += 1
+                    return r.text
 
-            if count > MAX_TRIES:
-                raise RuntimeError("Error: Unable to retrieve %s; Tried %d times.\nLast exception: %s" % (uri, MAX_TRIES, e.message))
+            except requests.ConnectionError:
+                retries += 1
+                print "Unable to retrieve %s try(%d) - will try again in %d seconds." % (uri, retries, self.try_again_timer)
 
-            time.sleep(10)
+            time.sleep(self.try_again_timer)
+
+        raise RuntimeError("Error: Unable to retrieve %s; Tried %d times." % (uri, self.max_tries))
 
     def post_process_uri(self, contents):
-        # Some sites are not in utf-8.
-        try:
-            contents = contents.decode('utf-8')
-        except UnicodeDecodeError:
-            try:
-                contents = contents.decode('iso-8859-1')
-            except Exception:
-                pass
         return BeautifulSoup(contents, convertEntities=BeautifulStoneSoup.ALL_ENTITIES)
