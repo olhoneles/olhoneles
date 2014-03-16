@@ -298,3 +298,22 @@ class Supplier(models.Model):
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.identifier)
+
+
+# Consolidated data models
+class PerNature(models.Model):
+    institution = models.ForeignKey("Institution")
+    legislature = models.ForeignKey("Legislature",
+                                    blank=True,
+                                    null=True)
+    date_start = models.DateField()
+    date_end = models.DateField()
+    nature = models.ForeignKey("ExpenseNature")
+    expensed = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class PerNatureByYear(models.Model):
+    institution = models.ForeignKey("Institution")
+    year = models.IntegerField()
+    nature = models.ForeignKey("ExpenseNature")
+    expensed = models.DecimalField(max_digits=10, decimal_places=2)

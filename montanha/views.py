@@ -30,6 +30,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from montanha.models import *
 from montanha.forms import *
+from montanha.util import filter_for_institution, get_date_ranges_from_data
 
 locale.setlocale(locale.LC_MONETARY, "pt_BR.UTF-8")
 locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
@@ -102,15 +103,6 @@ def exclude_disabled(data, to_disable):
     return data
 
 
-def filter_for_institution(data, institution):
-    if not institution:
-        return data
-
-    institution = Institution.objects.get(siglum=institution)
-    data = data.filter(mandate__legislature__institution=institution)
-    return data
-
-
 def show_index(request, institution):
 
     c = {}
@@ -136,98 +128,22 @@ def error_404(request):
     return original_render(request, '404.html', c)
 
 
-def get_date_ranges_from_data(request, institution, data, include_date_objects=True):
-    """ Takes a data set and returns a dict containing in textual form:
-
-        current_date_from: the start date that is being used for this query
-        current_date_to: the end date that is being used for this query
-    """
-    try:
-        cdf = data.order_by('date')[0].date
-    except:
-        cdf = date.today()
-
-    try:
-        cdt = data.order_by('-date')[0].date
-    except:
-        cdt = date.today()
-
-    if institution:
-        institution = Institution.objects.get(siglum=institution)
-
-        # Bound dates to the start of the first legislature to the end
-        # of the last, which makes more sense to our purposes.
-        first = institution.legislature_set.order_by('date_start')[0]
-        last = institution.legislature_set.order_by('-date_end')[0]
-    else:
-        first = Legislature.objects.order_by('date_start')[0]
-        last = Legislature.objects.order_by('-date_end')[0]
-
-    min_date = first.date_start
-    max_date = last.date_end
-
-    if cdf < min_date:
-        cdf = min_date
-
-    if cdt > max_date:
-        cdt = max_date
-
-    cdf_string = cdf.strftime('%B de %Y')
-    cdt_string = cdt.strftime('%B de %Y')
-
-    d = dict(current_date_from=cdf_string, current_date_to=cdt_string)
-    if include_date_objects:
-        d.update(dict(cdf=cdf, cdt=cdt))
-
-    return d
-
-
-def ensure_years_in_range(date_ranges, years):
-    nyears = []
-    cdf = date_ranges['cdf']
-    cdt = date_ranges['cdt']
-    for y in years:
-        d = date(y, 1, 1)
-        if d < cdf or d > cdt:
-            continue
-        nyears.append(y)
-    return nyears
-
-
 def show_per_nature(request, institution):
 
-    data = Expense.objects.all()
-    data = filter_for_institution(data, institution)
+    institution = Institution.objects.get(siglum=institution)
+    data = PerNature.objects.filter(institution=institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(institution, data, consolidated_data=True)
 
-    data = data.values('nature__name')
-    data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
-
-    years = [d.year for d in Expense.objects.dates('date', 'year')]
-    years = ensure_years_in_range(date_ranges, years)
-
-    # We use the data variable to get our list of expense natures so that we can
-    # match the graph stacking with the order of the table rows, it also makes
-    # it easier to filter for the institution.
     time_series = []
-    for nature_name in [d["nature__name"] for d in data]:
-        nature = ExpenseNature.objects.get(name=nature_name)
-
+    for d in data:
         l = []
         cummulative = .0
-        time_series.append(dict(label=nature_name, data=l))
+        time_series.append(dict(label=d.nature.name, data=l))
 
-        for year in years:
-            year_data = Expense.objects.filter(nature=nature)
-            year_data = year_data.filter(date__year=year)
-            year_data = year_data.values("nature__name")
-            year_data = year_data.annotate(expensed=Sum("expensed"))
-
-            if year_data:
-                cummulative = cummulative + float(year_data[0]["expensed"])
-
-            l.append([int(date(year, 1, 1).strftime("%s000")), cummulative])
+        for item in PerNatureByYear.objects.filter(institution=institution).filter(nature=d.nature):
+            cummulative = cummulative + float(item.expensed)
+            l.append([int(date(item.year, 1, 1).strftime("%s000")), cummulative])
 
     # mbm_years = list of years (3, right now - 2011, 2012, 2013) with 12 months inside
     # each month in turn carries a dict with month name and value or null.
@@ -283,7 +199,7 @@ def show_per_nature(request, institution):
 
     c.update(date_ranges)
 
-    return new_render(request, institution, 'per_nature.html', c)
+    return new_render(request, institution.siglum, 'per_nature.html', c)
 
 
 def show_per_legislator(request, institution):
@@ -291,7 +207,7 @@ def show_per_legislator(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(institution, data)
 
     data = data.values('mandate__legislator__id',
                        'mandate__legislator__name',
@@ -343,7 +259,7 @@ def show_legislator_detail(request, institution, legislator_id):
     if institution:
         data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(institution, data)
 
     legislator = Legislator.objects.get(pk=legislator_id)
     data = data.filter(mandate__legislator=legislator)
@@ -403,7 +319,7 @@ def show_per_party(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(institution, data)
 
     data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     data = data.annotate(expensed=Sum('expensed'))
@@ -433,7 +349,7 @@ def show_per_supplier(request, institution):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(institution, data)
 
     data = data.values('supplier__id', 'supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed'))
@@ -461,7 +377,7 @@ def show_supplier_detail(request, institution, supplier_id):
     data = Expense.objects.all()
     data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(institution, data)
 
     supplier = Supplier.objects.get(pk=supplier_id)
     data = data.filter(supplier=supplier)
@@ -540,7 +456,7 @@ def data_tables_query(request, institution, columns, filter_function=None):
     if filter_function:
         data = filter_function(data)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data, False)
+    date_ranges = get_date_ranges_from_data(institution, data, False)
 
     total_results = data.count()
 
@@ -655,7 +571,7 @@ def show_all(request, institution):
     if institution:
         data = filter_for_institution(data, institution)
 
-    date_ranges = get_date_ranges_from_data(request, institution, data)
+    date_ranges = get_date_ranges_from_data(institution, data)
     c.update(date_ranges)
 
     return new_render(request, institution, 'all_expenses.html', c)
