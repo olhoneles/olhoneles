@@ -1,11 +1,16 @@
 # Django settings for olhoneles project.
 
 import os
+import sys
 from derpconf.config import Config
 
 INSTANCE = lambda *x: os.path.join(os.path.dirname(__file__), *x)
 
-config_file = 'olhoneles/local.config'
+if 'test' in sys.argv:
+    config_file = 'olhoneles/tests.config'
+else:
+    config_file = 'olhoneles/local.config'
+
 if os.path.isfile(config_file):
     conf = Config.load(config_file)
 else:
