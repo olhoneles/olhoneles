@@ -5,3 +5,6 @@ South==0.8.4
 -e git+https://github.com/gnoronha/django-bootstrap-toolkit/@0f0ff43eeab8e19ee8d8021460f1a4abf8303bde#egg=django_bootstrap_toolkit-dev
 django-parsley==0.4
 easy-thumbnails==1.4
+requests==2.2.1
+chardet==2.2.1
+pandas==0.13.1
