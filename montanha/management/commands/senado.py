@@ -46,7 +46,7 @@ class Senado(BaseCollector):
 
         self.debug("Downloading %s" % uri)
 
-        return BaseCollector.retrieve_uri(self, uri, post_process=False)
+        return BaseCollector.retrieve_uri(self, uri, force_encoding='windows-1252', post_process=False)
 
     def update_legislators(self):
         page = self.retrieve_legislators()

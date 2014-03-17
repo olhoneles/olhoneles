@@ -71,13 +71,15 @@ class BaseCollector(object):
             for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                 self.update_data_for_year(mandate, year)
 
-    def retrieve_uri(self, uri, data=None, headers=None, post_process=True):
+    def retrieve_uri(self, uri, data=None, headers=None, post_process=True, force_encoding=None):
         retries = 0
 
         while retries < self.max_tries:
             try:
                 r = requests.get(uri, data=data, headers=headers,
-                                 timeout=self.default_timeout)
+                                 timeout=self.default_timeout, stream=True)
+                if force_encoding:
+                    r.encoding = force_encoding
                 if r.status_code == requests.codes.not_found:
                     return False
                 if post_process:
