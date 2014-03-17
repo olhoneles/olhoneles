@@ -2,6 +2,7 @@
 #
 # Copyright (©) 2010-2013 Estêvão Samuel Procópio
 # Copyright (©) 2010-2013 Gustavo Noronha Silva
+# Copyright (©) 2014 Lúcio Flávio Corrêa
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -16,31 +17,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import csv
-import re
-from datetime import datetime, date
+from datetime import datetime
+from StringIO import StringIO
 from django.db import reset_queries
+import pandas as pd
 from basecollector import BaseCollector
-from montanha.models import *
+from montanha.models import (ArchivedExpense, Institution, Legislature,
+                             Legislator, Mandate, ExpenseNature, Supplier, PoliticalParty)
 
-
-def parse_money(string):
-    string = string.strip('R$ ')
-    string = string.replace('.', '')
-    string = string.replace(',', '.')
-    string = string.replace('\r', '')
-    return float(string)
-
-
-def parse_date(string):
-    return datetime.strptime(string, '%d/%m/%y').date()
+OBJECT_LIST_MAXIMUM_COUNTER = 1000
 
 
 class Senado(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
         super(Senado, self).__init__(collection_runs, debug_enabled)
-
-        self.csv_regex = re.compile('http://www.senado.leg.br/transparencia/LAI/verba/2[0-9]{3}_SEN_[^\.]+.csv')
 
         institution, _ = Institution.objects.get_or_create(siglum='Senado', name=u'Senado Federal')
         self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
@@ -51,17 +41,12 @@ class Senado(BaseCollector):
         uri = 'http://www.senado.gov.br/transparencia/'
         return BaseCollector.retrieve_uri(self, uri)
 
-    def retrieve_data_for_year(self, legislator, year):
-        uri = 'http://www.senado.gov.br/transparencia/sen/verba/VerbaMes.asp'
-        data = {
-            'COD_ORGAO': legislator.original_id,
-            'ANO_EXERCICIO': year,
-        }
-        headers = {
-            'Referer': 'http://www.senado.gov.br/transparencia/sen/verba/verbaAno.asp',
-            'Origin': 'http://www.senado.gov.br',
-        }
-        return BaseCollector.retrieve_uri(self, uri, data, headers)
+    def retrieve_data_for_year(self, year):
+        uri = 'http://www.senado.gov.br/transparencia/LAI/verba/%d.csv' % year
+
+        self.debug("Downloading %s" % uri)
+
+        return BaseCollector.retrieve_uri(self, uri, post_process=False)
 
     def update_legislators(self):
         page = self.retrieve_legislators()
@@ -98,90 +83,90 @@ class Senado(BaseCollector):
 
                 self.debug("New legislator found: %s" % unicode(legislator))
 
-    def update_data_for_year(self, mandate, year=datetime.now().year):
+    def update_data(self):
+        self.collection_run = self.create_collection_run(self.legislature)
+        for year in range(self.legislature.date_start.year, datetime.now().year + 1):
+            self.update_data_for_year(year)
+
+    def update_data_for_year(self, year=datetime.now().year):
         self.debug("Updating data for year %d" % year)
 
-        data = self.retrieve_data_for_year(mandate.legislator, year)
+        data = StringIO(self.retrieve_data_for_year(year))
 
-        csv_data = None
-        anchor = data.find('a', href=self.csv_regex)
-        if anchor and anchor.get('href'):
-            csv_data = unicode(self.retrieve_uri(anchor.get('href')))
+        if data:
+            df = pd.read_csv(data, skiprows=1, delimiter=";",
+                             parse_dates=[7], decimal=',',
+                             error_bad_lines=False).dropna(how='all')
 
-        if not csv_data:
-            self.debug("Legislator %s does not have expenses for year %d" % (mandate.legislator.name, year))
-            return
+            expected_header = [u'ANO',
+                               u'MES',
+                               u'SENADOR',
+                               u'TIPO_DESPESA',
+                               u'CNPJ_CPF',
+                               u'FORNECEDOR',
+                               u'DOCUMENTO',
+                               u'DATA',
+                               u'DETALHAMENTO',
+                               u'VALOR_REEMBOLSADO']
 
-        csv_data = [l.encode('utf-8') for l in csv_data.split('\n')]
+            actual_header = df.columns.values.tolist()
 
-        expected_headers = ["ANO", "MES", "SENADOR", "TIPO_DESPESA", "CNPJ_CPF",
-                            "FORNECEDOR", "DOCUMENTO", "DATA", "DETALHAMENTO",
-                            "VALOR_REEMBOLSADO"]
-        headers = csv_data[1].split(';')
-        if not len(headers) == len(expected_headers):
-            print u'Bad CSV: expected %d headers, got %d' % (len(expected_headers), len(headers))
-            return
-
-        for i, header in enumerate(expected_headers):
-            actual_header = headers[i].strip('"\r')
-            if actual_header != header:
-                print u'Bad CSV: expected header %s, got %s' % (header, actual_header)
+            if actual_header != expected_header:
+                print u'Bad CSV: expected header %s, got %s' % (expected_header, actual_header)
                 return
 
-        for row in csv.reader(csv_data[2:], delimiter=";"):
-            # Last row?
-            if not row:
-                continue
+            archived_expense_list = []
+            objects_counter = 0
+            archived_expense_list_counter = len(df.index)
 
-            nature = row[3].strip('"')
-            cnpj = row[4].replace('.', '').replace('-', '').replace('/', '').strip('"')
-            supplier_name = row[5].strip('"')
-            docnumber = row[6].strip('"')
+            for idx, row in df.iterrows():
+                name = row["SENADOR"]
+                nature = row["TIPO_DESPESA"]
+                cpf_cnpj = row["CNPJ_CPF"].replace('.', '').replace('-', '').replace('/', '')
+                supplier_name = row["FORNECEDOR"]
+                docnumber = row["DOCUMENTO"]
+                expense_date = row["DATA"]
+                expensed = row['VALOR_REEMBOLSADO']
 
-            try:
-                expense_date = parse_date(row[7].strip('"'))
-            except:
-                expense_date = date(year, 1, 1)
+                nature, _ = ExpenseNature.objects.get_or_create(name=nature)
 
-            expensed = parse_money(row[9].strip('"\r'))
+                try:
+                    supplier = Supplier.objects.get(identifier=cpf_cnpj)
+                except Supplier.DoesNotExist:
+                    supplier = Supplier(identifier=cpf_cnpj, name=supplier_name)
+                    supplier.save()
 
-            try:
-                nature = nature.decode('utf-8')
-            except Exception:
-                pass
+                try:
+                    legislator = Legislator.objects.get(name__iexact=name)
+                    mandate = self.mandate_for_legislator(legislator, None)
+                    expense = ArchivedExpense(number=docnumber,
+                                              nature=nature,
+                                              date=expense_date,
+                                              expensed=expensed,
+                                              mandate=mandate,
+                                              supplier=supplier,
+                                              collection_run=self.collection_run)
+                    archived_expense_list.append(expense)
+                    self.debug("New expense found: %s" % unicode(expense))
 
-            nature, _ = ExpenseNature.objects.get_or_create(name=nature)
+                    objects_counter += 1
+                    archived_expense_list_counter -= 1
 
-            try:
-                supplier_name = supplier_name.decode('utf-8')
-            except Exception:
-                pass
+                    # We create a list with up to OBJECT_LIST_MAXIMUM_COUNTER.
+                    # If that lists is equal to the maximum object count allowed
+                    # or if there are no more objects in archived_expense_list,
+                    # we bulk_create() them and clear the list.
 
-            try:
-                docnumber = docnumber.decode('utf-8')
-            except Exception:
-                pass
+                    if objects_counter == OBJECT_LIST_MAXIMUM_COUNTER or archived_expense_list_counter == 0:
+                        ArchivedExpense.objects.bulk_create(archived_expense_list)
+                        archived_expense_list[:] = []
+                        objects_counter = 0
+                        reset_queries()
 
-            try:
-                supplier = Supplier.objects.get(identifier=cnpj)
-            except Supplier.DoesNotExist:
-                supplier = Supplier(identifier=cnpj, name=supplier_name)
-                supplier.save()
-
-            expense = ArchivedExpense(number=docnumber,
-                                      nature=nature,
-                                      date=expense_date,
-                                      expensed=expensed,
-                                      mandate=mandate,
-                                      supplier=supplier,
-                                      collection_run=self.collection_run)
-            expense.save()
-            self.debug("New expense found: %s" % unicode(expense))
-
-            # This makes django release its queries cache; when running Django itself,
-            # the queries are cleared for each request, not the case here, so we need
-            # to do it ourselves.
-            reset_queries()
+                except Exception:
+                    pass
+        else:
+            self.debug("Error downloading file for year %d" % year)
 
     def _normalize_name(self, name):
         names_map = {
