@@ -25,7 +25,7 @@ settings.DEBUG = False
 
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
-from montanha.models import ArchivedExpense, Expense
+from montanha.models import Expense
 
 
 debug_enabled = False
