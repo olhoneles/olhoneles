@@ -91,6 +91,7 @@ class Command(BaseCommand):
                 for year in years:
                     year_data = Expense.objects.filter(nature=nature)
                     year_data = year_data.filter(date__year=year)
+                    year_data = filter_for_institution(year_data, institution)
                     year_data = year_data.values('nature__id')
                     year_data = year_data.annotate(expensed=Sum("expensed"))
 
