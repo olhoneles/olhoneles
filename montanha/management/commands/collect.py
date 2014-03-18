@@ -23,6 +23,7 @@ import sys
 from django.conf import settings
 settings.DEBUG = False
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from montanha.models import Expense
@@ -35,7 +36,7 @@ class Command(BaseCommand):
     args = "<source> [debug]"
     help = "Collects data for a number of sources"
 
-    @transaction.commit_manually
+    @transaction.commit_on_success
     def handle(self, *args, **options):
         global debug_enabled
 
@@ -43,6 +44,7 @@ class Command(BaseCommand):
 
         collection_runs = []
 
+        debug_enabled = False
         if "debug" in args:
             debug_enabled = True
 
@@ -51,6 +53,8 @@ class Command(BaseCommand):
             sys.exit(0)
         signal.signal(signal.SIGINT, signal_handler)
 
+        houses_to_consolidate = []
+
         try:
             if "almg" in args:
                 from almg import ALMG
@@ -58,6 +62,7 @@ class Command(BaseCommand):
                 almg.update_legislators()
                 almg.update_data()
                 almg.update_legislators_data()
+                houses_to_consolidate.append("almg")
 
             if "senado" in args:
                 from senado import Senado
@@ -65,17 +70,20 @@ class Command(BaseCommand):
                 senado.update_legislators()
                 senado.update_data()
                 senado.update_legislators_extra_data()
+                houses_to_consolidate.append("senado")
 
             if "cmbh" in args:
                 from cmbh import CMBH
                 cmbh = CMBH(collection_runs, debug_enabled)
                 cmbh.update_legislators()
                 cmbh.update_data()
+                houses_to_consolidate.append("cmbh")
 
             if "cmsp" in args:
                 from cmsp import CMSP
                 cmsp = CMSP(collection_runs, debug_enabled)
                 cmsp.update_data()
+                houses_to_consolidate.append("cmsp")
 
             if "camarafederal" in args:
                 from camarafederal import CamaraFederal
@@ -90,6 +98,7 @@ class Command(BaseCommand):
 
                 if args[0] == "expenses":
                     camarafederal.collect_expenses()
+                houses_to_consolidate.append("camarafederal")
 
             settings.expense_locked_for_collection = False
 
@@ -111,3 +120,11 @@ class Command(BaseCommand):
             raise
 
         transaction.commit()
+
+        for house in houses_to_consolidate:
+            args = [house]
+
+            if debug_enabled:
+                args.append("debug")
+
+            call_command("consolidate", *args)

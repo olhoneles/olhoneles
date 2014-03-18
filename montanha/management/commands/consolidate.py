@@ -33,69 +33,76 @@ class Command(BaseCommand):
     args = "<source> [debug]"
     help = "Collects data for a number of sources"
 
+    def debug(self, message):
+        if debug_enabled:
+            print message
+
     def handle(self, *args, **options):
         global debug_enabled
 
         if "debug" in args:
             debug_enabled = True
 
-        institution = None
+        institutions = []
         if "almg" in args:
-            institution = Institution.objects.get(siglum='ALMG')
+            institutions.append(Institution.objects.get(siglum='ALMG'))
 
         if "senado" in args:
-            institution = Institution.objects.get(siglum='Senado')
+            institutions.append(Institution.objects.get(siglum='Senado'))
 
         if "cmbh" in args:
-            institution = Institution.objects.get(siglum='CMBH')
+            institutions.append(Institution.objects.get(siglum='CMBH'))
 
         if "cmsp" in args:
-            institution = Institution.objects.get(siglum='CMSP')
+            institutions.append(Institution.objects.get(siglum='CMSP'))
 
         if "camarafederal" in args:
-            institution = Institution.objects.get(siglum='CDF')
+            institutions.append(Institution.objects.get(siglum='CDF'))
 
-        # Per nature
-        PerNature.objects.filter(institution=institution).delete()
-        PerNatureByYear.objects.filter(institution=institution).delete()
+        for institution in institutions:
+            self.debug('Consolidating data for %s' % (institution.name))
 
-        data = Expense.objects.all()
-        data = filter_for_institution(data, institution)
+            # Per nature
+            PerNature.objects.filter(institution=institution).delete()
+            PerNatureByYear.objects.filter(institution=institution).delete()
 
-        date_ranges = get_date_ranges_from_data(institution, data)
+            data = Expense.objects.all()
+            data = filter_for_institution(data, institution)
 
-        data = data.values('nature__id')
-        data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+            date_ranges = get_date_ranges_from_data(institution, data)
 
-        years = [d.year for d in Expense.objects.dates('date', 'year')]
-        years = ensure_years_in_range(date_ranges, years)
+            data = data.values('nature__id')
+            data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
-        per_natures_to_create = list()
-        per_natures_by_year_to_create = list()
-        for item in data:
-            nature = ExpenseNature.objects.get(id=item['nature__id'])
-            p = PerNature(institution=institution,
-                          date_start=date_ranges['cdf'],
-                          date_end=date_ranges['cdt'],
-                          nature=nature,
-                          expensed=item['expensed'])
-            per_natures_to_create.append(p)
+            years = [d.year for d in Expense.objects.dates('date', 'year')]
+            years = ensure_years_in_range(date_ranges, years)
 
-            for year in years:
-                year_data = Expense.objects.filter(nature=nature)
-                year_data = year_data.filter(date__year=year)
-                year_data = year_data.values('nature__id')
-                year_data = year_data.annotate(expensed=Sum("expensed"))
+            per_natures_to_create = list()
+            per_natures_by_year_to_create = list()
+            for item in data:
+                nature = ExpenseNature.objects.get(id=item['nature__id'])
+                p = PerNature(institution=institution,
+                              date_start=date_ranges['cdf'],
+                              date_end=date_ranges['cdt'],
+                              nature=nature,
+                              expensed=item['expensed'])
+                per_natures_to_create.append(p)
 
-                if year_data:
-                    year_data = year_data[0]
-                else:
-                    year_data = dict(expensed='0.')
+                for year in years:
+                    year_data = Expense.objects.filter(nature=nature)
+                    year_data = year_data.filter(date__year=year)
+                    year_data = year_data.values('nature__id')
+                    year_data = year_data.annotate(expensed=Sum("expensed"))
 
-                p = PerNatureByYear(institution=institution,
-                                    year=year,
-                                    nature=nature,
-                                    expensed=float(year_data['expensed']))
-                per_natures_by_year_to_create.append(p)
-        PerNature.objects.bulk_create(per_natures_to_create)
-        PerNatureByYear.objects.bulk_create(per_natures_by_year_to_create)
+                    if year_data:
+                        year_data = year_data[0]
+                    else:
+                        year_data = dict(expensed='0.')
+
+                    p = PerNatureByYear(institution=institution,
+                                        year=year,
+                                        nature=nature,
+                                        expensed=float(year_data['expensed']))
+                    per_natures_by_year_to_create.append(p)
+            PerNature.objects.bulk_create(per_natures_to_create)
+            PerNatureByYear.objects.bulk_create(per_natures_by_year_to_create)
