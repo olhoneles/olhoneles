@@ -26,23 +26,12 @@ from montanha.models import Institution, Expense, ExpenseNature
 from montanha.models import PerNature, PerNatureByYear
 from montanha.util import filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
 
-debug_enabled = False
-
 
 class Command(BaseCommand):
     args = "<source> [debug]"
     help = "Collects data for a number of sources"
 
-    def debug(self, message):
-        if debug_enabled:
-            print message
-
     def handle(self, *args, **options):
-        global debug_enabled
-
-        if "debug" in args:
-            debug_enabled = True
-
         institutions = []
         if "almg" in args:
             institutions.append(Institution.objects.get(siglum='ALMG'))
@@ -60,7 +49,7 @@ class Command(BaseCommand):
             institutions.append(Institution.objects.get(siglum='CDF'))
 
         for institution in institutions:
-            self.debug('Consolidating data for %s' % (institution.name))
+            print u'Consolidating data for %s' % (institution.name)
 
             # Per nature
             PerNature.objects.filter(institution=institution).delete()

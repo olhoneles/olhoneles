@@ -122,9 +122,4 @@ class Command(BaseCommand):
         transaction.commit()
 
         for house in houses_to_consolidate:
-            args = [house]
-
-            if debug_enabled:
-                args.append("debug")
-
-            call_command("consolidate", *args)
+            call_command("consolidate", house)
