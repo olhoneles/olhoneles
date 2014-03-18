@@ -317,3 +317,10 @@ class PerNatureByYear(models.Model):
     year = models.IntegerField()
     nature = models.ForeignKey("ExpenseNature")
     expensed = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class PerNatureByMonth(models.Model):
+    institution = models.ForeignKey("Institution")
+    date = models.DateField()
+    nature = models.ForeignKey("ExpenseNature")
+    expensed = models.DecimalField(max_digits=10, decimal_places=2)

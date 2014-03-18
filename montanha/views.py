@@ -154,45 +154,29 @@ def show_per_nature(request, institution):
                     return False
         return True
 
-    natures_mbm = cache.get(request.get_full_path() + '-natures_mbm')
-    if natures_mbm:
-        natures_mbm = pickle.loads(natures_mbm)
-    else:
-        natures_mbm = []
-        for nature in ExpenseNature.objects.all():
-            mbm_years = []
-            last_year = 2013
-            for year in [2011, 2012, 2013]:
-                mbm_series = []
+    natures_mbm = []
+    for nature in ExpenseNature.objects.all():
+        mbm_years = []
+        expensed_by_month = PerNatureByMonth.objects.filter(institution=institution)
+        expensed_by_month = expensed_by_month.filter(nature=nature)
+        all_years = [d.year for d in expensed_by_month.dates('date', 'year')]
+        for year in all_years:
+            mbm_series = []
+            for month in range(1, 13):
+                month_date = date(year, month, 1)
 
-                expenses = Expense.objects.filter(nature=nature).filter(date__year=year)
-                expenses = filter_for_institution(expenses, institution)
-                last_month = expenses and expenses.order_by('-date')[0].date.month or 0
+                mname = month_date.strftime("%b")
+                try:
+                    item = expensed_by_month.get(date=month_date)
+                    expensed = float(item.expensed)
+                except PerNatureByMonth.DoesNotExist:
+                    expensed = 'null'
 
-                for month in range(1, 13):
-                    mname = date(year, month, 1).strftime("%b")
-                    mdata = expenses.filter(date__month=month)
-                    mdata = mdata.values('nature__name')
-                    mdata = mdata.annotate(expensed=Sum('expensed')).order_by('-expensed')
+                mbm_series.append(dict(month=mname, data=str(expensed)))
+            mbm_years.append(dict(label=year, data=mbm_series))
 
-                    if mdata:
-                        mdata = mdata[0]['expensed']
-                    else:
-                        # If we reached the last month we have any data for, use null instead of
-                        # 0., so the graph gets cut out.
-                        if last_year and month > last_month:
-                            mdata = 'null'
-                        else:
-                            mdata = 0.
-
-                    mbm_series.append(dict(month=mname, data=mdata))
-
-                mbm_years.append(dict(label=year, data=mbm_series))
-
-            if not nature_is_empty(mbm_years):
-                natures_mbm.append(dict(name=nature.name, data=mbm_years))
-
-        cache.set(request.get_full_path() + '-natures_mbm', pickle.dumps(natures_mbm), 36288000)
+        if not nature_is_empty(mbm_years):
+            natures_mbm.append(dict(name=nature.name, data=mbm_years))
 
     c = {'data': data, 'years_data': time_series, 'natures_mbm': natures_mbm,
          'colors': generate_colors(len(data), 0.93, 0.8)}

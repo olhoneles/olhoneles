@@ -20,15 +20,16 @@
 from django.conf import settings
 settings.DEBUG = False
 
+from datetime import date
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
 from montanha.models import Institution, Expense, ExpenseNature
-from montanha.models import PerNature, PerNatureByYear
+from montanha.models import PerNature, PerNatureByYear, PerNatureByMonth
 from montanha.util import filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
 
 
 class Command(BaseCommand):
-    args = "<source> [debug]"
+    args = u"<source> [source2] … [sourcen]"
     help = "Collects data for a number of sources"
 
     def handle(self, *args, **options):
@@ -68,7 +69,10 @@ class Command(BaseCommand):
 
             per_natures_to_create = list()
             per_natures_by_year_to_create = list()
+            per_natures_by_month_to_create = list()
+
             for item in data:
+                # Totals
                 nature = ExpenseNature.objects.get(id=item['nature__id'])
                 p = PerNature(institution=institution,
                               date_start=date_ranges['cdf'],
@@ -77,10 +81,37 @@ class Command(BaseCommand):
                               expensed=item['expensed'])
                 per_natures_to_create.append(p)
 
+                # By Year
                 for year in years:
+                    print u'[%s] Consolidating nature %s totals for year %d…' % (institution.siglum, nature.name, year)
                     year_data = Expense.objects.filter(nature=nature)
                     year_data = year_data.filter(date__year=year)
                     year_data = filter_for_institution(year_data, institution)
+
+                    # By Month
+                    last_date = year_data and year_data.order_by('-date')[0].date or date.today()
+                    for month in range(1, 13):
+                        print u'[%s] Consolidating nature %s totals for %d-%d…' % (institution.siglum, nature.name, year, month)
+                        month_date = date(year, month, 1)
+
+                        if month_date >= last_date:
+                            break
+
+                        mdata = year_data.filter(date__month=month)
+                        mdata = mdata.values('nature__id')
+                        mdata = mdata.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+                        if mdata:
+                            mdata = mdata[0]
+                        else:
+                            mdata = dict(expensed='0.')
+
+                        p = PerNatureByMonth(institution=institution,
+                                             date=month_date,
+                                             nature=nature,
+                                             expensed=float(mdata['expensed']))
+                        per_natures_by_month_to_create.append(p)
+
                     year_data = year_data.values('nature__id')
                     year_data = year_data.annotate(expensed=Sum("expensed"))
 
@@ -94,5 +125,7 @@ class Command(BaseCommand):
                                         nature=nature,
                                         expensed=float(year_data['expensed']))
                     per_natures_by_year_to_create.append(p)
+
             PerNature.objects.bulk_create(per_natures_to_create)
+            PerNatureByMonth.objects.bulk_create(per_natures_by_month_to_create)
             PerNatureByYear.objects.bulk_create(per_natures_by_year_to_create)
