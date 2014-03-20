@@ -55,6 +55,7 @@ class Command(BaseCommand):
             # Per nature
             PerNature.objects.filter(institution=institution).delete()
             PerNatureByYear.objects.filter(institution=institution).delete()
+            PerNatureByMonth.objects.filter(institution=institution).delete()
 
             data = Expense.objects.all()
             data = filter_for_institution(data, institution)
