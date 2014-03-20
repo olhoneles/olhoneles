@@ -23,8 +23,8 @@ settings.DEBUG = False
 from datetime import date
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
-from montanha.models import Institution, Expense, ExpenseNature
-from montanha.models import PerNature, PerNatureByYear, PerNatureByMonth
+from montanha.models import Institution, Expense, ExpenseNature, Legislator
+from montanha.models import PerNature, PerNatureByYear, PerNatureByMonth, PerLegislator
 from montanha.util import filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
 
 
@@ -130,3 +130,26 @@ class Command(BaseCommand):
             PerNature.objects.bulk_create(per_natures_to_create)
             PerNatureByMonth.objects.bulk_create(per_natures_by_month_to_create)
             PerNatureByYear.objects.bulk_create(per_natures_by_year_to_create)
+
+            # Legislator
+            PerLegislator.objects.filter(institution=institution).delete()
+
+            data = Expense.objects.all()
+            data = filter_for_institution(data, institution)
+
+            date_ranges = get_date_ranges_from_data(institution, data)
+
+            data = data.values('mandate__legislator__id')
+            data = data.annotate(expensed=Sum('expensed'))
+
+            per_legislators_to_create = list()
+            for item in data:
+                legislator = Legislator.objects.get(id=int(item['mandate__legislator__id']))
+                print u'[%s] Consolidating totals for legislator %s…' % (institution.siglum, legislator.name)
+                p = PerLegislator(institution=institution,
+                                  date_start=date_ranges['cdf'],
+                                  date_end=date_ranges['cdt'],
+                                  legislator=legislator,
+                                  expensed=item['expensed'])
+                per_legislators_to_create.append(p)
+            PerLegislator.objects.bulk_create(per_legislators_to_create)

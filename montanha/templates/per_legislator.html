@@ -28,17 +28,17 @@
                     {% for d in data %}
                     <tr>
                         <td>
-                          <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
-                            {{ d.mandate__legislator__name }}
+                          <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-legislator-detail' d.legislator.id %}">
+                            {{ d.legislator.name }}
                           </a>
                         </td>
                         <td>
-                            {% for p in d.parties %}
+                            {% for m in d.mandates %}
                                 {% if forloop.counter0 %}
                                     /
                                 {% endif %}
-                                {% if p.logo %}<img src="{{ p.logo|thumbnail_url:'mini' }}" title="{{ p.name }}" alt="{{ p.name }}">{% endif %}
-                                {% if p.siglum %} {{ p.siglum }} {% else %} Partido não informado {% endif %} ({{ p.year }}{% if p.year_end %} - {{ p.year_end }} {% endif %})
+                                {% if m.party.logo %}<img src="{{ m.party.logo|thumbnail_url:'mini' }}" title="{{ m.party.name }}" alt="{{ m.party.name }}">{% endif %}
+                                {% if m.party.siglum %} {{ m.party.siglum }} {% else %} Partido não informado {% endif %} ({{ m.date_start.year }}{% if m.date_end.year %} - {{ m.date_end.year }} {% endif %})
                             {% endfor %}
                         </td>
                         <td>{{ d.expensed|format_currency }}</td>

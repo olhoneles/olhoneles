@@ -188,52 +188,28 @@ def show_per_nature(request, institution):
 
 def show_per_legislator(request, institution):
 
-    data = Expense.objects.all()
-    data = filter_for_institution(data, institution)
+    institution = Institution.objects.get(siglum=institution)
+    data = PerLegislator.objects.filter(institution=institution)
 
-    date_ranges = get_date_ranges_from_data(institution, data)
-
-    data = data.values('mandate__legislator__id',
-                       'mandate__legislator__name',
-                       'mandate__date_start',
-                       'mandate__date_end',
-                       'mandate__party__siglum',
-                       'mandate__party__name',
-                       'mandate__party__logo')
-    data = data.annotate(expensed=Sum('expensed'))
+    date_ranges = get_date_ranges_from_data(institution, data, consolidated_data=True)
 
     # We may have several mandates for a legislator, potentially with different parties.
     # We only want to show one line per legislator, though, so sum the expenses and list
     # all parties in the party column.
-    data_dict = {}
     data_list = []
-    for d in data:
-        key = d['mandate__legislator__id']
-        party = {'siglum': d['mandate__party__siglum'],
-                 'name': d['mandate__party__name'],
-                 'logo': d['mandate__party__logo'],
-                 'year': d['mandate__date_start'].year,
-                 'year_end': ''}
-        if d['mandate__date_end']:
-            party['year_end'] = d['mandate__date_end'].year
-
-        if key in data_dict:
-            data_dict[key]['expensed'] + d['expensed']
-            data_dict[key]['parties'].append(party)
-            data_dict[key]['parties'].sort(key=lambda p: p['year'])
-        else:
-            data_dict[key] = d
-            data_dict[key]['parties'] = [party]
-            data_list.append(d)
-
+    for item in data:
+        mandates = item.legislator.mandate_set.order_by('date_start')
+        legislator_data = dict(legislator=item.legislator,
+                               mandates=mandates,
+                               expensed=item.expensed)
+        data_list.append(legislator_data)
     data = data_list
-    data.sort(key=lambda d: d['expensed'], reverse=True)
 
     c = {'data': data}
 
     c.update(date_ranges)
 
-    return new_render(request, institution, 'per_legislator.html', c)
+    return new_render(request, institution.siglum, 'per_legislator.html', c)
 
 
 def show_legislator_detail(request, institution, legislator_id):

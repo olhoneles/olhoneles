@@ -324,3 +324,14 @@ class PerNatureByMonth(models.Model):
     date = models.DateField()
     nature = models.ForeignKey("ExpenseNature")
     expensed = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class PerLegislator(models.Model):
+    institution = models.ForeignKey("Institution")
+    legislature = models.ForeignKey("Legislature",
+                                    blank=True,
+                                    null=True)
+    legislator = models.ForeignKey("Legislator")
+    date_start = models.DateField()
+    date_end = models.DateField()
+    expensed = models.DecimalField(max_digits=10, decimal_places=2)
