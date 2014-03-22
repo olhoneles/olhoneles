@@ -383,6 +383,9 @@ def data_tables_query(request, filter_spec, columns, filter_function=None):
 
     data, date_ranges = get_basic_objects_for_model(filter_spec)
 
+    if filter_function:
+        data = filter_function(data)
+
     # json doesn't like to serialize date objects
     del date_ranges['cdf']
     del date_ranges['cdt']
