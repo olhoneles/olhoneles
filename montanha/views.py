@@ -30,7 +30,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from montanha.models import *
 from montanha.forms import *
-from montanha.util import filter_for_institution, get_date_ranges_from_data
+from montanha.util import filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
 
 locale.setlocale(locale.LC_MONETARY, "pt_BR.UTF-8")
 locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
@@ -78,10 +78,13 @@ def render(request, to_disable, template, context):
     return original_render(request, template, context)
 
 
-def new_render(request, institution, template, context):
+def new_render(request, filter_spec, template, context):
     context['institution'] = None
-    if institution:
-        context['institution'] = Institution.objects.get(siglum=institution)
+    if filter_spec:
+        institution, legislature = parse_filter(filter_spec)
+        context['institution'] = institution
+        context['legislature'] = legislature
+        context['filter_spec'] = filter_spec
     return original_render(request, template, context)
 
 
@@ -103,15 +106,45 @@ def exclude_disabled(data, to_disable):
     return data
 
 
-def show_index(request, institution):
+def get_basic_objects_for_model(filter_spec, model=Expense):
+    data = model.objects.all()
+
+    if not filter_spec:
+        return data, None
+
+    institution, legislature = parse_filter(filter_spec)
+    data = filter_for_institution(data, institution)
+
+    if legislature:
+        data = data.filter(mandate__legislature=legislature)
+
+    date_ranges = get_date_ranges_from_data(institution, data)
+
+    return data, date_ranges
+
+
+def parse_filter(filter_spec):
+    parts = filter_spec.split(':', 1)
+    institution = Institution.objects.get(siglum=parts[0])
+
+    if len(parts) == 1:
+        return institution, None
+
+    legislature = institution.legislature_set.get(date_start__year=parts[1])
+    return institution, legislature
+
+
+def show_index(request, filter_spec):
 
     c = {}
 
-    if institution:
-        c['img'] = institution.lower() + '.png'
-        return new_render(request, institution, 'institution.html', c)
+    if filter_spec:
+        institution, _ = parse_filter(filter_spec)
+        c['legislatures'] = institution.legislature_set.order_by('-date_start').all()
+        c['img'] = institution.siglum.lower() + '.png'
+        return new_render(request, filter_spec, 'institution.html', c)
 
-    return new_render(request, institution, 'index.html', c)
+    return new_render(request, filter_spec, 'index.html', c)
 
 
 def show_robots_txt(request):
@@ -128,10 +161,10 @@ def error_404(request):
     return original_render(request, '404.html', c)
 
 
-def show_per_nature(request, institution):
+def show_per_nature(request, filter_spec):
 
-    institution = Institution.objects.get(siglum=institution)
-    data = PerNature.objects.filter(institution=institution)
+    institution, legislature = parse_filter(filter_spec)
+    data = PerNature.objects.filter(institution=institution, legislature=legislature)
 
     date_ranges = get_date_ranges_from_data(institution, data, consolidated_data=True)
 
@@ -141,7 +174,10 @@ def show_per_nature(request, institution):
         cummulative = .0
         time_series.append(dict(label=d.nature.name, data=l))
 
-        for item in PerNatureByYear.objects.filter(institution=institution).filter(nature=d.nature):
+        per_year_data = PerNatureByYear.objects.filter(institution=institution).filter(nature=d.nature)
+        per_year_data = per_year_data.filter(year__gte=date_ranges['cdf'].year)
+        per_year_data = per_year_data.filter(year__lte=date_ranges['cdt'].year)
+        for item in per_year_data:
             cummulative = cummulative + float(item.expensed)
             l.append([int(date(item.year, 1, 1).strftime("%s000")), cummulative])
 
@@ -159,7 +195,10 @@ def show_per_nature(request, institution):
         mbm_years = []
         expensed_by_month = PerNatureByMonth.objects.filter(institution=institution)
         expensed_by_month = expensed_by_month.filter(nature=nature)
+
         all_years = [d.year for d in expensed_by_month.dates('date', 'year')]
+        all_years = ensure_years_in_range(date_ranges, all_years)
+
         for year in all_years:
             mbm_series = []
             for month in range(1, 13):
@@ -183,13 +222,13 @@ def show_per_nature(request, institution):
 
     c.update(date_ranges)
 
-    return new_render(request, institution.siglum, 'per_nature.html', c)
+    return new_render(request, filter_spec, 'per_nature.html', c)
 
 
-def show_per_legislator(request, institution):
+def show_per_legislator(request, filter_spec):
 
-    institution = Institution.objects.get(siglum=institution)
-    data = PerLegislator.objects.filter(institution=institution)
+    institution, legislature = parse_filter(filter_spec)
+    data = PerLegislator.objects.filter(institution=institution, legislature=legislature)
 
     date_ranges = get_date_ranges_from_data(institution, data, consolidated_data=True)
 
@@ -209,17 +248,12 @@ def show_per_legislator(request, institution):
 
     c.update(date_ranges)
 
-    return new_render(request, institution.siglum, 'per_legislator.html', c)
+    return new_render(request, filter_spec, 'per_legislator.html', c)
 
 
-def show_legislator_detail(request, institution, legislator_id):
+def show_legislator_detail(request, filter_spec, legislator_id):
 
-    data = Expense.objects.all()
-
-    if institution:
-        data = filter_for_institution(data, institution)
-
-    date_ranges = get_date_ranges_from_data(institution, data)
+    data, date_ranges = get_basic_objects_for_model(filter_spec)
 
     legislator = Legislator.objects.get(pk=legislator_id)
     data = data.filter(mandate__legislator=legislator)
@@ -249,12 +283,14 @@ def show_legislator_detail(request, institution, legislator_id):
 
     c.update(date_ranges)
 
-    return new_render(request, institution, 'detail_legislator.html', c)
+    return new_render(request, filter_spec, 'detail_legislator.html', c)
 
 
 def postprocess_party_data(institution, data):
     if institution:
-        institution = Institution.objects.get(siglum=institution)
+        if not isinstance(institution, Institution):
+            institution = Institution.objects.get(siglum=institution)
+
     for d in list(data):
         if d['mandate__party__siglum']:
             party = PoliticalParty.objects.get(siglum=d['mandate__party__siglum'])
@@ -274,12 +310,10 @@ def postprocess_party_data(institution, data):
     return sorted(data, key=lambda d: d['expensed_average'], reverse=True)
 
 
-def show_per_party(request, institution):
+def show_per_party(request, filter_spec):
 
-    data = Expense.objects.all()
-    data = filter_for_institution(data, institution)
-
-    date_ranges = get_date_ranges_from_data(institution, data)
+    institution, _ = parse_filter(filter_spec)
+    data, date_ranges = get_basic_objects_for_model(filter_spec)
 
     data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     data = data.annotate(expensed=Sum('expensed'))
@@ -290,7 +324,7 @@ def show_per_party(request, institution):
 
     c.update(date_ranges)
 
-    return new_render(request, institution, 'per_party.html', c)
+    return new_render(request, filter_spec, 'per_party.html', c)
 
 
 def add_sorting(request, data, default='-expensed'):
@@ -304,12 +338,9 @@ def add_sorting(request, data, default='-expensed'):
     return data
 
 
-def show_per_supplier(request, institution):
+def show_per_supplier(request, filter_spec):
 
-    data = Expense.objects.all()
-    data = filter_for_institution(data, institution)
-
-    date_ranges = get_date_ranges_from_data(institution, data)
+    data, date_ranges = get_basic_objects_for_model(filter_spec)
 
     data = data.values('supplier__id', 'supplier__name', 'supplier__identifier')
     data = data.annotate(expensed=Sum('expensed'))
@@ -329,15 +360,13 @@ def show_per_supplier(request, institution):
 
     c.update(date_ranges)
 
-    return new_render(request, institution, 'per_supplier.html', c)
+    return new_render(request, filter_spec, 'per_supplier.html', c)
 
 
-def show_supplier_detail(request, institution, supplier_id):
+def show_supplier_detail(request, filter_spec, supplier_id):
 
-    data = Expense.objects.all()
-    data = filter_for_institution(data, institution)
-
-    date_ranges = get_date_ranges_from_data(institution, data)
+    institution, _ = parse_filter(filter_spec)
+    data, date_ranges = get_basic_objects_for_model(filter_spec)
 
     supplier = Supplier.objects.get(pk=supplier_id)
     data = data.filter(supplier=supplier)
@@ -378,7 +407,7 @@ def show_supplier_detail(request, institution, supplier_id):
 
     c.update(date_ranges)
 
-    return new_render(request, institution, 'detail_supplier.html', c)
+    return new_render(request, filter_spec, 'detail_supplier.html', c)
 
 
 def deep_getattr(obj, attr):
@@ -403,20 +432,13 @@ def convert_data_to_list(data, columns):
     return data_list
 
 
-def cleanup_date_ranges(date_ranges):
+def data_tables_query(request, filter_spec, columns, filter_function=None):
+
+    data, date_ranges = get_basic_objects_for_model(filter_spec)
+
+    # json doesn't like to serialize date objects
     del date_ranges['cdf']
     del date_ranges['cdt']
-
-
-def data_tables_query(request, institution, columns, filter_function=None):
-
-    data = Expense.objects.all()
-    data = filter_for_institution(data, institution)
-
-    if filter_function:
-        data = filter_function(data)
-
-    date_ranges = get_date_ranges_from_data(institution, data, False)
 
     total_results = data.count()
 
@@ -475,7 +497,7 @@ def data_tables_query(request, institution, columns, filter_function=None):
     return HttpResponse(json.dumps(response), content_type='application/json')
 
 
-def query_all(request, institution):
+def query_all(request, filter_spec):
     columns = (
         ('nature.name', 's'),
         ('mandate.legislator.name', 's'),
@@ -486,10 +508,10 @@ def query_all(request, institution):
         ('expensed', 'm'),
     )
 
-    return data_tables_query(request, institution, columns)
+    return data_tables_query(request, filter_spec, columns)
 
 
-def query_supplier_all(request, institution):
+def query_supplier_all(request, filter_spec):
     def filter_function(data):
         supplier = Supplier.objects.get(id=request.GET['item_id'])
         return data.filter(supplier=supplier)
@@ -502,10 +524,10 @@ def query_supplier_all(request, institution):
         ('expensed', 'm'),
     )
 
-    return data_tables_query(request, institution, columns, filter_function)
+    return data_tables_query(request, filter_spec, columns, filter_function)
 
 
-def query_legislator_all(request, institution):
+def query_legislator_all(request, filter_spec):
     def filter_function(data):
         legislator = Legislator.objects.get(id=request.GET['item_id'])
         return data.filter(mandate__legislator=legislator)
@@ -519,22 +541,18 @@ def query_legislator_all(request, institution):
         ('expensed', 'm'),
     )
 
-    return data_tables_query(request, institution, columns, filter_function)
+    return data_tables_query(request, filter_spec, columns, filter_function)
 
 
-def show_all(request, institution):
+def show_all(request, filter_spec):
 
     c = {}
 
-    data = Expense.objects.all()
+    _, date_ranges = get_basic_objects_for_model(filter_spec)
 
-    if institution:
-        data = filter_for_institution(data, institution)
-
-    date_ranges = get_date_ranges_from_data(institution, data)
     c.update(date_ranges)
 
-    return new_render(request, institution, 'all_expenses.html', c)
+    return new_render(request, filter_spec, 'all_expenses.html', c)
 
 
 def what_is_expenses(request):

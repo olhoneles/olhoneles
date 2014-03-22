@@ -9,7 +9,7 @@ $(document).ready(function(){
             {% endfor %}
         ];
         $('#all-expenses-table').dataTable({
-            sAjaxSource: '{% if institution %}/{{ institution.siglum }}{% endif %}/q/{{ query_name }}',
+            sAjaxSource: '{% if filter_spec %}/{{ filter_spec }}{% endif %}/q/{{ query_name }}',
             aoColumns: aoColumns,
             aaSorting: [[aoColumns.length - 1, 'desc']],
             bPaginate: true,

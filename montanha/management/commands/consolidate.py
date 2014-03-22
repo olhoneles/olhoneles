@@ -82,6 +82,31 @@ class Command(BaseCommand):
                               expensed=item['expensed'])
                 per_natures_to_create.append(p)
 
+                # Totals for Legislature
+                for legislature in institution.legislature_set.all():
+                    pargs = (institution.siglum, nature.name, legislature.date_start.year, legislature.date_end.year)
+                    print u'[%s] Consolidating nature %s totals for legislature %d-%d…' % pargs
+                    legislature_data = Expense.objects.filter(nature=nature)
+                    legislature_data = legislature_data.filter(mandate__legislature=legislature)
+
+                    legislature_ranges = get_date_ranges_from_data(institution, legislature_data)
+
+                    legislature_data = legislature_data.values('nature__id')
+                    legislature_data = legislature_data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+                    if legislature_data:
+                        legislature_data = legislature_data[0]
+                    else:
+                        legislature_data = dict(expensed='0.')
+
+                    p = PerNature(institution=institution,
+                                  legislature=legislature,
+                                  date_start=legislature_ranges['cdf'],
+                                  date_end=legislature_ranges['cdt'],
+                                  nature=nature,
+                                  expensed=legislature_data['expensed'])
+                    per_natures_to_create.append(p)
+
                 # By Year
                 for year in years:
                     print u'[%s] Consolidating nature %s totals for year %d…' % (institution.siglum, nature.name, year)
@@ -145,6 +170,33 @@ class Command(BaseCommand):
             per_legislators_to_create = list()
             for item in data:
                 legislator = Legislator.objects.get(id=int(item['mandate__legislator__id']))
+
+                # Totals for Legislature
+                for legislature in institution.legislature_set.all():
+                    pargs = (institution.siglum, legislator.name, legislature.date_start.year, legislature.date_end.year)
+                    print u'[%s] Consolidating legislator %s totals for legislature %d-%d…' % pargs
+
+                    legislature_data = Expense.objects.filter(mandate__legislature=legislature)
+                    legislature_data = legislature_data.filter(mandate__legislator=legislator)
+
+                    legislature_ranges = get_date_ranges_from_data(institution, legislature_data)
+
+                    legislature_data = legislature_data.values('mandate__legislator__id')
+                    legislature_data = legislature_data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+                    if legislature_data:
+                        legislature_data = legislature_data[0]
+                    else:
+                        legislature_data = dict(expensed='0.')
+
+                    p = PerLegislator(institution=institution,
+                                      legislature=legislature,
+                                      date_start=date_ranges['cdf'],
+                                      date_end=date_ranges['cdt'],
+                                      legislator=legislator,
+                                      expensed=legislature_data['expensed'])
+                    per_legislators_to_create.append(p)
+
                 print u'[%s] Consolidating totals for legislator %s…' % (institution.siglum, legislator.name)
                 p = PerLegislator(institution=institution,
                                   date_start=date_ranges['cdf'],

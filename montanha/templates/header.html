@@ -19,19 +19,19 @@
             <div class="nav-collapse collapse">
                 <ul class="nav">
                     <li id="menu-per-nature">
-                        <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-nature' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Tipo de gasto</a>
+                        <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:per-nature' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Tipo de gasto</a>
                     </li>
                     <li id="menu-per-legislator">
-                        <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-legislator' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Parlamentar</a>
+                        <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:per-legislator' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Parlamentar</a>
                     </li>
                     <li id="menu-per-party">
-                        <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-party' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Partido</a>
+                        <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:per-party' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Partido</a>
                     </li>
                     <li id="menu-per-supplier">
-                        <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:per-supplier' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Fornecedor</a>
+                        <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:per-supplier' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Fornecedor</a>
                     </li>
                     <li id="menu-all">
-                        <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-all' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Todos</a>
+                        <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:show-all' %}{% if extra_uri %}{{ extra_uri }}{% endif %}">Todos</a>
                     </li>
                 </ul>
                 {% if current_date_from %}

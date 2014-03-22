@@ -63,6 +63,9 @@ def expenses_data_table(context, query_name, col_types, item_id=None):
             columns.append("{ sType: 'money' }")
         else:
             columns.append('null')
-    c = dict(institution=context['institution'], item_id=item_id,
+    c = dict(institution=context['institution'],
+             legislature=context['legislature'],
+             filter_spec=context['filter_spec'],
+             item_id=item_id,
              query_name=query_name, columns=columns)
     return render_to_string('expenses_data_table.html', c)

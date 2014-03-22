@@ -26,7 +26,7 @@
                     {% for d in data %}
                     <tr>
                         <td>
-                          <a href="{% if institution %}/{{ institution.siglum }}{% endif %}{% url 'montanha:show-supplier-detail' d.supplier__id %}">
+                          <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:show-supplier-detail' d.supplier__id %}">
                             {{ d.supplier__name }}
                           </a>
                         </td>
