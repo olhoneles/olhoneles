@@ -43,41 +43,6 @@ def generate_colors(n=7, sat=1.0, val=1.0):
            [hsv_to_rgb(x/float(n), sat, val) for x in xrange(0, n)]]]
 
 
-def render(request, to_disable, template, context):
-    disable_list = to_disable and [item for item in to_disable[3:].split(',')] or []
-
-    institutions = Institution.objects.all()
-    institution_dicts = []
-    for institution in institutions:
-        d = {}
-        d["siglum"] = institution.siglum
-        d["name"] = institution.name
-        d["logo"] = institution.logo
-        d["enabled"] = institution.siglum not in disable_list
-        legislatures = institution.legislature_set.all()
-        if legislatures.count() > 1:
-            legislature_dicts = []
-            for legislature in legislatures:
-                l = {}
-                l["date_start"] = legislature.date_start
-                l["date_end"] = legislature.date_end
-                legislature_string = '%s-%d' % (institution.siglum, legislature.date_start.year)
-                l["enabled"] = legislature_string in disable_list
-                legislature_dicts.append(l)
-            d["legislatures"] = legislature_dicts
-        else:
-            d["legislatures"] = None
-        institution_dicts.append(d)
-    context['institutions'] = institution_dicts
-    context['extra_uri'] = to_disable
-
-    # This is just to simplify the conversion to the single-institution-or-all view model,
-    # so that we can reuse templates between both code paths for a while.
-    context['institution'] = None
-
-    return original_render(request, template, context)
-
-
 def new_render(request, filter_spec, template, context):
     context['institution'] = None
     if filter_spec:
@@ -86,24 +51,6 @@ def new_render(request, filter_spec, template, context):
         context['legislature'] = legislature
         context['filter_spec'] = filter_spec
     return original_render(request, template, context)
-
-
-def exclude_disabled(data, to_disable):
-    if not to_disable:
-        return data
-
-    for item in to_disable[3:].split(','):
-        parts = item.split('-')
-
-        if len(parts) == 1:
-            institution = Institution.objects.get(siglum=parts[0])
-            data = data.exclude(mandate__legislature__institution=institution)
-        elif len(parts) == 2:
-            institution = Institution.objects.get(siglum=parts[0])
-            legislature = institution.legislature_set.get(date_start__year=parts[1])
-            data = data.exclude(mandate__legislature=legislature)
-
-    return data
 
 
 def get_basic_objects_for_model(filter_spec, model=Expense):
