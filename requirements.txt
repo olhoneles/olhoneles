@@ -8,3 +8,4 @@ easy-thumbnails==1.4
 requests==2.2.1
 chardet==2.2.1
 pandas==0.13.1
+derpconf==0.4.9
