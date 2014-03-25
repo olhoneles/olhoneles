@@ -19,7 +19,6 @@ $(document).ready(function(){
                 {% if item_id %}
                 data.push({ 'name': 'item_id', 'value': {{ item_id }} });
                 {% endif %}
-                console.log(data);
 			    $.getJSON(source, data, function (json) {
 			        $('#current-date-from').html(json['current_date_from']);
 			        $('#current-date-to').html(json['current_date_to']);
