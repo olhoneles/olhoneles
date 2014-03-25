@@ -1,0 +1,79 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title>Olho neles! {% block title %}{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Gustavo Noronha Silva, Estêvão Samuel Procópio Amaral, Marcelo Jorge Vieira">
+        <meta name="description" content="Como os deputados e vereadores mineiros gastam os recursos da verba indenizatória" />
+        <meta name="keywords" content="deputados, vereadores, parlamentares, verba indenizatória, Assembleia Legislativa de Minas Gerais, Câmara Municipal de Belo Horizonte" />
+        <meta name="robots" content="all" />
+        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
+        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap-responsive.min.css' %}" />
+        <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}" />
+        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js" type="text/javascript"></script>
+        <![endif]-->
+        <noscript>Your browser does not support JavaScript!</noscript>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="span12">
+                    <h1 class="main-title"><a href="/">Olho neles!</a></h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="span3">
+                        <h3>Fale Conosco</h3>
+                        <p>Se quiser saber mais sobre o projeto, tirar dúvidas ou entrar em contato com a
+                        gente, você pode <a href="{% url 'montanha:contact-us' %}">nos enviar um email!</a>
+                    </div>
+                    <div class="span5">
+                        {% include 'sourcecode.html' %}
+                    </div>
+                    <div class="span3">
+                        {% include 'creativecommons.html' %}
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/datatables-bootstrap-pagination.js' %}"></script>
+        <script type="text/javascript" src="{% static 'jquery-deserialize/jquery.deserialize.js' %}"></script>
+
+        {% block footer-extra %}{% endblock %}
+
+        <script type="text/javascript">
+        // Properly align the form elements.
+        $.extend($.fn.dataTableExt.oStdClasses, {
+            "sWrapper": "dataTables_wrapper form-inline"
+        });
+
+        $(document).ready(function() {
+            if (location.hash.substr(0,2) == "#!") {
+                $("a[href='#" + location.hash.substr(2) + "']").tab("show");
+            }
+
+            $('a[data-toggle="tab"]').on('shown', function (e) {
+                var hash = $(e.target).attr('href');
+                if (hash.substr(0,1) == "#") {
+                    location.replace("#!" + hash.substr(1));
+                }
+            });
+        });
+        </script>
+    </body>
+</html>

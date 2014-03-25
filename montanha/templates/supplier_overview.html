@@ -1,0 +1,133 @@
+{% extends "overview.html" %}
+{% load staticfiles %}
+{% load thumbnail %}
+{% load montanhatags %}
+{% load bootstrap_toolkit %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="span12">
+            <h1>{{ supplier.name }}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <table class="alert alert-info table-condensed">
+                <tr>
+                    <th class="pull-right">CNPJ:</th>
+                    <td>{{ supplier.identifier }}</td>
+                </tr>
+                <tr>
+                    <th class="pull-right">Total recebido:</th><td>{{ total_expensed|format_currency  }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#houses" data-toggle="tab"><i class="icon-list-alt"></i> Por casa legislativa</a></li>
+                <li><a href="#top-buyers" data-toggle="tab"><i class="icon-list-alt"></i> Maiores compradores</a></li>
+                <li><a href="#all-expenses" data-toggle="tab"><i class="icon-list-alt"></i> Todos os gastos</a></li>
+            </ul>
+            <div class="tab-content" id="tab-detail-supplier">
+                <div id="houses" class="tab-pane active">
+                    <table class="span6 table table-bordered table-striped">
+                        <thead>
+                            <th>Casa parlamentar</th>
+                            <th>Valor</th>
+                        </thead>
+                        <tbody>
+                            {% for h in house_data %}
+                            <tr>
+                                <td>
+                                    <a href="/{{ h.siglum }}{% url 'montanha:show-supplier-detail' supplier.id %}">
+                                        <img src="{{ h.logo|thumbnail_url:'mini' }}">
+                                        {{ h.name }} ({{ h.siglum }})
+                                    </a>
+                                </td>
+                                <td>{{ h.expensed|format_currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div id="houses-placeholder" style="height:300px" class="span5"></div>
+                </div>
+                <div id="all-expenses" class="tab-pane">
+                    {% expenses_table "Tipo de gasto" "Parlamentar (Partido)" "Número do Documento" "Data" "Valor" %}
+                </div>
+                <div id="top-buyers" class="tab-pane">
+                    <div class="span4">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Parlamentar (Partido)</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in top_buyers %}
+                                <tr>
+                                    <td>
+                                        <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
+                                        {{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})
+                                        </a>
+                                    </td>
+                                    <td>{{ d.expensed|format_currency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="span6">
+                        <div id="placeholder" class="span6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block footer-extra %}
+
+{% include 'per_party_graph.html' %}
+
+<script>
+$(document).ready(function(){
+
+	var house_data = [
+        {% for h in house_data %}{label: "{{ h.siglum }}", color: "{{ colors|itercycle:forloop.counter0 }}", data: {{ h.expensed }}},{% endfor %}
+    ]
+
+    plot_houses_graph = function() {
+        $.plot('#houses-placeholder', house_data, {
+            series: {
+                pie: {
+                    show: true,
+                }
+            },
+        });
+    }
+
+});
+</script>
+{% expenses_data_table 'supplier_all' 'ttttm' supplier.id %}
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#menu-per-supplier').addClass('active').siblings().removeClass('active');
+
+    plot_houses_graph();
+
+    $('a[href="#top-buyers"]').on('shown', function() {
+        plot_per_party_graph();
+    });
+
+});
+</script>
+
+{% endblock %}

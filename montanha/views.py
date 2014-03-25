@@ -45,6 +45,8 @@ def generate_colors(n=7, sat=1.0, val=1.0):
 
 def new_render(request, filter_spec, template, context):
     context['institution'] = None
+    context['legislature'] = None
+    context['filter_spec'] = None
     if filter_spec:
         institution, legislature = parse_filter(filter_spec)
         context['institution'] = institution
@@ -57,10 +59,12 @@ def get_basic_objects_for_model(filter_spec, model=Expense):
     data = model.objects.all()
 
     if not filter_spec:
-        return data, None
+        date_ranges = get_date_ranges_from_data(None, data)
+        return data, date_ranges
 
     institution, legislature = parse_filter(filter_spec)
-    data = filter_for_institution(data, institution)
+    if institution:
+        data = filter_for_institution(data, institution)
 
     if legislature:
         data = data.filter(mandate__legislature=legislature)
@@ -72,7 +76,11 @@ def get_basic_objects_for_model(filter_spec, model=Expense):
 
 def parse_filter(filter_spec):
     parts = filter_spec.split(':', 1)
-    institution = Institution.objects.get(siglum=parts[0])
+
+    try:
+        institution = Institution.objects.get(siglum=parts[0])
+    except Institution.DoesNotExist:
+        return None, None
 
     if len(parts) == 1:
         return institution, None
@@ -241,8 +249,9 @@ def postprocess_party_data(institution, data):
     for d in list(data):
         if d['mandate__party__siglum']:
             party = PoliticalParty.objects.get(siglum=d['mandate__party__siglum'])
+            mandates = party.mandate_set.all()
             if institution:
-                mandates = party.mandate_set.filter(legislature__institution=institution)
+                mandates = mandates.filter(legislature__institution=institution)
             d['n_legislators'] = mandates.values('legislator').count()
             d['expensed_average'] = d['expensed'] / d['n_legislators']
         else:
@@ -310,8 +319,7 @@ def show_per_supplier(request, filter_spec):
     return new_render(request, filter_spec, 'per_supplier.html', c)
 
 
-def show_supplier_detail(request, filter_spec, supplier_id):
-
+def get_supplier_detail_data(request, supplier_id, filter_spec=''):
     institution, _ = parse_filter(filter_spec)
     data, date_ranges = get_basic_objects_for_model(filter_spec)
 
@@ -353,7 +361,38 @@ def show_supplier_detail(request, filter_spec, supplier_id):
          'colors': generate_colors(len(data), 0.93, 0.8)}
 
     c.update(date_ranges)
+    return c
 
+
+def show_supplier_overview(request, supplier_id):
+    c = get_supplier_detail_data(request, supplier_id)
+
+    data = Expense.objects.filter(supplier__id=supplier_id)
+
+    total_expensed = data.aggregate(e=Sum('expensed'))['e']
+
+    data = data.values('mandate__legislature__institution__logo',
+                       'mandate__legislature__institution__siglum',
+                       'mandate__legislature__institution__name')
+    data = data.annotate(expensed=Sum('expensed'))
+    data = data.order_by('-expensed')
+
+    house_data = list()
+    for d in data:
+        house_data.append(dict(logo=d['mandate__legislature__institution__logo'],
+                               siglum=d['mandate__legislature__institution__siglum'],
+                               name=d['mandate__legislature__institution__name'],
+                               expensed=d['expensed'],
+                               proportion=total_expensed / d['expensed']))
+
+    c['total_expensed'] = total_expensed
+    c['house_data'] = house_data
+
+    return new_render(request, '', 'supplier_overview.html', c)
+
+
+def show_supplier_detail(request, filter_spec, supplier_id):
+    c = get_supplier_detail_data(request, supplier_id, filter_spec)
     return new_render(request, filter_spec, 'detail_supplier.html', c)
 
 
