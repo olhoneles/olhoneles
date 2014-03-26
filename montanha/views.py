@@ -95,7 +95,9 @@ def show_index(request, filter_spec):
 
     if filter_spec:
         institution, _ = parse_filter(filter_spec)
-        c['legislatures'] = institution.legislature_set.order_by('-date_start').all()
+        legislatures = institution.legislature_set.order_by('-date_start').all()
+        c['legislatures'] = [l for l in legislatures
+                             if Expense.objects.filter(mandate__legislature=l).count()]
         c['img'] = institution.siglum.lower() + '.png'
         return new_render(request, filter_spec, 'institution.html', c)
 
