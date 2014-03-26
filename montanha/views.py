@@ -101,6 +101,15 @@ def show_index(request, filter_spec):
         c['img'] = institution.siglum.lower() + '.png'
         return new_render(request, filter_spec, 'institution.html', c)
 
+    data = BiggestSupplierForYear.objects.filter(year=date.today().year)
+
+    # Empty-named supplier appears to be used for expenses done through the house?
+    data = data.exclude(supplier__name='').order_by('-expensed')
+    if data.count() > 8:
+        data = data[:8]
+
+    c = {'biggest_suppliers': data}
+
     return new_render(request, filter_spec, 'index.html', c)
 
 

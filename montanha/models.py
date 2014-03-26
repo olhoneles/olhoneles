@@ -335,3 +335,9 @@ class PerLegislator(models.Model):
     date_start = models.DateField()
     date_end = models.DateField()
     expensed = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class BiggestSupplierForYear(models.Model):
+    supplier = models.ForeignKey("Supplier")
+    year = models.IntegerField()
+    expensed = models.DecimalField(max_digits=10, decimal_places=2)

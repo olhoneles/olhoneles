@@ -23,8 +23,8 @@ settings.DEBUG = False
 from datetime import date
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
-from montanha.models import Institution, Expense, ExpenseNature, Legislator
-from montanha.models import PerNature, PerNatureByYear, PerNatureByMonth, PerLegislator
+from montanha.models import Institution, Expense, ExpenseNature, Legislator, Supplier
+from montanha.models import PerNature, PerNatureByYear, PerNatureByMonth, PerLegislator, BiggestSupplierForYear
 from montanha.util import filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
 
 
@@ -205,3 +205,25 @@ class Command(BaseCommand):
                                   expensed=item['expensed'])
                 per_legislators_to_create.append(p)
             PerLegislator.objects.bulk_create(per_legislators_to_create)
+
+        if 'agnostic' in args:
+            # Institution-agnostic consolidations - biggest suppliers
+            print u'Consolidating institution-agnostic totals…'
+
+            BiggestSupplierForYear.objects.all().delete()
+            years = [d.year for d in Expense.objects.dates('date', 'year')]
+            for year in years:
+                print u'Consolidating supplier totals for year %d…' % year
+                data = Expense.objects.filter(date__year=year)
+                data = data.values('supplier__id')
+                data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
+
+                biggest_suppliers_for_year_to_add = list()
+                for item in data:
+                    supplier = Supplier.objects.get(id=item['supplier__id'])
+
+                    b = BiggestSupplierForYear(supplier=supplier,
+                                               year=year,
+                                               expensed=item['expensed'])
+                    biggest_suppliers_for_year_to_add.append(b)
+                BiggestSupplierForYear.objects.bulk_create(biggest_suppliers_for_year_to_add)
