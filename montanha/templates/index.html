@@ -46,7 +46,7 @@
         </div>
         <table class="span11 table table-bordered table-striped">
             <thead>
-                <th>Nome</th><th>CNPJ/CPF</th><th>Montante</th>
+                <th>Nome</th><th>CNPJ/CPF</th><th><div class="text-right">Montante</div></th>
             </thead>
             <tbody>
                 {% for d in biggest_suppliers %}
@@ -57,7 +57,7 @@
                       </a>
                     </td>
                     <td>{{ d.supplier.identifier }}</td>
-                    <td>{{ d.expensed|format_currency }}</td>
+                    <td><div class="text-right">{{ d.expensed|format_currency }}</div></td>
                 </tr>
                 {% endfor %}
             </tbody>
