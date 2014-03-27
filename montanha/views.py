@@ -272,7 +272,10 @@ def postprocess_party_data(institution, data):
             if institution:
                 mandates = mandates.filter(legislature__institution=institution)
             d['n_legislators'] = mandates.values('legislator').count()
-            d['expensed_average'] = d['expensed'] / d['n_legislators']
+            if d['n_legislators']:
+                d['expensed_average'] = d['expensed'] / d['n_legislators']
+            else:
+                d['expensed_average'] = 0.
 
     return sorted(data, key=lambda d: d['expensed_average'], reverse=True)
 
