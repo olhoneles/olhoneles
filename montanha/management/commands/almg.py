@@ -47,57 +47,59 @@ class ALMG(BaseCollector):
         # The JSON returned by ALMG's web service uses the brazilian
         # locale for floating point numbers (uses , instead of .).
         data = re.sub(r"([0-9]+),([0-9]+)", r"\1.\2", contents)
-
         return json.loads(data)
 
+    def try_name_disambiguation(self, name):
+        if name == 'Luiz Henrique':
+            return Legislator.objects.get(id=52), False
+
+        return None, False
+
     def update_legislators(self):
-        legislators = self.retrieve_uri("http://dadosabertos.almg.gov.br/ws/deputados/em_exercicio?formato=json")["list"]
-        for entry in legislators:
-            try:
-                party = PoliticalParty.objects.get(siglum=entry["partido"])
-            except PoliticalParty.DoesNotExist:
-                party = PoliticalParty(siglum=entry["partido"])
-                party.save()
+        for situation in ['em_exercicio', 'que_exerceram_mandato']:
+            legislators = self.retrieve_uri("http://dadosabertos.almg.gov.br/ws/deputados/%s?formato=json" % situation)["list"]
+            for entry in legislators:
+                try:
+                    party = PoliticalParty.objects.get(siglum=entry["partido"])
+                except PoliticalParty.DoesNotExist:
+                    party = PoliticalParty(siglum=entry["partido"])
+                    party.save()
 
-                self.debug("New party: %s" % unicode(party))
+                    self.debug("New party: %s" % unicode(party))
 
-            try:
-                legislator = Legislator.objects.get(original_id=entry["id"])
-                self.debug("Found existing legislator: %s" % unicode(legislator))
+                legislator, created = self.try_name_disambiguation(entry['nome'])
+                if not legislator:
+                    legislator, created = Legislator.objects.get_or_create(name=entry['nome'])
 
-                mandate = self.mandate_for_legislator(legislator, party)
+                if created:
+                    self.debug("New legislator: %s" % unicode(legislator))
+                else:
+                    self.debug("Found existing legislator: %s" % unicode(legislator))
 
-            except Legislator.DoesNotExist:
-                legislator = Legislator(name=entry["nome"], original_id=entry["id"])
-                legislator.save()
-
-                mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=party, legislature=self.legislature)
-                mandate.save()
-
-                self.debug("New legislator found: %s" % unicode(legislator))
+                mandate = self.mandate_for_legislator(legislator, party, entry["id"])
 
     def update_legislators_data(self):
 
-        legislatures = self.legislature.mandate_set.all()
-        for legislature in legislatures:
-            original_id = legislature.legislator.original_id
+        mandates = self.legislature.mandate_set.all()
+        for mandate in mandates:
+            original_id = mandate.original_id
             uri = "http://dadosabertos.almg.gov.br/ws/deputados/%s?formato=json" % original_id
             entry = self.retrieve_uri(uri)["deputado"]
 
-            self.debug("Legislator %s" % unicode(legislature.legislator))
+            self.debug("Legislator %s" % unicode(mandate.legislator))
 
             if "sexo" in entry:
-                legislature.legislator.gender = entry["sexo"]
+                mandate.legislator.gender = entry["sexo"]
 
             if "sitePessoal" in entry:
-                legislature.legislator.site = entry["sitePessoal"]
+                mandate.legislator.site = entry["sitePessoal"]
 
             if "vidaProfissionalPolitica" in entry:
-                legislature.legislator.about = entry["vidaProfissionalPolitica"]
+                mandate.legislator.about = entry["vidaProfissionalPolitica"]
 
             if "emails" in entry and entry["emails"]:
                 email = entry["emails"][0]['endereco']
-                legislature.legislator.email = "%s%s" % (email, "@almg.gov.br")
+                mandate.legislator.email = "%s%s" % (email, "@almg.gov.br")
 
             if "dataNascimento" in entry:
                 date_of_birth = entry["dataNascimento"]
@@ -107,9 +109,9 @@ class ALMG(BaseCollector):
                     date_of_birth = date_of_birth.replace(crazy_char, "")
                 date_of_birth = datetime.strptime(date_of_birth,
                                                   "%d/%m/%Y").date()
-                legislature.legislator.date_of_birth = date_of_birth
+                mandate.legislator.date_of_birth = date_of_birth
 
-            legislature.legislator.save()
+            mandate.legislator.save()
 
     def update_data_for_year(self, mandate, year):
         self.debug("Updating data for year %d" % year)
@@ -118,7 +120,7 @@ class ALMG(BaseCollector):
 
     def update_data_for_month(self, mandate, year, month):
         self.debug("Updating data for %d-%d - %s" % (year, month, unicode(mandate)))
-        uri = "http://dadosabertos.almg.gov.br/ws/prestacao_contas/verbas_indenizatorias/deputados/%s/%d/%d?formato=json" % (mandate.legislator.original_id, year, month)
+        uri = "http://dadosabertos.almg.gov.br/ws/prestacao_contas/verbas_indenizatorias/deputados/%s/%d/%d?formato=json" % (mandate.original_id, year, month)
         for entry in self.retrieve_uri(uri)["list"]:
             try:
                 nature = ExpenseNature.objects.get(original_id=entry["codTipoDespesa"])

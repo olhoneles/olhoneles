@@ -38,7 +38,7 @@ class BaseCollector(object):
         if self.debug_enabled:
             print message
 
-    def mandate_for_legislator(self, legislator, party):
+    def mandate_for_legislator(self, legislator, party, original_id=None):
         try:
             mandate = Mandate.objects.get(legislator=legislator, date_start=self.legislature.date_start)
         except Mandate.DoesNotExist:
@@ -46,6 +46,11 @@ class BaseCollector(object):
                               legislature=self.legislature)
             mandate.save()
             self.debug("Mandate starting on %s did not exist, created." % self.legislature.date_start.strftime("%F"))
+
+        if original_id:
+            mandate.original_id = original_id
+            mandate.save()
+
         return mandate
 
     def update_legislators(self):

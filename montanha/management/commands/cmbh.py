@@ -171,19 +171,14 @@ class CMBH(BaseCollector):
                 nature = ExpenseNature(name=nature)
                 nature.save()
 
-            try:
-                legislator = Legislator.objects.get(original_id=code)
+            legislator, created = Legislator.objects.get_or_create(name=legislator)
+
+            if created:
+                self.debug("New legislator: %s" % unicode(legislator))
+            else:
                 self.debug("Found existing legislator: %s" % unicode(legislator))
 
-                mandate = self.mandate_for_legislator(legislator, None)
-            except Legislator.DoesNotExist:
-                legislator = Legislator(name=legislator, original_id=code)
-                legislator.save()
-
-                mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=None, legislature=self.legislature)
-                mandate.save()
-
-                self.debug("New legislator found: %s" % unicode(legislator))
+            mandate = self.mandate_for_legislator(legislator, party=None, original_id=code)
 
             for row in data:
                 columns = row.findAll('td')

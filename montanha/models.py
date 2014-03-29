@@ -51,16 +51,20 @@ class PoliticalParty(models.Model):
         return u"%s" % (self.siglum)
 
 
+class AlternativeLegislatorName(models.Model):
+    name = models.CharField(max_length=2048)
+
+
 class Legislator(models.Model):
 
     class Meta:
         verbose_name = _("Legislator")
         verbose_name_plural = _("Legislators")
 
-    original_id = models.TextField()
-
     name = models.CharField(max_length=2048,
                             verbose_name=_("Full name"))
+
+    alternative_names = models.ManyToManyField('AlternativeLegislatorName')
 
     picture = ThumbnailerImageField(
         verbose_name=_('Picture'),
@@ -98,9 +102,6 @@ class Legislator(models.Model):
         null=True)
 
     def __unicode__(self):
-        if self.original_id:
-            return u"Legislator %s (Original ID: %s)" % (self.name, self.original_id)
-
         return u"Legislator %s" % (self.name)
 
     @property
@@ -161,6 +162,8 @@ class Mandate(models.Model):
     class Meta:
         verbose_name = _("Mandate")
         verbose_name_plural = _("Mandates")
+
+    original_id = models.TextField(null=True, blank=True)
 
     legislator = models.ForeignKey("Legislator")
 

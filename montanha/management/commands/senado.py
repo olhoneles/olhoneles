@@ -39,7 +39,7 @@ class Senado(BaseCollector):
 
     def retrieve_legislators(self):
         uri = 'http://www.senado.gov.br/transparencia/'
-        return BaseCollector.retrieve_uri(self, uri)
+        return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
     def retrieve_data_for_year(self, year):
         uri = 'http://www.senado.gov.br/transparencia/LAI/verba/%d.csv' % year
@@ -47,6 +47,12 @@ class Senado(BaseCollector):
         self.debug("Downloading %s" % uri)
 
         return BaseCollector.retrieve_uri(self, uri, force_encoding='windows-1252', post_process=False)
+
+    def try_name_disambiguation(self, name):
+        if name.title() == 'Luiz Henrique':
+            return Legislator.objects.get(id=246), False
+
+        return None, False
 
     def update_legislators(self):
         page = self.retrieve_legislators()
@@ -61,27 +67,25 @@ class Senado(BaseCollector):
             original_id = int(item.get('value'))
             legislators.append(dict(name=name, original_id=original_id))
 
-        # Obtain the existing ids
-        existing_ids = [x.id for x in Legislator.objects.filter(mandate__legislature=self.legislature).all()]
-
         # Add legislators that do not exist yet
         for l in legislators:
-            if l['original_id'] in existing_ids:
-                continue
-
-            try:
-                legislator = Legislator.objects.get(original_id=l['original_id'])
+            mandate = Mandate.objects.filter(legislature=self.legislature).filter(original_id=l['original_id'])
+            if mandate.count():
+                assert(mandate.count() == 1)
+                mandate = mandate[0]
+                legislator = mandate.legislator
                 self.debug("Found existing legislator: %s" % unicode(legislator))
+            else:
+                legislator, created = self.try_name_disambiguation(l['name'])
+                if not legislator:
+                    legislator, created = Legislator.objects.get_or_create(name=l['name'])
 
-                mandate = self.mandate_for_legislator(legislator, None)
-            except Legislator.DoesNotExist:
-                legislator = Legislator(name=l['name'], original_id=l['original_id'])
-                legislator.save()
+                if created:
+                    self.debug("New legislator: %s" % unicode(legislator))
+                else:
+                    self.debug("Found existing legislator: %s" % unicode(legislator))
 
-                mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=None, legislature=self.legislature)
-                mandate.save()
-
-                self.debug("New legislator found: %s" % unicode(legislator))
+                mandate = self.mandate_for_legislator(legislator, party=None, original_id=l['original_id'])
 
     def update_data(self):
         self.collection_run = self.create_collection_run(self.legislature)
@@ -96,7 +100,8 @@ class Senado(BaseCollector):
         if data:
             df = pd.read_csv(data, skiprows=1, delimiter=";",
                              parse_dates=[7], decimal=',',
-                             error_bad_lines=False).dropna(how='all')
+                             error_bad_lines=False,
+                             encoding='utf-8').dropna(how='all')
 
             expected_header = [u'ANO',
                                u'MES',
@@ -128,6 +133,10 @@ class Senado(BaseCollector):
                 expense_date = row["DATA"]
                 expensed = row['VALOR_REEMBOLSADO']
 
+                # FIXME: WTF?
+                if isinstance(expensed, unicode):
+                    expensed = float(expensed.replace(',', '.').replace('\r\n', ''))
+
                 nature, _ = ExpenseNature.objects.get_or_create(name=nature)
 
                 try:
@@ -136,35 +145,36 @@ class Senado(BaseCollector):
                     supplier = Supplier(identifier=cpf_cnpj, name=supplier_name)
                     supplier.save()
 
-                try:
+                legislator, _ = self.try_name_disambiguation(name)
+                if not legislator:
                     legislator = Legislator.objects.get(name__iexact=name)
-                    mandate = self.mandate_for_legislator(legislator, None)
-                    expense = ArchivedExpense(number=docnumber,
-                                              nature=nature,
-                                              date=expense_date,
-                                              expensed=expensed,
-                                              mandate=mandate,
-                                              supplier=supplier,
-                                              collection_run=self.collection_run)
-                    archived_expense_list.append(expense)
-                    self.debug("New expense found: %s" % unicode(expense))
+                mandate = self.mandate_for_legislator(legislator, None)
+                expense = ArchivedExpense(number=docnumber,
+                                          nature=nature,
+                                          date=expense_date,
+                                          expensed=expensed,
+                                          mandate=mandate,
+                                          supplier=supplier,
+                                          collection_run=self.collection_run)
+                archived_expense_list.append(expense)
+                self.debug("New expense found: %s" % unicode(expense))
 
-                    objects_counter += 1
-                    archived_expense_list_counter -= 1
+                objects_counter += 1
+                archived_expense_list_counter -= 1
 
-                    # We create a list with up to OBJECT_LIST_MAXIMUM_COUNTER.
-                    # If that lists is equal to the maximum object count allowed
-                    # or if there are no more objects in archived_expense_list,
-                    # we bulk_create() them and clear the list.
+                # We create a list with up to OBJECT_LIST_MAXIMUM_COUNTER.
+                # If that lists is equal to the maximum object count allowed
+                # or if there are no more objects in archived_expense_list,
+                # we bulk_create() them and clear the list.
 
-                    if objects_counter == OBJECT_LIST_MAXIMUM_COUNTER or archived_expense_list_counter == 0:
-                        ArchivedExpense.objects.bulk_create(archived_expense_list)
-                        archived_expense_list[:] = []
-                        objects_counter = 0
-                        reset_queries()
+                if objects_counter == OBJECT_LIST_MAXIMUM_COUNTER or archived_expense_list_counter == 0:
+                    ArchivedExpense.objects.bulk_create(archived_expense_list)
+                    archived_expense_list[:] = []
+                    objects_counter = 0
+                    reset_queries()
 
-                except Exception:
-                    pass
+                #except Exception, e:
+                    #import pdb;pdb.set_trace()
         else:
             self.debug("Error downloading file for year %d" % year)
 
