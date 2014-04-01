@@ -70,7 +70,7 @@ class CMBH(BaseCollector):
         uri = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_vereadores.php'
         data = {'mes': month}
         headers = {
-            'Referer': 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_meses.php',
+            'Referer': 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/index.php',
             'Origin': 'http://www.cmbh.mg.gov.br',
         }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
