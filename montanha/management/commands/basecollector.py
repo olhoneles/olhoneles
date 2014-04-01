@@ -79,8 +79,12 @@ class BaseCollector(object):
 
         while retries < self.max_tries:
             try:
-                r = requests.get(uri, data=data, headers=headers,
-                                 timeout=self.default_timeout, stream=True)
+                options = dict(data=data, headers=headers, timeout=self.default_timeout, stream=True)
+                if data:
+                    r = requests.post(uri, **options)
+                else:
+                    r = requests.get(uri, **options)
+
                 if force_encoding:
                     r.encoding = force_encoding
                 if r.status_code == requests.codes.not_found:
