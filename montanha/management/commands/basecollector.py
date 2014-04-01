@@ -74,6 +74,9 @@ class BaseCollector(object):
     def retrieve_uri(self, uri, data=None, headers=None, post_process=True, force_encoding=None):
         retries = 0
 
+        pargs = (uri, unicode(data), unicode(headers), int(post_process), unicode(force_encoding))
+        self.debug(u"Retrieving %s data: %s headers: %s post_process? %d force_encoding: %s" % pargs)
+
         while retries < self.max_tries:
             try:
                 r = requests.get(uri, data=data, headers=headers,
