@@ -58,7 +58,7 @@ class CMSP(BaseCollector):
 
     def retrieve_expenses(self, month, year):
         uri = 'http://www2.camara.sp.gov.br/SAEG/%s%s.xml' % (year, month)
-        return BaseCollector.retrieve_uri(self, uri)
+        return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
     def retrieve_legislators(self):
         uri = 'http://www1.camara.sp.gov.br/vereadores_joomla.asp'
