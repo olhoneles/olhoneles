@@ -25,6 +25,7 @@ legislators
     license='AGPL',
     classifiers=[
         'Development Status :: 4 - Beta',
+        'Classifier: Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
