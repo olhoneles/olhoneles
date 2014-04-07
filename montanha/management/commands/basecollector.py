@@ -36,7 +36,7 @@ class BaseCollector(object):
 
     def debug(self, message):
         if self.debug_enabled:
-            print message
+            print message.encode('utf-8')
 
     def mandate_for_legislator(self, legislator, party, original_id=None):
         try:
