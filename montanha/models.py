@@ -186,6 +186,11 @@ class Mandate(models.Model):
                               blank=True,
                               null=True)
 
+    state = models.CharField(blank=True, null=True,
+                             max_length=512,
+                             verbose_name=_("State"),
+                             help_text=_("""The state where the legislator comes from."""))
+
     def __unicode__(self):
         if self.date_end:
             return u"%s's ongoing mandate started on %s, affiliated with %s" % (self.legislator.name,
@@ -312,21 +317,21 @@ class PerNature(models.Model):
     date_start = models.DateField()
     date_end = models.DateField()
     nature = models.ForeignKey("ExpenseNature")
-    expensed = models.DecimalField(max_digits=10, decimal_places=2)
+    expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
 
 class PerNatureByYear(models.Model):
     institution = models.ForeignKey("Institution")
     year = models.IntegerField()
     nature = models.ForeignKey("ExpenseNature")
-    expensed = models.DecimalField(max_digits=10, decimal_places=2)
+    expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
 
 class PerNatureByMonth(models.Model):
     institution = models.ForeignKey("Institution")
     date = models.DateField()
     nature = models.ForeignKey("ExpenseNature")
-    expensed = models.DecimalField(max_digits=10, decimal_places=2)
+    expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
 
 class PerLegislator(models.Model):
@@ -337,10 +342,10 @@ class PerLegislator(models.Model):
     legislator = models.ForeignKey("Legislator")
     date_start = models.DateField()
     date_end = models.DateField()
-    expensed = models.DecimalField(max_digits=10, decimal_places=2)
+    expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
 
 class BiggestSupplierForYear(models.Model):
     supplier = models.ForeignKey("Supplier")
     year = models.IntegerField()
-    expensed = models.DecimalField(max_digits=10, decimal_places=2)
+    expensed = models.DecimalField(max_digits=20, decimal_places=2)

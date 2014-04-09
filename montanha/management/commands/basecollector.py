@@ -38,7 +38,7 @@ class BaseCollector(object):
         if self.debug_enabled:
             print message.encode('utf-8')
 
-    def mandate_for_legislator(self, legislator, party, original_id=None):
+    def mandate_for_legislator(self, legislator, party, state=None, original_id=None):
         try:
             mandate = Mandate.objects.get(legislator=legislator, date_start=self.legislature.date_start)
         except Mandate.DoesNotExist:
@@ -106,6 +106,12 @@ class BaseCollector(object):
             time.sleep(self.try_again_timer)
 
         raise RuntimeError("Error: Unable to retrieve %s; Tried %d times." % (uri, self.max_tries))
+
+    def _normalize_party_name(self, name):
+        names_map = {
+            'PCdoB': 'PC do B',
+        }
+        return names_map.get(name, name)
 
     def post_process_uri(self, contents):
         return BeautifulSoup(contents, convertEntities=BeautifulStoneSoup.ALL_ENTITIES)

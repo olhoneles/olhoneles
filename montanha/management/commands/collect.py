@@ -100,6 +100,13 @@ class Command(BaseCommand):
                     camarafederal.collect_expenses()
                 houses_to_consolidate.append("camarafederal")
 
+            if "cdep" in args:
+                from cdep import CamaraDosDeputados
+                cdep = CamaraDosDeputados(collection_runs, debug_enabled)
+                cdep.update_legislators()
+                cdep.update_data()
+                houses_to_consolidate.append("camarafederal")
+
             settings.expense_locked_for_collection = False
 
             for run in collection_runs:
