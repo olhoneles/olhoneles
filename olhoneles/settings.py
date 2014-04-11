@@ -7,9 +7,9 @@ from derpconf.config import Config
 INSTANCE = lambda *x: os.path.join(os.path.dirname(__file__), *x)
 
 if 'test' in sys.argv:
-    config_file = 'olhoneles/tests.config'
+    config_file = INSTANCE('tests.config')
 else:
-    config_file = 'olhoneles/local.config'
+    config_file = INSTANCE('local.config')
 
 if os.path.isfile(config_file):
     conf = Config.load(config_file)
