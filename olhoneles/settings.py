@@ -1,74 +1,86 @@
 # Django settings for olhoneles project.
 
 import os
-INSTANCE = lambda *x:os.path.join(os.path.dirname(__file__), *x)
+import sys
+from derpconf.config import Config
 
-DEBUG = True
+INSTANCE = lambda *x: os.path.join(os.path.dirname(__file__), *x)
+
+if 'test' in sys.argv:
+    config_file = INSTANCE('tests.config')
+else:
+    config_file = INSTANCE('local.config')
+
+if os.path.isfile(config_file):
+    conf = Config.load(config_file)
+else:
+    conf = Config()
+
+DEBUG = conf.get('DEBUG', True)
 TEMPLATE_DEBUG = DEBUG
 
-ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
-)
+ADMINS = conf.get('ADMINS', ())
 
 MANAGERS = ADMINS
 
-DATABASES = {
+DEAFAULT_DATABASE = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': INSTANCE('db.sqlite3'),                      # Or path to database file if using sqlite3.
-        # The following settings are not used with sqlite3:
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': INSTANCE('db.sqlite3'),
         'USER': '',
         'PASSWORD': '',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
+        'HOST': '',
+        'PORT': '',
     }
 }
 
+DATABASES = conf.get('DATABASES', DEAFAULT_DATABASE)
+
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = conf.get('ALLOWED_HOSTS', [])
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = conf.get('TIME_ZONE', 'America/Chicago')
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = conf.get('LANGUAGE_CODE', 'en-us')
 
-SITE_ID = 1
+SITE_ID = conf.get('SITE_ID', 1)
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = True
+USE_I18N = conf.get('USE_I18N', True)
 
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale.
-USE_L10N = True
+USE_L10N = conf.get('USE_L10N', True)
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
+USE_TZ = conf.get('USE_TZ', True)
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-MEDIA_ROOT = INSTANCE('../media')
+MEDIA_ROOT = conf.get('MEDIA_ROOT', INSTANCE('../media'))
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://example.com/media/", "http://media.example.com/"
-MEDIA_URL = '/media/'
+MEDIA_URL = conf.get('MEDIA_URL', '/media/')
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = conf.get('STATIC_ROOT', '')
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
-STATIC_URL = '/static/'
+STATIC_URL = conf.get('STATIC_URL', '/static/')
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -86,23 +98,13 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'REPLACE-THIS-WITH-YOUR-SECRET'
+SECRET_KEY = conf.get('SECRET_KEY', 'REPLACE-THIS-IN-CONFIG-LOCAL')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 #     'django.template.loaders.eggs.Loader',
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    'django.core.context_processors.request',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -126,7 +128,7 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
-INSTALLED_APPS = (
+DEFAULT_INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -142,6 +144,8 @@ INSTALLED_APPS = (
     # all apps, potentially.
     'south',
 )
+
+INSTALLED_APPS = conf.get('INSTALLED_APPS', DEFAULT_INSTALLED_APPS)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -178,13 +182,25 @@ THUMBNAIL_ALIASES = {
     },
 }
 
-CACHES = {
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz',
+    'django.core.context_processors.request',
+)
+
+DEFAULT_CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': INSTANCE('../cache'),
     }
 }
 
-DEFAULT_FROM_EMAIL = "montanha-dev@listas.olhoneles.org"
+CACHES = conf.get('CACHES', DEFAULT_CACHES)
 
-CONTACT_US_EMAIL = "montanha@olhoneles.org"
+DEFAULT_FROM_EMAIL = conf.get('DEFAULT_FROM_EMAIL', 'montanha-dev@listas.olhoneles.org')
+
+CONTACT_US_EMAIL = conf.get('CONTACT_US_EMAIL', 'montanha@olhoneles.org')

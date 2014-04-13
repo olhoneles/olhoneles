@@ -2,7 +2,9 @@
 *~
 *.db
 *.sqlite3
-olhoneles/settings.py
 media
 .idea
-
+olhoneles/local.config
+.coverage
+*.egg-info
+dist/

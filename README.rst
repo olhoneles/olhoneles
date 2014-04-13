@@ -20,12 +20,6 @@ Install
 
     make setup
 
-#. Create your ``settings.py``::
-
-    cp olhoneles/settings.py.sample olhoneles/settings.py
-
-#. Define a ``SECRET_KEY``. You can use this `generator <http://www.miniwebtool.com/django-secret-key-generator/>`_.
-
 #. Create your database::
 
     make data
@@ -33,6 +27,8 @@ Install
 #. Run it::
 
     make run
+
+#. If you would like to override some settings.py variables, like SECRET_KEY, DATABASES, ALLOWED_HOSTS, please create the ``olhoneles/local.config`` file.
 
 
 Collecting the data
