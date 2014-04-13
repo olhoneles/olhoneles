@@ -140,6 +140,7 @@ DEFAULT_INSTALLED_APPS = (
     'easy_thumbnails',
     'montanha',
     'cms',
+    'captcha',
     # South must be the last one, since it is used for migrating models of
     # all apps, potentially.
     'south',
@@ -204,3 +205,6 @@ CACHES = conf.get('CACHES', DEFAULT_CACHES)
 DEFAULT_FROM_EMAIL = conf.get('DEFAULT_FROM_EMAIL', 'montanha-dev@listas.olhoneles.org')
 
 CONTACT_US_EMAIL = conf.get('CONTACT_US_EMAIL', 'montanha@olhoneles.org')
+
+RECAPTCHA_PUBLIC_KEY = conf.get('RECAPTCHA_PUBLIC_KEY', '')
+RECAPTCHA_PRIVATE_KEY = conf.get('RECAPTCHA_PRIVATE_KEY', '')

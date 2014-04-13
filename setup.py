@@ -47,6 +47,7 @@ legislators
         'chardet==2.2.1',
         'pandas==0.13.1',
         'derpconf==0.4.9',
+        'django-recaptcha==0.0.9',
     ],
     dependency_links = [
         'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14'

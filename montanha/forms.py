@@ -17,6 +17,7 @@
 
 from django import forms
 from parsley.decorators import parsleyfy
+from captcha.fields import ReCaptchaField
 
 
 @parsleyfy
@@ -47,5 +48,5 @@ class ContactUsForm(forms.Form):
                    "class": "span5",
                    'rows': 5}))
 
-
+    captcha = ReCaptchaField(attrs={'theme' : 'clean'})
 
