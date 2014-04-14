@@ -110,13 +110,7 @@ class CamaraDosDeputados(BaseCollector):
         for file_name in files_to_download:
             xml_file_name = file_name.replace('zip', 'xml')
             full_xml_path = os.path.join(data_path, xml_file_name)
-
-            # The files are in UTF-16LE. Seriously. We convert them to UTF-8 because it's way
-            # easier to poke at them with any tools we choose; the encoding declaration is also
-            # fixed down below.
-            fixed_xml_path = full_xml_path.replace('.xml', '.fixed.xml')
-
-            files_to_process.append(os.path.join(data_path, fixed_xml_path))
+            files_to_process.append(os.path.join(data_path, full_xml_path))
 
             full_path = os.path.join(data_path, file_name)
 
@@ -140,10 +134,6 @@ class CamaraDosDeputados(BaseCollector):
             self.debug(u"Unzipping %s…" % (file_name))
             zf = ZipFile(full_path, 'r')
             zf.extract(xml_file_name, data_path)
-
-            with open(fixed_xml_path, 'w') as output_file:
-                subprocess.call(['iconv', '-futf16', '-tutf-8', full_xml_path], stdout=output_file)
-            subprocess.call(['sed', '-i', 's/iso-8859-1/utf-8/', fixed_xml_path])
 
         open('cdep-collection-run', 'w').write('%d' % (self.collection_run.id))
         archived_expense_list = []
