@@ -35,8 +35,16 @@ class BaseCollector(object):
         self.try_again_timer = 10
 
     def debug(self, message):
+        message = message.encode('utf-8')
+
         if self.debug_enabled:
-            print message.encode('utf-8')
+            print message
+
+        if not hasattr(self, 'logfile'):
+            self.logfile = open(self.__class__.__name__.lower() + '.log', 'a')
+
+        timestamp = datetime.fromtimestamp(time.time()).strftime('%F:%H:%M:%S')
+        self.logfile.write('%s %s\n' % (timestamp, message))
 
     def mandate_for_legislator(self, legislator, party, state=None, original_id=None):
         try:
