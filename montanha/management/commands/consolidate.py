@@ -46,7 +46,7 @@ class Command(BaseCommand):
         if "cmsp" in args:
             institutions.append(Institution.objects.get(siglum='CMSP'))
 
-        if "camarafederal" in args:
+        if "cdep" in args:
             institutions.append(Institution.objects.get(siglum='CDF'))
 
         for institution in institutions:

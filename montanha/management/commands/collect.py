@@ -50,7 +50,7 @@ class Command(BaseCommand):
         houses_to_consolidate = []
 
         if "almg" in args:
-            from almg import ALMG
+            from collectors.almg import ALMG
             almg = ALMG(collection_runs, debug_enabled)
             almg.update_legislators()
             almg.update_data()
@@ -58,7 +58,7 @@ class Command(BaseCommand):
             houses_to_consolidate.append("almg")
 
         if "senado" in args:
-            from senado import Senado
+            from collectors.senado import Senado
             senado = Senado(collection_runs, debug_enabled)
             senado.update_legislators()
             senado.update_data()
@@ -66,39 +66,24 @@ class Command(BaseCommand):
             houses_to_consolidate.append("senado")
 
         if "cmbh" in args:
-            from cmbh import CMBH
+            from collectors.cmbh import CMBH
             cmbh = CMBH(collection_runs, debug_enabled)
             cmbh.update_legislators()
             cmbh.update_data()
             houses_to_consolidate.append("cmbh")
 
         if "cmsp" in args:
-            from cmsp import CMSP
+            from collectors.cmsp import CMSP
             cmsp = CMSP(collection_runs, debug_enabled)
             cmsp.update_data()
             houses_to_consolidate.append("cmsp")
 
-        if "camarafederal" in args:
-            from camarafederal import CamaraFederal
-            camarafederal = CamaraFederal(collection_runs, debug_enabled)
-            args = args[1:]
-
-            if args[0] == "legislatures":
-                camarafederal.collect_legislatures()
-
-            if args[0] == "legislators":
-                camarafederal.collect_legislators()
-
-            if args[0] == "expenses":
-                camarafederal.collect_expenses()
-            houses_to_consolidate.append("camarafederal")
-
         if "cdep" in args:
-            from cdep import CamaraDosDeputados
+            from collectors.cdep import CamaraDosDeputados
             cdep = CamaraDosDeputados(collection_runs, debug_enabled)
             cdep.update_legislators()
             cdep.update_data()
-            houses_to_consolidate.append("camarafederal")
+            houses_to_consolidate.append("cdep")
 
         settings.expense_locked_for_collection = False
 
