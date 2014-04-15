@@ -76,7 +76,7 @@ class ALMG(BaseCollector):
                 else:
                     self.debug("Found existing legislator: %s" % unicode(legislator))
 
-                mandate = self.mandate_for_legislator(legislator, party, entry["id"])
+                mandate = self.mandate_for_legislator(legislator, party, original_id=entry["id"])
 
     def update_legislators_data(self):
 
