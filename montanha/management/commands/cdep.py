@@ -21,7 +21,7 @@ import os
 import requests
 import subprocess
 from datetime import date, datetime
-from django.db import transaction, reset_queries
+from django.db import reset_queries
 from email.utils import formatdate as http_date
 from basecollector import BaseCollector
 from lxml.etree import iterparse
@@ -239,7 +239,6 @@ class CamaraDosDeputados(BaseCollector):
                     archived_expense_list[:] = []
                     objects_counter = 0
                     reset_queries()
-                    transaction.commit()
 
                 elem.clear()
                 while elem.getprevious() is not None:

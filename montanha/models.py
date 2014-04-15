@@ -228,6 +228,7 @@ class CollectionRun(models.Model):
 
     date = models.DateField(verbose_name=_("Collection date"))
     legislature = models.ForeignKey("Legislature")
+    committed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u"Collection run on %s for %s" % (self.date, unicode(self.legislature))

@@ -19,7 +19,6 @@
 
 import pickle
 from django.core.cache import cache
-from django.db import transaction
 from multiprocessing import Process, Queue, Lock, Event, current_process, cpu_count
 from Queue import Empty
 from datetime import datetime, date
@@ -227,7 +226,6 @@ class CamaraFederal(object):
                         content = self.collector.retrieve_nature_expenses(mandate.legislator, nature['original_id'], year, month)
                         expenses = self.parser.parse_nature_expenses(content, nature, year, month)
                         self.updater.update_nature_expenses(mandate, nature['original_id'], expenses)
-            transaction.commit()
             pending_collection['processed_mandates'].append(mandate.id)
             cache.set('pending-cdf-collection', pickle.dumps(pending_collection))
         cache.delete('pending-cdf-collection')
