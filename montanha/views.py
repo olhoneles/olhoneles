@@ -456,6 +456,9 @@ def data_tables_query(request, filter_spec, columns, filter_function=None):
 
         filter_expression = None
         for name, col_type in columns:
+            if col_type == 'd':
+                continue
+
             actual_search_string = format_for_column_type(col_type, search_string)
             exp = Q(**{name.replace('.', '__') + '__icontains': actual_search_string})
             if filter_expression:
