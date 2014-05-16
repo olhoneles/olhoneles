@@ -20,12 +20,18 @@
 from django.conf import settings
 settings.DEBUG = False
 
+import codecs
+import sys
 from datetime import date
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
 from montanha.models import Institution, Expense, ExpenseNature, Legislator, Supplier
 from montanha.models import PerNature, PerNatureByYear, PerNatureByMonth, PerLegislator, BiggestSupplierForYear
 from montanha.util import filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
+
+
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
+sys.stderr = codecs.getwriter("utf-8")(sys.stderr)
 
 
 class Command(BaseCommand):
