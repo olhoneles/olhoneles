@@ -206,5 +206,7 @@ DEFAULT_FROM_EMAIL = conf.get('DEFAULT_FROM_EMAIL', 'montanha-dev@listas.olhonel
 
 CONTACT_US_EMAIL = conf.get('CONTACT_US_EMAIL', 'montanha@olhoneles.org')
 
+SERVER_EMAIL = conf.get('SERVER_EMAIL', 'montanha@olhoneles.org')
+
 RECAPTCHA_PUBLIC_KEY = conf.get('RECAPTCHA_PUBLIC_KEY', '')
 RECAPTCHA_PRIVATE_KEY = conf.get('RECAPTCHA_PRIVATE_KEY', '')
