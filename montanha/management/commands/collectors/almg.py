@@ -51,7 +51,10 @@ class ALMG(BaseCollector):
 
     def try_name_disambiguation(self, name):
         if name == 'Luiz Henrique':
-            return Legislator.objects.get(id=52), False
+            try:
+                return Legislator.objects.get(id=52), False
+            except Legislator.DoesNotExist:
+                return None, False
 
         return None, False
 
