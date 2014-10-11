@@ -57,6 +57,13 @@ class Command(BaseCommand):
             almg.update_legislators_data()
             houses_to_consolidate.append("almg")
 
+        if "algo" in args:
+            from collectors.algo import ALGO
+            almg = ALGO(collection_runs, debug_enabled)
+            almg.update_legislators()
+            almg.update_data()
+            houses_to_consolidate.append("algo")
+
         if "senado" in args:
             from collectors.senado import Senado
             senado = Senado(collection_runs, debug_enabled)
