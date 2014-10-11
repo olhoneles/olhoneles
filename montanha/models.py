@@ -27,7 +27,7 @@ class PoliticalParty(models.Model):
         verbose_name = _("Political Party")
         verbose_name_plural = _("Political Parties")
 
-    siglum = models.CharField(max_length=10,
+    siglum = models.CharField(max_length=15,
                               verbose_name=_("Siglum"),
                               unique=True)
 
