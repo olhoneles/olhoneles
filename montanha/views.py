@@ -23,7 +23,7 @@ from datetime import date
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render as original_render
 from django.db.models import Sum, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.core.mail import send_mail
 from django.conf import settings
 from montanha.models import *
@@ -95,6 +95,8 @@ def show_index(request, filter_spec):
 
     if filter_spec:
         institution, _ = parse_filter(filter_spec)
+        if not institution:
+            raise Http404
         legislatures = institution.legislature_set.order_by('-date_start').all()
         c['legislatures'] = [l for l in legislatures
                              if Expense.objects.filter(mandate__legislature=l).count()]
