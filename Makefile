@@ -12,3 +12,6 @@ setup:
 tests:
 	@coverage run --source='.' manage.py test
 	@coverage report -m
+
+clean:
+	@rm -f *.log
