@@ -349,6 +349,7 @@ def get_supplier_detail_data(request, supplier_id, filter_spec=''):
 
     top_buyers = data.values('mandate__legislator__id',
                              'mandate__legislator__name',
+                             'mandate__legislature__institution__siglum',
                              'mandate__party__siglum')
     top_buyers = top_buyers.annotate(expensed=Sum('expensed')).order_by('-expensed')
     top_buyers = top_buyers[:15]

@@ -70,7 +70,7 @@
                                 {% for d in top_buyers %}
                                 <tr>
                                     <td>
-                                        <a href="{% if filter_spec %}/{{ filter_spec }}{% endif %}{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
+                                        <a href="{% if filter_spec %}/{{ filter_spec }}{% else %}/{{ d.mandate__legislature__institution__siglum }}{% endif %}{% url 'montanha:show-legislator-detail' d.mandate__legislator__id %}">
                                         {{ d.mandate__legislator__name }} ({{ d.mandate__party__siglum }})
                                         </a>
                                     </td>
