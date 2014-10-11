@@ -202,7 +202,7 @@ class CMSP(BaseCollector):
                 for j in i.findAll('g_beneficiario'):
                     supplier_name = j.find('nm_beneficiario').getText()
                     supplier_name = supplier_name.capitalize()
-                    cnpj = j.find('nr_cnpj').getText()
+                    cnpj = self.normalize_cnpj_or_cpf(j.find('nr_cnpj').getText())
 
                     if not cnpj and not supplier_name:
                         continue

@@ -123,3 +123,6 @@ class BaseCollector(object):
 
     def post_process_uri(self, contents):
         return BeautifulSoup(contents, convertEntities=BeautifulStoneSoup.ALL_ENTITIES)
+
+    def normalize_cnpj_or_cpf(self, cnpj):
+        return cnpj.replace('.', '').replace('-', '').replace('/', '').strip()

@@ -129,10 +129,11 @@ class ALMG(BaseCollector):
                 nature.save()
 
             for details in entry["listaDetalheVerba"]:
+                cnpj = self.normalize_cnpj_or_cpf(details["cpfCnpj"])
                 try:
-                    supplier = Supplier.objects.get(identifier=details["cpfCnpj"])
+                    supplier = Supplier.objects.get(identifier=cnpj)
                 except Supplier.DoesNotExist:
-                    supplier = Supplier(identifier=details["cpfCnpj"], name=details["nomeEmitente"])
+                    supplier = Supplier(identifier=cnpj, name=details["nomeEmitente"])
                     supplier.save()
 
                 if "descDocumento" in details:

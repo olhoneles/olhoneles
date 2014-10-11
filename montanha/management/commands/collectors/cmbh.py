@@ -187,7 +187,7 @@ class CMBH(BaseCollector):
                     print u'Bad row: %s' % unicode(columns)
                     continue
 
-                cnpj = columns[0].getText().replace('.', '').replace('-', '').replace('/', '').strip()
+                cnpj = self.normalize_cnpj_or_cpf(columns[0].getText())
 
                 supplier_name = columns[1].getText().strip()
 

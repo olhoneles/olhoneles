@@ -127,7 +127,7 @@ class Senado(BaseCollector):
             for idx, row in df.iterrows():
                 name = row["SENADOR"]
                 nature = row["TIPO_DESPESA"]
-                cpf_cnpj = row["CNPJ_CPF"].replace('.', '').replace('-', '').replace('/', '')
+                cpf_cnpj = self.normalize_cnpj_or_cpf(row["CNPJ_CPF"])
                 supplier_name = row["FORNECEDOR"]
                 docnumber = row["DOCUMENTO"]
                 expense_date = row["DATA"]
