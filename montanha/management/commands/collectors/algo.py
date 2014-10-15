@@ -143,7 +143,7 @@ class ALGO(BaseCollector):
             while current_pos < len(group_trs):
                 tr = group_trs[current_pos]
 
-                if tr.get('class') == 'budget_title':
+                if tr.get('class') == 'verba_titulo':
                     break
 
                 current_pos += 1
