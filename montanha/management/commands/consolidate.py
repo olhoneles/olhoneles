@@ -43,6 +43,9 @@ class Command(BaseCommand):
         if "almg" in args:
             institutions.append(Institution.objects.get(siglum='ALMG'))
 
+        if "algo" in args:
+            institutions.append(Institution.objects.get(siglum='ALGO'))
+
         if "senado" in args:
             institutions.append(Institution.objects.get(siglum='Senado'))
 

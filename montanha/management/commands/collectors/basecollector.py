@@ -84,7 +84,7 @@ class BaseCollector(object):
             for year in range(self.legislature.date_start.year, datetime.now().year + 1):
                 self.update_data_for_year(mandate, year)
 
-    def retrieve_uri(self, uri, data=None, headers=None, post_process=True, force_encoding=None):
+    def retrieve_uri(self, uri, data=None, headers=None, post_process=True, force_encoding=None, return_content=False):
         retries = 0
 
         pargs = (uri, unicode(data), unicode(headers), int(post_process), unicode(force_encoding))
@@ -104,6 +104,8 @@ class BaseCollector(object):
                     return False
                 if post_process:
                     return self.post_process_uri(r.text)
+                elif return_content:
+                    return r.content
                 else:
                     return r.text
 
