@@ -15,7 +15,7 @@
         <meta property="og:locale" content="pt_BR" />
         <meta property="og:url" content="{{ request.build_absolute_uri }}" />
         <meta property="og:description" content="Uma coletânea de dados de gasto com verba indenizatória de algumas das casas legislativas brasileiras. Ele permite ver de maneira mais simples em que os parlamentares estão gastando, quem está gastando mais, quem está recebendo e por aí vai." />
-        <meta property="og:image" content="{% static 'olhoneles_op.png' %}" />
+        <meta property="og:image" content="http://{{ request.get_host }}{% static 'olhoneles_op.png' %}" />
         <link rel="icon" type="image/png" href="{% static 'olhoneles_icon.png' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap-responsive.min.css' %}" />
