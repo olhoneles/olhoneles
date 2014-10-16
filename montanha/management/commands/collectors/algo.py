@@ -31,6 +31,7 @@ from montanha.models import *
 
 
 class ALGO(BaseCollector):
+    TITLE_REGEX = re.compile(r'\d+ - (.*)')
 
     def __init__(self, *args, **kwargs):
         super(ALGO, self).__init__(*args, **kwargs)
@@ -105,9 +106,26 @@ class ALGO(BaseCollector):
         for month in range(1, 13):
             self.update_data_for_month(mandate, year, month)
 
-    @staticmethod
-    def parse_money(value):
-        return float(value.replace('.', '').replace(',', '.').replace('R$', '').strip())
+    @classmethod
+    def parse_title(self, title):
+        if '-' in title:
+            match = self.TITLE_REGEX.search(title)
+
+            if match:
+                return match.group(1)
+
+        return title
+
+    MONEY_RE = re.compile(r'([0-9.,]+)[,.]([0-9]{2})$')
+
+    @classmethod
+    def parse_money(self, value):
+        match = self.MONEY_RE.search(value)
+
+        if match:
+            return float('%s.%s' % (match.group(1).replace('.', '').replace(',', ''), match.group(2)))
+        else:
+            raise ValueError('Cannot convert %s to float (money)' % value)
 
     def find_data_for_month(self, mandate, year, month):
         url = '%s/transparencia/verbaindenizatoria/exibir?ano=%d&mes=%d&parlamentar_id=%s' % (
@@ -119,37 +137,35 @@ class ALGO(BaseCollector):
                 unicode(mandate.legislator), year, month))
             raise StopIteration
 
-        table = data.find('table', {'class': 'tabela-verba-indenizatoria'})
+        container = data.find('div', id='verba')
+
+        if not container:
+            self.debug('div#verba not found')
+
+        table = container.find('table', recursive=False)
 
         if not table:
             self.debug("table.tabela-verba-indenizatoria not found")
             raise StopIteration
 
-        group_trs = table.find('tbody').findAll('tr', recursive=False)
-        current_pos = 0
+        group_trs = table.findAll('tr', {'class': 'verba_titulo'})
 
-        while current_pos < len(group_trs):
-            tr = group_trs[current_pos]
-            current_pos += 1
-
-            if tr.get('class') != 'verba_titulo':
-                continue
-
-            budget_title = tr.text
-            if '-' in budget_title:
-                budget_title = budget_title.split('-')[1].strip()
-
+        for tr in group_trs:
+            budget_title = self.parse_title(tr.text)
             budget_subtitle = None
-            while current_pos < len(group_trs):
-                tr = group_trs[current_pos]
+
+            while True:
+                tr = tr.findNext('tr')
+
+                if not tr:
+                    break
+
+                tr_class = tr.get('class')
 
                 if tr.get('class') == 'verba_titulo':
                     break
 
-                current_pos += 1
-
-                tr_class = tr.get('class')
-                if tr_class == 'info-detalhe-verba':
+                elif tr_class == 'info-detalhe-verba':
                     for detail_tr in tr.find('tbody').findAll('tr'):
                         tds = detail_tr.findAll('td')
 
@@ -173,7 +189,33 @@ class ALGO(BaseCollector):
                     continue
 
                 elif len(tr.findAll('td')) == 3:
-                    budget_subtitle = tr.findAll('td')[0].text
+                    tds = tr.findAll('td')
+                    budget_subtitle = self.parse_title(tds[0].text)
+
+                    next_tr = tr.findNext('tr')
+                    break_classes = ('subtotal', 'info-detalhe-verba', 'verba_titulo')
+
+                    if next_tr.get('class') in break_classes:
+                        continue
+
+                    value_presented = self.parse_money(tds[1].text)
+                    value_expensed = self.parse_money(tds[2].text)
+
+                    if not value_expensed or not value_presented:
+                        continue
+
+                    data = {
+                        'budget_title': budget_title,
+                        'budget_subtitle': budget_subtitle,
+                        'value_presented': value_presented,
+                        'date': '1/%d/%d' % (month, year),
+                        'value_expensed': value_expensed,
+                        'number': 'Sem número'
+                    }
+
+                    self.debug(u'Generated JSON: %s' % data)
+
+                    yield data
 
     def get_or_create_expense_nature(self, name):
         if name not in self.expenses_nature_cached:
@@ -191,10 +233,13 @@ class ALGO(BaseCollector):
         for data in self.find_data_for_month(mandate, year, month):
             nature = self.get_or_create_expense_nature(data['budget_title'])
 
+            name = data.get('nome') or 'Sem nome'
+            cpf_cnpj = data.get('cpf_cnpj') or 'Sem CPF/CNPJ (%s)' % name
+
             try:
-                supplier = Supplier.objects.get(identifier=data["cpf_cnpj"])
+                supplier = Supplier.objects.get(identifier=cpf_cnpj)
             except Supplier.DoesNotExist:
-                supplier = Supplier(identifier=data["cpf_cnpj"], name=data["nome"])
+                supplier = Supplier(identifier=cpf_cnpj, name=name)
                 supplier.save()
 
             date = datetime.strptime(data['date'], '%d/%m/%Y')
