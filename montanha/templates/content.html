@@ -1,57 +1,20 @@
-{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
-        <meta charset="utf-8">
-        <title>Olho neles! {% block title %}{% endblock %}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="author" content="Gustavo Noronha Silva, Estêvão Samuel Procópio Amaral, Marcelo Jorge Vieira">
-        <meta name="description" content="Como os deputados e vereadores mineiros gastam os recursos da verba indenizatória" />
-        <meta name="keywords" content="deputados, vereadores, parlamentares, verba indenizatória, Assembleia Legislativa de Minas Gerais, Câmara Municipal de Belo Horizonte" />
-        <meta name="robots" content="all" />
-        <meta property="og:site_name" content="OlhoNeles.Org" />
-        <meta property="og:title" content="OlhoNeles.Org" />
-        <meta property="og:type" content="website" />
-        <meta property="og:locale" content="pt_BR" />
-        <meta property="og:url" content="{{ request.build_absolute_uri }}" />
-        <meta property="og:description" content="Uma coletânea de dados de gasto com verba indenizatória de algumas das casas legislativas brasileiras. Ele permite ver de maneira mais simples em que os parlamentares estão gastando, quem está gastando mais, quem está recebendo e por aí vai." />
-        <meta property="og:image" content="http://{{ request.get_host }}{% static 'olhoneles_op.png' %}" />
-        <link rel="icon" type="image/png" href="{% static 'olhoneles_icon.png' %}" />
-        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
-        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap-responsive.min.css' %}" />
-        <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}" />
-        <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-        <!--[if lt IE 9]>
-        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js" type="text/javascript"></script>
-        <![endif]-->
-        <noscript>Your browser does not support JavaScript!</noscript>
+    {% include 'base_header.html' %}
+    {% block head-extra %}{% endblock %}
     </head>
     <body>
         <div class="container">
             <div class="row">
                 <div class="span12">
                     <h1 class="main-title"><a href="/">Olho neles!</a></h1>
+                    {% block content %}{% endblock %}
                 </div>
             </div>
-            {% block content %}{% endblock %}
         </div>
-        <footer>
-            <div class="container">
-                <div class="row">
-                    <div class="span3">
-                        <h3>Fale Conosco</h3>
-                        <p>Se quiser saber mais sobre o projeto, tirar dúvidas ou entrar em contato com a
-                        gente, você pode <a href="{% url 'montanha:contact-us' %}">nos enviar um email!</a>
-                    </div>
-                    <div class="span5">
-                        {% include 'sourcecode.html' %}
-                    </div>
-                    <div class="span3">
-                        {% include 'creativecommons.html' %}
-                    </div>
-                </div>
-            </div>
-        </footer>
+        {% include 'footer.html' %}
+        {% block footer-extra %}{% endblock %}
     </body>
 </html>
 
