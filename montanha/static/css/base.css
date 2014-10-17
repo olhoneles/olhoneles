@@ -96,12 +96,12 @@ th.sortable {
     font-size: 18px;
 }
 
-.main-title {
+.main-title h1 {
     font-size: 80px;
     margin-bottom: 40px;
 }
-
-.main-title a {
+.main-title,
+.main-title:hover {
     color: black;
 }
 
