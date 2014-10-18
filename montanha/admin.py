@@ -23,9 +23,17 @@ from montanha.models import *
 
 
 class PoliticalPartyAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'name', 'show_logo']
+    list_display = ['__str__', 'name', 'show_logo', 'has_wikipedia']
     ordering = ['siglum']
     search_fields = ['name']
+
+    def has_wikipedia(self, obj):
+        if obj.wikipedia:
+            return mark_safe('<span>Yes</span>')
+        else:
+            return mark_safe('<span>No</span>')
+    has_wikipedia.allow_tags = True
+    has_wikipedia.short_description = 'Has wikipedia'
 
     def show_logo(self, obj):
         if obj.logo:
