@@ -233,7 +233,11 @@ def show_legislator_detail(request, filter_spec, legislator_id):
     top_suppliers = top_suppliers[:15]
 
     total_expensed = data.values('supplier__name')
-    total_expensed = total_expensed.annotate(total_expensed=Sum('expensed'))[0]['total_expensed']
+    total_expensed = total_expensed.annotate(total_expensed=Sum('expensed'))
+    if len(total_expensed) > 0:
+        total_expensed = total_expensed[0]['total_expensed']
+    else:
+        total_expensed = 0
 
     data = data.values('nature__name', 'supplier__name', 'supplier__identifier',
                        'number', 'date', 'expensed').order_by('-date')
