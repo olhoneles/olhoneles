@@ -15,3 +15,6 @@ tests:
 
 clean:
 	@rm -f *.log
+
+publish:
+	@python setup.py sdist upload
