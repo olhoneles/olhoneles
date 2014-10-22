@@ -359,7 +359,11 @@ def get_supplier_detail_data(request, supplier_id, filter_spec=''):
     top_buyers = top_buyers[:15]
 
     total_expensed = data.values('supplier__name')
-    total_expensed = total_expensed.annotate(total_expensed=Sum('expensed'))[0]['total_expensed']
+    total_expensed = total_expensed.annotate(total_expensed=Sum('expensed'))
+    if len(total_expensed) > 0:
+        total_expensed = total_expensed[0]['total_expensed']
+    else:
+        total_expensed = 0
 
     data = data.values('nature__name',
                        'mandate__legislator__name', 'mandate__party__siglum',
