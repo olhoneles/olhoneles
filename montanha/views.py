@@ -75,6 +75,9 @@ def get_basic_objects_for_model(filter_spec, model=Expense):
 
 
 def parse_filter(filter_spec):
+    if not filter_spec:
+        return None, None
+
     parts = filter_spec.split(':', 1)
 
     try:
