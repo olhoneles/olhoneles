@@ -404,11 +404,18 @@ def show_supplier_overview(request, supplier_id):
 
     house_data = list()
     for d in data:
-        house_data.append(dict(logo=d['mandate__legislature__institution__logo'],
-                               siglum=d['mandate__legislature__institution__siglum'],
-                               name=d['mandate__legislature__institution__name'],
-                               expensed=d['expensed'],
-                               proportion=total_expensed / d['expensed']))
+        if d['expensed'] > 0:
+            proportion = total_expensed / d['expensed']
+        else:
+            proportion = 0
+
+        house_data.append(dict(
+            logo=d['mandate__legislature__institution__logo'],
+            siglum=d['mandate__legislature__institution__siglum'],
+            name=d['mandate__legislature__institution__name'],
+            expensed=d['expensed'],
+            proportion=proportion
+        ))
 
     c['total_expensed'] = total_expensed
     c['house_data'] = house_data
