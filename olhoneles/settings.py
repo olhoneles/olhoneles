@@ -141,6 +141,7 @@ DEFAULT_INSTALLED_APPS = (
     'montanha',
     'cms',
     'captcha',
+    'raven.contrib.django.raven_compat',
     # South must be the last one, since it is used for migrating models of
     # all apps, potentially.
     'south',
@@ -155,26 +156,44 @@ INSTALLED_APPS = conf.get('INSTALLED_APPS', DEFAULT_INSTALLED_APPS)
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    'disable_existing_loggers': True,
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['sentry'],
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
     },
     'handlers': {
-        'mail_admins': {
+        'sentry': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         }
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
+        'django.db.backends': {
             'level': 'ERROR',
-            'propagate': True,
+            'handlers': ['console'],
+            'propagate': False,
         },
-    }
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
 }
 
 THUMBNAIL_ALIASES = {
@@ -210,3 +229,5 @@ SERVER_EMAIL = conf.get('SERVER_EMAIL', 'montanha@olhoneles.org')
 
 RECAPTCHA_PUBLIC_KEY = conf.get('RECAPTCHA_PUBLIC_KEY', '')
 RECAPTCHA_PRIVATE_KEY = conf.get('RECAPTCHA_PRIVATE_KEY', '')
+
+RAVEN_CONFIG = conf.get('RAVEN_CONFIG', {})
