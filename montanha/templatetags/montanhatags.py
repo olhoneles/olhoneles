@@ -26,7 +26,10 @@ register = template.Library()
 
 @register.filter
 def format_currency(value):
-    return mark_safe(locale.currency(value, grouping=True).replace(" ", "&nbsp;"))
+    if value:
+        return mark_safe(locale.currency(value, grouping=True).replace(" ", "&nbsp;"))
+    else:
+        return ''
 
 
 @register.filter
