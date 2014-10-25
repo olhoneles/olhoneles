@@ -563,8 +563,14 @@ def query_supplier_all(request, filter_spec):
 
 def query_legislator_all(request, filter_spec):
     def filter_function(data):
-        legislator = Legislator.objects.get(id=request.GET['item_id'])
-        return data.filter(mandate__legislator=legislator)
+        legislator_id = request.GET.get('item_id', None)
+        if legislator_id:
+            try:
+                legislator = Legislator.objects.get(pk=legislator_id)
+                return data.filter(mandate__legislator=legislator)
+            except Legislator.DoesNotExist:
+                return data
+        return data
 
     columns = (
         ('nature.name', 's'),
