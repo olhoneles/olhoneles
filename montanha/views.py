@@ -466,8 +466,9 @@ def data_tables_query(request, filter_spec, columns, filter_function=None):
 
     total_results = data.count()
 
-    search_string = request.GET.get('sSearch').decode('utf-8')
+    search_string = request.GET.get('sSearch', None)
     if search_string:
+        search_string = search_string.decode('utf-8')
         def format_for_column_type(col_type, search_string):
             if col_type == 'm':
                 search_string = search_string.replace('.', '').replace(',', '.')
@@ -540,8 +541,14 @@ def query_all(request, filter_spec):
 
 def query_supplier_all(request, filter_spec):
     def filter_function(data):
-        supplier = Supplier.objects.get(id=request.GET['item_id'])
-        return data.filter(supplier=supplier)
+        supplier_id = request.GET.get('item_id', None)
+        if supplier_id:
+            try:
+                supplier = Supplier.objects.get(pk=supplier_id)
+                return data.filter(supplier=supplier)
+            except Supplier.DoesNotExist:
+                return data
+        return data
 
     columns = (
         ('nature.name', 's'),
