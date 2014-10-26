@@ -468,7 +468,11 @@ def data_tables_query(request, filter_spec, columns, filter_function=None):
 
     search_string = request.GET.get('sSearch', None)
     if search_string:
-        search_string = search_string.decode('utf-8')
+        try:
+            search_string = search_string.decode('utf-8')
+        except UnicodeEncodeError:
+            pass
+
         def format_for_column_type(col_type, search_string):
             if col_type == 'm':
                 search_string = search_string.replace('.', '').replace(',', '.')
