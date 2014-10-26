@@ -88,7 +88,11 @@ def parse_filter(filter_spec):
     if len(parts) == 1:
         return institution, None
 
-    legislature = institution.legislature_set.get(date_start__year=parts[1])
+    try:
+        legislature = institution.legislature_set.get(date_start__year=parts[1])
+    except ValueError:
+        raise Http404
+
     return institution, legislature
 
 
