@@ -22,18 +22,28 @@ from django.utils.translation import ugettext as _
 from montanha.models import *
 
 
+class HasWikipediaListFilter(admin.SimpleListFilter):
+    title = _('Has wikipedia')
+    parameter_name = 'wikipedia'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', _('yes')),
+            ('no', _('no')),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(wikipedia__isnull=False)
+        if self.value() == 'no':
+            return queryset.filter(wikipedia__isnull=True)
+
+
 class PoliticalPartyAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'name', 'show_logo', 'has_wikipedia']
+    list_display = ['__str__', 'name', 'show_logo']
     ordering = ['siglum']
     search_fields = ['name']
-
-    def has_wikipedia(self, obj):
-        if obj.wikipedia:
-            return mark_safe('<span>Yes</span>')
-        else:
-            return mark_safe('<span>No</span>')
-    has_wikipedia.allow_tags = True
-    has_wikipedia.short_description = 'Has wikipedia'
+    list_filter = [HasWikipediaListFilter]
 
     def show_logo(self, obj):
         if obj.logo:
