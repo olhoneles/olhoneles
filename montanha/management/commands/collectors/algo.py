@@ -54,6 +54,12 @@ class ALGO(BaseCollector):
 
         self.expenses_nature_cached = {}
 
+    def _normalize_party_siglum(self, siglum):
+        names_map = {
+            'SDD': 'Solidariedade',
+        }
+        return names_map.get(siglum, siglum)
+
     def update_legislators(self):
         headers = {
             'Referer': self.base_url + '/deputado/',
@@ -80,11 +86,10 @@ class ALGO(BaseCollector):
             if entry['email']:
                 entry['email'] = email_regex.match(entry['email']).group(1).strip()
 
-            try:
-                party = PoliticalParty.objects.get(siglum=entry["party"])
-            except PoliticalParty.DoesNotExist:
-                party = PoliticalParty(siglum=entry["party"])
-                party.save()
+            party_siglum = self._normalize_party_siglum(entry["party"])
+            party, party_created = PoliticalParty.objects.get_or_create(
+                siglum=party_siglum
+            )
 
             self.debug("New party: %s" % unicode(party))
 
