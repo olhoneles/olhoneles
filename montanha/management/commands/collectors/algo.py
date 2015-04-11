@@ -117,9 +117,9 @@ class ALGO(BaseCollector):
             match = self.TITLE_REGEX.search(title)
 
             if match:
-                return match.group(1)
+                return match.group(1).encode('utf-8')
 
-        return title
+        return title.encode('utf-8')
 
     MONEY_RE = re.compile(r'([0-9.,]+)[,.]([0-9]{2})$')
 
