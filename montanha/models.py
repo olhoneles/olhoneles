@@ -300,10 +300,50 @@ class Supplier(models.Model):
         verbose_name = _("Supplier")
         verbose_name_plural = _("Suppliers")
 
-    identifier = models.CharField(max_length=256,
-                                  verbose_name=_("Supplier identifier"))
+    name = models.CharField(verbose_name=_("Name"), max_length=200)
 
-    name = models.CharField(max_length=200)
+    identifier = models.CharField(
+        max_length=256,
+        verbose_name=_("Supplier identifier"))
+
+    date_opened = models.DateField(
+        verbose_name=_("Date Opened"),
+        blank=True,
+        null=True)
+
+    trade_name = models.CharField(
+        verbose_name=_("Trade Name"),
+        max_length=200,
+        blank=True,
+        null=True)
+
+    address = models.TextField(
+        verbose_name=_("Address"),
+        blank=True,
+        null=True)
+
+    juridical_nature = models.CharField(
+        verbose_name=_("Juridical Nature"),
+        max_length=200,
+        blank=True,
+        null=True)
+
+    status = models.NullBooleanField(
+        verbose_name=_("Status"),
+        blank=True,
+        null=True)
+
+    main_economic_activity = models.CharField(
+        verbose_name=_("Main Economic Activity"),
+        max_length=200,
+        blank=True,
+        null=True)
+
+    last_change = models.DateTimeField(
+        verbose_name=_('Last Change'),
+        auto_now=True,
+        blank=True,
+        null=True)
 
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.identifier)

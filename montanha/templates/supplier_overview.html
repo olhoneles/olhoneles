@@ -21,6 +21,24 @@
                 <tr>
                     <th class="pull-right">Total recebido:</th><td>{{ total_expensed|format_currency  }}</td>
                 </tr>
+                {% if supplier.address %}
+                <tr>
+                    <th class="pull-right">Endereço:</th>
+                    <td>{{ supplier.address }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.date_opened %}
+                <tr>
+                    <th class="pull-right">Data de abertura:</th>
+                    <td>{{ supplier.date_opened|date:"d/m/Y" }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.status %}
+                <tr>
+                    <th class="pull-right">Status:</th>
+                    <td>{{ supplier.status|yesno:"Ativa, Não ativa" }}</td>
+                </tr>
+                {% endif %}
             </table>
         </div>
     </div>
