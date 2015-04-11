@@ -18,7 +18,7 @@
                 <thead>
                     <tr>
                         <th {% sortable_th "supplier__name" %}>Fornecedor</th>
-                        <th {% sortable_th "supplier__identifier"  %}>CNPJ</th>
+                        <th {% sortable_th "supplier__identifier"  %}>CNPJ / CPF</th>
                         <th {% sortable_th "expensed" True %}>Valor recebido</th>
                     </tr>
                 </thead>
@@ -30,7 +30,7 @@
                             {{ d.supplier__name }}
                           </a>
                         </td>
-                        <td>{{ d.supplier__identifier }}</td>
+                        <td>{{ d.supplier__identifier|supplier_with_mask }}</td>
                         <td>{{ d.expensed|format_currency }}</td>
                     </tr>
                     {% endfor %}

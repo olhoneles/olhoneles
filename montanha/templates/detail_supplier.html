@@ -16,8 +16,8 @@
         <div class="span12">
             <table class="alert alert-info table-condensed">
                 <tr>
-                    <th class="pull-right">CNPJ:</th>
-                    <td>{{ supplier.identifier }}</td>
+                    <th class="pull-right">{{ supplier.identifier_label }}:</th>
+                    <td>{{ supplier.identifier_with_mask }}</td>
                 </tr>
                 <tr>
                     <th class="pull-right">Total recebido:</th><td>{{ total_expensed|format_currency  }}</td>

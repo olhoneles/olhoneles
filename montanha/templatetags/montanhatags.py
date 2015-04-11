@@ -20,6 +20,9 @@ from django import template
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
+from montanha.cpf import Cpf
+from montanha.cnpj import Cnpj
+
 
 register = template.Library()
 
@@ -72,3 +75,17 @@ def expenses_data_table(context, query_name, col_types, item_id=None):
              item_id=item_id,
              query_name=query_name, columns=columns)
     return render_to_string('expenses_data_table.html', c)
+
+
+# FIXME: duplicated code
+@register.filter
+def supplier_with_mask(value):
+    try:
+        if len(value) == 11:
+            return mark_safe(Cpf().format(value))
+        elif len(value) == 14:
+            return mark_safe(Cnpj().format(value))
+        else:
+            return value
+    except:
+        return value

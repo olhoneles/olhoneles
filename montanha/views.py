@@ -538,7 +538,7 @@ def query_all(request, filter_spec):
         ('nature.name', 's'),
         ('mandate.legislator.name', 's'),
         ('supplier.name', 's'),
-        ('supplier.identifier', 's'),
+        ('supplier.identifier_with_mask', 's'),
         ('number', 's'),
         ('date', 'd'),
         ('expensed', 'm'),
@@ -583,7 +583,7 @@ def query_legislator_all(request, filter_spec):
     columns = (
         ('nature.name', 's'),
         ('supplier.name', 's'),
-        ('supplier.identifier', 's'),
+        ('supplier.identifier_with_mask', 's'),
         ('number', 's'),
         ('date', 'd'),
         ('expensed', 'm'),

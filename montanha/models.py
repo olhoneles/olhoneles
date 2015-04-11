@@ -20,6 +20,9 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from easy_thumbnails.fields import ThumbnailerImageField
 
+from montanha.cpf import Cpf
+from montanha.cnpj import Cnpj
+
 
 class PoliticalParty(models.Model):
 
@@ -345,8 +348,29 @@ class Supplier(models.Model):
         blank=True,
         null=True)
 
+    @property
+    def identifier_with_mask(self):
+        try:
+            if len(self.identifier) == 11:
+                return Cpf().format(self.identifier)
+            elif len(self.identifier) == 14:
+                return Cnpj().format(self.identifier)
+            else:
+                return self.identifier
+        except:
+            return self.identifier
+
+    @property
+    def identifier_label(self):
+        if len(self.identifier) == 11:
+            return 'CPF'
+        elif len(self.identifier) == 14:
+            return 'CNPJ'
+        else:
+            return _('Identifier')
+
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.identifier)
+        return u"%s (%s)" % (self.name, self.identifier_with_mask)
 
 
 # Consolidated data models
