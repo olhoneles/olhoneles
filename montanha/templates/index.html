@@ -61,7 +61,7 @@
                         {{ d.supplier.name }}
                       </a>
                     </td>
-                    <td>{{ d.supplier.identifier }}</td>
+                    <td>{{ d.supplier.identifier_with_mask }}</td>
                     <td><div class="text-right">{{ d.expensed|format_currency }}</div></td>
                 </tr>
                 {% endfor %}
