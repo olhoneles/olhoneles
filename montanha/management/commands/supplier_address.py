@@ -36,6 +36,18 @@ class Command(BaseCommand):
             convertEntities=BeautifulStoneSoup.ALL_ENTITIES
         )
 
+    def debug(self, message):
+        message = message.encode('utf-8')
+
+        if self.debug_enabled:
+            print message
+
+        if not hasattr(self, 'logfile'):
+            self.logfile = open(self.__class__.__name__.lower() + '.log', 'a')
+
+        timestamp = datetime.fromtimestamp(time.time()).strftime('%F:%H:%M:%S')
+        self.logfile.write('%s %s\n' % (timestamp, message))
+
     def get_item(self, class_name):
         data = self.html \
             .find("p", {"class": class_name}) \
@@ -43,36 +55,48 @@ class Command(BaseCommand):
         return data
 
     def handle(self, *args, **options):
-        debug_enabled = False
+        self.debug_enabled = False
+        self.only_empty = False
+
         if "debug" in args:
-            debug_enabled = True
+            self.debug_enabled = True
+
+        if "only-empty" in args:
+            self.only_empty = True
 
         suppliers = Supplier.objects.all()
         for supplier in suppliers:
+            if self.only_empty and supplier.address:
+                continue
+
+            time.sleep(10)
+
             try:
                 url = 'http://www.cnpjbrasil.com/e/cnpj/t/%s' % (
                     supplier.identifier
                 )
                 response = requests.get(url)
             except Exception as e:
-                print 'Error: %s' % str(e)
+                self.debug(u'Error on get %s: %s' % (supplier, str(e)))
                 continue
 
             if response.status_code != 200:
-                print 'Error: status code is %d' % response.status_code
+                self.debug(u'Error on get %s: Status code is %d' % (
+                    supplier, response.status_code)
+                )
                 continue
 
             contents = self.post_process_uri(response.text)
             if not contents:
-                print 'Error: there are no contents'
+                self.debug(
+                    u'Error on get %s: There are no contents' % supplier
+                )
                 continue
 
-            details = contents.find(id='details')
-            if not details:
-                print 'Error: there are no details'
+            self.html = contents.find(id='details')
+            if not self.html:
+                self.debug(u'Error on get %s: There are no details' % supplier)
                 continue
-
-            self.html = details
 
             trade_name = self.get_item('fantasia')
             if trade_name:
@@ -104,7 +128,4 @@ class Command(BaseCommand):
 
             supplier.save()
 
-            if debug_enabled:
-                print 'Supplier %s updated!' % supplier
-
-            time.sleep(1)
+            self.debug(u'Supplier %s updated!' % supplier)
