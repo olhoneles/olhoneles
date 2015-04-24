@@ -40,8 +40,8 @@ class CamaraDosDeputados(BaseCollector):
 
         institution, _ = Institution.objects.get_or_create(siglum='CDF', name=u'Câmara dos Deputados Federais')
         self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
-                                                                date_start=datetime(2011, 1, 1),
-                                                                date_end=datetime(2014, 12, 31))
+                                                                date_start=datetime(2015, 1, 1),
+                                                                date_end=datetime(2018, 12, 31))
 
     def retrieve_legislators(self):
         uri = 'http://www.camara.gov.br/SitCamaraWS/Deputados.asmx/ObterDeputados'

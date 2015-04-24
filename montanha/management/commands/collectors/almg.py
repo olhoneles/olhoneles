@@ -39,8 +39,8 @@ class ALMG(BaseCollector):
             self.legislature = Legislature.objects.all().filter(institution=institution).order_by('-date_start')[0]
         except IndexError:
             self.legislature = Legislature(institution=institution,
-                                           date_start=datetime(2011, 1, 1),
-                                           date_end=datetime(2014, 12, 31))
+                                           date_start=datetime(2015, 1, 1),
+                                           date_end=datetime(2018, 12, 31))
             self.legislature.save()
 
     def post_process_uri(self, contents):
