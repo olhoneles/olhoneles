@@ -62,9 +62,9 @@ class CamaraDosDeputados(BaseCollector):
             if not name:
                 name = l.find('nome')
             else:
-                alternative_name = l.find('nome').text.title()
+                alternative_name = l.find('nome').text.title().strip()
 
-            name = name.text.title()
+            name = name.text.title().strip()
 
             legislator, created = Legislator.objects.get_or_create(name=name)
 
