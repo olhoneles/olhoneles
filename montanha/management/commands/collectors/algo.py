@@ -135,7 +135,7 @@ class ALGO(BaseCollector):
     def find_data_for_month(self, mandate, year, month):
         url = '%s/transparencia/verbaindenizatoria/exibir?ano=%d&mes=%d&parlamentar_id=%s' % (
             self.base_url, year, month, mandate.original_id)
-        data = self.retrieve_uri(url)
+        data = self.retrieve_uri(url, force_encoding='utf8')
 
         if u'parlamentar não prestou contas para o mês' in data.text:
             self.debug("not found data for: %s -> %d/%d" % (
@@ -236,7 +236,7 @@ class ALGO(BaseCollector):
 
     def update_data_for_month(self, mandate, year, month):
         for data in self.find_data_for_month(mandate, year, month):
-            nature = self.get_or_create_expense_nature(data['budget_title'])
+            nature = self.get_or_create_expense_nature(data['budget_title'] + ': ' + data['budget_subtitle'])
 
             name = data.get('nome') or 'Sem nome'
             cpf_cnpj = data.get('cpf_cnpj') or 'Sem CPF/CNPJ (%s)' % name
