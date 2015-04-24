@@ -47,6 +47,12 @@ class CamaraDosDeputados(BaseCollector):
         uri = 'http://www.camara.gov.br/SitCamaraWS/Deputados.asmx/ObterDeputados'
         return BaseCollector.retrieve_uri(self, uri)
 
+    def try_name_disambiguation(self, name):
+        if name.title() == 'Sergio Souza':
+            return Legislator.objects.get(id=293), False
+
+        return None, False
+
     def update_legislators(self):
         xml = self.retrieve_legislators()
 
