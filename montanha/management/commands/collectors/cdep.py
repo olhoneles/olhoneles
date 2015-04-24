@@ -173,13 +173,13 @@ class CamaraDosDeputados(BaseCollector):
                     self.debug(u"Ignoring entry because it's out of the target legislature…")
                     continue
 
-                name = elem.find('txNomeParlamentar').text.title()
+                name = elem.find('txNomeParlamentar').text.title().strip()
 
-                nature = elem.find('txtDescricao').text.title()
+                nature = elem.find('txtDescricao').text.title().strip()
 
                 supplier_name = elem.find('txtBeneficiario')
                 if supplier_name is not None:
-                    supplier_name = supplier_name.text.title()
+                    supplier_name = supplier_name.text.title().strip()
                 else:
                     supplier_name = u'Sem nome'
 
@@ -196,7 +196,9 @@ class CamaraDosDeputados(BaseCollector):
                     supplier = Supplier(identifier=supplier_identifier, name=supplier_name)
                     supplier.save()
 
-                docnumber = elem.find('txtNumero').text
+                docnumber = elem.find('txtNumero').text.strip()
+                if docnumber:
+                    docnumber = docnumber.strip()
 
                 expense_date = elem.find('datEmissao')
                 if expense_date is not None:
@@ -215,9 +217,9 @@ class CamaraDosDeputados(BaseCollector):
                     party_name = self._normalize_party_name(party_name.text)
                     party, _ = PoliticalParty.objects.get_or_create(siglum=party_name)
 
-                state = elem.find('sgUF').text
+                state = elem.find('sgUF').text.strip()
 
-                original_id = elem.find('ideCadastro').text
+                original_id = elem.find('ideCadastro').text.strip()
 
                 try:
                     legislator = Legislator.objects.get(name__iexact=name)
