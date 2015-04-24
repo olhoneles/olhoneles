@@ -57,6 +57,9 @@ class PoliticalParty(models.Model):
 class AlternativeLegislatorName(models.Model):
     name = models.CharField(max_length=2048)
 
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
 
 class Legislator(models.Model):
 
