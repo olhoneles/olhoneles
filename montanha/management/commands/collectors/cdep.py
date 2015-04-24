@@ -66,6 +66,7 @@ class CamaraDosDeputados(BaseCollector):
 
             name = name.text.title().strip()
 
+            self.debug(u"Looking for legislator: %s" % unicode(name))
             legislator, created = Legislator.objects.get_or_create(name=name)
 
             if created:
