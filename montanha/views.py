@@ -203,7 +203,7 @@ def show_per_nature(request, filter_spec):
 def show_per_legislator(request, filter_spec):
 
     institution, legislature = parse_filter(filter_spec)
-    data = PerLegislator.objects.filter(institution=institution, legislature=legislature)
+    data = PerLegislator.objects.filter(institution=institution, legislature=legislature).order_by('-expensed')
 
     date_ranges = get_date_ranges_from_data(institution, data, consolidated_data=True)
 
