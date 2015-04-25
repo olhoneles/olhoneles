@@ -42,7 +42,7 @@ legislators
         'South>=0.8.4,<0.9.0',
         'django-parsley>=0.4,<0.5.0',
         'django-bootstrap-toolkit==2.14',
-        'easy-thumbnails>=1.4,<1.5.0',
+        'easy-thumbnails>=2.2.0,<2.3.0',
         'requests>=2.2.1,<2.3.0',
         'chardet>=2.2.1,<2.3.0',
         'pandas>=0.13.1,<0.14.0',
