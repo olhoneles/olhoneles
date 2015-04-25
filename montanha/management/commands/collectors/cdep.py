@@ -184,7 +184,7 @@ class CamaraDosDeputados(BaseCollector):
                     supplier_name = u'Sem nome'
 
                 supplier_identifier = elem.find('txtCNPJCPF')
-                if supplier_identifier is not None:
+                if supplier_identifier is not None and supplier_identifier.text is not None:
                     supplier_identifier = self.normalize_cnpj_or_cpf(supplier_identifier.text)
 
                 if not supplier_identifier:
