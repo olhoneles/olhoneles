@@ -196,7 +196,7 @@ class CamaraDosDeputados(BaseCollector):
                     supplier = Supplier(identifier=supplier_identifier, name=supplier_name)
                     supplier.save()
 
-                docnumber = elem.find('txtNumero').text.strip()
+                docnumber = elem.find('txtNumero').text
                 if docnumber:
                     docnumber = docnumber.strip()
 
