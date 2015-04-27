@@ -35,13 +35,9 @@ class ALMG(BaseCollector):
             institution = Institution(siglum='ALMG', name=u'Assembléia Legislativa do Estado de Minas Gerais')
             institution.save()
 
-        try:
-            self.legislature = Legislature.objects.all().filter(institution=institution).order_by('-date_start')[0]
-        except IndexError:
-            self.legislature = Legislature(institution=institution,
-                                           date_start=datetime(2015, 1, 1),
-                                           date_end=datetime(2018, 12, 31))
-            self.legislature.save()
+        self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
+                                                                date_start=datetime(2015, 1, 1),
+                                                                date_end=datetime(2018, 12, 31))
 
     def post_process_uri(self, contents):
         # The JSON returned by ALMG's web service uses the brazilian
