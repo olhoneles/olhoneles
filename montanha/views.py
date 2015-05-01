@@ -39,8 +39,7 @@ locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
 def generate_colors(n=7, sat=1.0, val=1.0):
     '''Generates an array of n colors from red to violet, considering
     saturation sat and value val'''
-    return ['#%02X%02X%02X' % t for t in [tuple([int(round(c * 255)) for c in t]) for t in
-           [hsv_to_rgb(x/float(n), sat, val) for x in xrange(0, n)]]]
+    return ['#%02X%02X%02X' % t for t in [tuple([int(round(c * 255)) for c in t]) for t in [hsv_to_rgb(x/float(n), sat, val) for x in xrange(0, n)]]]
 
 
 def new_render(request, filter_spec, template, context):
@@ -109,15 +108,6 @@ def show_index(request, filter_spec):
                              if Expense.objects.filter(mandate__legislature=l).count()]
         c['img'] = institution.siglum.lower() + '.png'
         return new_render(request, filter_spec, 'institution.html', c)
-
-    data = BiggestSupplierForYear.objects.filter(year=date.today().year)
-
-    # Empty-named supplier appears to be used for expenses done through the house?
-    data = data.exclude(supplier__name='').order_by('-expensed')
-    if data.count() > 8:
-        data = data[:8]
-
-    c = {'biggest_suppliers': data}
 
     return new_render(request, filter_spec, 'index.html', c)
 
@@ -313,7 +303,7 @@ def show_per_party(request, filter_spec):
 def add_sorting(request, data, default='-expensed'):
     if 'order_by' in request.GET:
         order_by_field = request.GET.get('order_by')
-        if not 'asc' in request.GET or not request.GET.get('asc'):
+        if 'asc' not in request.GET or not request.GET.get('asc'):
             order_by_field = '-' + order_by_field
         data = data.order_by(order_by_field)
     else:
@@ -457,9 +447,9 @@ def convert_data_to_list(data, columns):
     return data_list
 
 
-def data_tables_query(request, filter_spec, columns, filter_function=None):
+def data_tables_query(request, filter_spec, columns, filter_function=None, model=Expense):
 
-    data, date_ranges = get_basic_objects_for_model(filter_spec)
+    data, date_ranges = get_basic_objects_for_model(filter_spec, model)
 
     if filter_function:
         data = filter_function(data)
@@ -545,6 +535,21 @@ def query_all(request, filter_spec):
     )
 
     return data_tables_query(request, filter_spec, columns)
+
+
+def query_biggest_suppliers(request, filter_spec):
+    def filter_function(data):
+        # Empty-named supplier appears to be used for expenses done through the house?
+        data = data.filter(year=date.today().year)
+        return data.exclude(supplier__name='').order_by('-expensed')
+
+    columns = (
+        ('supplier.name', 's'),
+        ('supplier.identifier_with_mask', 's'),
+        ('expensed', 'm'),
+    )
+
+    return data_tables_query(request, filter_spec, columns, filter_function, BiggestSupplierForYear)
 
 
 def query_supplier_all(request, filter_spec):

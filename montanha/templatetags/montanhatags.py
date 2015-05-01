@@ -45,7 +45,7 @@ def sortable_th(context, tag_id, is_default=False):
     request = context["request"]
 
     th_attr = 'id="%s"' % tag_id
-    if request.GET.get("order_by") == tag_id or (is_default and not "order_by" in request.GET):
+    if request.GET.get("order_by") == tag_id or (is_default and "order_by" not in request.GET):
         th_attr += ' class="sortable'
         if request.GET.get("asc"):
             th_attr += ' sorted-asc'
@@ -75,6 +75,27 @@ def expenses_data_table(context, query_name, col_types, item_id=None):
              item_id=item_id,
              query_name=query_name, columns=columns)
     return render_to_string('expenses_data_table.html', c)
+
+
+@register.simple_tag
+def biggest_suppliers_table(*args):
+    return render_to_string('suppliers_table.html', dict(columns=args))
+
+
+@register.simple_tag(takes_context=True)
+def biggest_suppliers_data_table(context, query_name, col_types, item_id=None):
+    columns = []
+    for c in col_types:
+        if c == 'm':
+            columns.append("{ sType: 'money' }")
+        else:
+            columns.append('null')
+    c = dict(institution=context['institution'],
+             legislature=context['legislature'],
+             filter_spec=context['filter_spec'],
+             item_id=item_id,
+             query_name=query_name, columns=columns)
+    return render_to_string('suppliers_data_table.html', c)
 
 
 # FIXME: duplicated code

@@ -25,6 +25,7 @@ urlpatterns = patterns(
 
     # JSON queries
     url(r'^([^/]+)?/?q/all/?$', 'query_all', name='query-all'),
+    url(r'^([^/]+)?/?q/biggest_suppliers/?$', 'query_biggest_suppliers', name='query-biggest-suppliers'),
     url(r'^([^/]+)?/?q/supplier_all/?$', 'query_supplier_all', name='query-supplier-all'),
     url(r'^([^/]+)?/?q/legislator_all/?$', 'query_legislator_all', name='query-legislator-all'),
 
