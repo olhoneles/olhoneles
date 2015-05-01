@@ -79,7 +79,7 @@ def expenses_data_table(context, query_name, col_types, item_id=None):
 
 @register.simple_tag
 def biggest_suppliers_table(*args):
-    return render_to_string('suppliers_table.html', dict(columns=args))
+    return render_to_string('biggest_suppliers_table.html', dict(columns=args))
 
 
 @register.simple_tag(takes_context=True)
@@ -95,7 +95,7 @@ def biggest_suppliers_data_table(context, query_name, col_types, item_id=None):
              filter_spec=context['filter_spec'],
              item_id=item_id,
              query_name=query_name, columns=columns)
-    return render_to_string('suppliers_data_table.html', c)
+    return render_to_string('biggest_suppliers_data_table.html', c)
 
 
 # FIXME: duplicated code

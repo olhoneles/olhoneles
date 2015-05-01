@@ -1,0 +1,57 @@
+<script type="text/javascript">
+$(document).ready(function(){
+    $(document).ready(function() {
+        aoColumns = [
+            {% for col in columns %}
+                {{ col|safe }},
+            {% endfor %}
+        ];
+        $('#biggest-suppliers-data-table').dataTable({
+            sAjaxSource: '{% if filter_spec %}/{{ filter_spec }}{% endif %}/q/{{ query_name }}',
+            aoColumns: aoColumns,
+            aaSorting: [[aoColumns.length - 1, 'desc']],
+            bPaginate: true,
+            bProcessing: true,
+            bServerSide: true,
+            fnServerData: function (source, data, fnCallback) {
+                {% if item_id %}
+                data.push({ 'name': 'item_id', 'value': {{ item_id }} });
+                {% endif %}
+			    $.getJSON(source, data, function (json) {
+			        $('#current-date-from').html(json['current_date_from']);
+			        $('#current-date-to').html(json['current_date_to']);
+				    fnCallback(json)
+			    });
+	        },
+            sDom: "<'row'<'span4'f><'span3 pull-right'l>r>t<'row'<'span4'i><'span5 text-right'p>>",
+            sPaginationType: 'bootstrap_ellipses',
+            oLanguage: { 'sUrl': '/static/dtptbr.txt' },
+            aLengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+            iDisplayLength: 5,
+            fnFormatNumber: function (number) {
+                if (number < 1000)
+                    return number;
+
+                var s = (number + ""), a = s.split(""), out = "";
+                for (var i = 0; i < s.length; i++) {
+                    if (i % 3 === 0 && i !== 0)
+                        out = "." + out;
+
+                    out = a[s.length -i -1] + out;
+                }
+
+                return out;
+            },
+            fnCreatedRow: function (row, data, index) {
+                var cols = $('td', row);
+                for (var i = 0; i < cols.length; i++) {
+                    var column = $(cols[i]);
+                    var html = column.html();
+                    column.html('<div class="data-tables-column">' + html + '</div>');
+                }
+            },
+        });
+    });
+});
+</script>
+
