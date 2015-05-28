@@ -1,4 +1,4 @@
-# Olho Neles
+# Olho Neles [![Code Health](https://landscape.io/github/olhoneles/olhoneles/master/landscape.svg?style=flat)](https://landscape.io/github/olhoneles/olhoneles/master)
 
 Tool to monitor Brazilian legislators expenses while in the exercise of their mandates.
 
