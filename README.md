@@ -9,10 +9,10 @@ Tool to monitor Brazilian legislators expenses while in the exercise of their ma
 
         git clone https://github.com/olhoneles/olhoneles.git
 
-1.  Create a *virtualenv*:
+1.  Create a [*virtualenv*](http://virtualenvwrapper.readthedocs.org/en/latest/install.html):
 
-        cd olhoneles
-        virtualenv .
+        cd politicos
+        mkvirtualenv politicos
 
 1.  Install dependencies:
 
