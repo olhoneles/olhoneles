@@ -11,8 +11,8 @@ Tool to monitor Brazilian legislators expenses while in the exercise of their ma
 
 1.  Create a [*virtualenv*](http://virtualenvwrapper.readthedocs.org/en/latest/install.html):
 
-        cd politicos
-        mkvirtualenv politicos
+        cd olhoneles
+        mkvirtualenv olhoneles
 
 1.  Install dependencies:
 
