@@ -74,7 +74,7 @@ class Command(BaseCommand):
             data = data.values('nature__id')
             data = data.annotate(expensed=Sum('expensed')).order_by('-expensed')
 
-            years = [d.year for d in Expense.objects.dates('date', 'year')]
+            years = [d.year for d in Expense.objects.dates('date', 'year') if d]
             years = ensure_years_in_range(date_ranges, years)
 
             per_natures_to_create = list()
