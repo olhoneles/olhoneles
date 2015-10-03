@@ -38,7 +38,7 @@ class Senado(BaseCollector):
                                                                 date_end=datetime(2018, 12, 31))
 
     def retrieve_legislators(self):
-        uri = 'http://www.senado.gov.br/transparencia/'
+        uri = 'http://www25.senado.leg.br/web/transparencia/sen/'
         return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
     def retrieve_data_for_year(self, year):
@@ -58,7 +58,7 @@ class Senado(BaseCollector):
         page = self.retrieve_legislators()
 
         # We ignore the first one because it is a placeholder.
-        options = page(attrs={'name': 'COD_ORGAO'})[0].findAll('option')[1:]
+        options = page(attrs={'name': 'frmConsulta1'})[0].findAll('option')[1:]
 
         # Turn the soup objects into a list of dictionaries
         legislators = []
@@ -188,6 +188,8 @@ class Senado(BaseCollector):
         return names_map.get(name, name)
 
     def update_legislators_extra_data(self):
+        # Disabled for now, page got redesigned
+        return
         data = self.retrieve_uri('http://www.senado.gov.br/senadores/')
         table = data.find(id='senadores')
         for row in table.findAll('tr'):
