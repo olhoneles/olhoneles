@@ -17,6 +17,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from datetime import datetime
 from StringIO import StringIO
 from django.db import reset_queries
@@ -95,7 +96,9 @@ class Senado(BaseCollector):
     def update_data_for_year(self, year=datetime.now().year):
         self.debug("Updating data for year %d" % year)
 
-        data = StringIO(self.retrieve_data_for_year(year))
+        csv_data = self.retrieve_data_for_year(year)
+        csv_data = re.sub(r'([^;])"([^;\n])', r'\1\"\2', csv_data)
+        data = StringIO(csv_data)
 
         if data:
             df = pd.read_csv(data, skiprows=1, delimiter=";",
