@@ -228,6 +228,8 @@ class CMBH(BaseCollector):
         date_list = []
         for month in months:
             anchor = month.find('a')
+            if not anchor.text.endswith('- %d' % year):
+                continue
             parts = anchor['onclick'].split("'")
             date_list.append(parts[1])
 
