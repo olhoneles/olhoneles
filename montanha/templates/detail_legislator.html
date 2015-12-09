@@ -9,7 +9,7 @@
 
     <div class="row">
         <div class="span12">
-            <h1>{{ legislator.name }} ({{ legislator.party }})</h1>
+            <h1>{{ legislator.name }} ({% if legislator.party %}{{ legislator.party }}{% else %}Partido não informado{% endif %})</h1>
         </div>
     </div>
     <div class="row">
