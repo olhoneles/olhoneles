@@ -38,7 +38,7 @@
                                     /
                                 {% endif %}
                                 {% if m.party.logo %}<img src="{{ m.party.logo|thumbnail_url:'mini' }}" title="{{ m.party.name }}" alt="{{ m.party.name }}">{% endif %}
-                                {% if m.party.siglum %} {{ m.party.siglum }} {% else %} Partido não informado {% endif %} ({{ m.date_start.year }}{% if m.date_end.year %} - {{ m.date_end.year }} {% endif %})
+                                {% if m.party.siglum %} {{ m.party.siglum }} {% else %} Partido não informado {% endif %} ({{ m.date_start.year }}{% if m.date_end.year %} - {{ m.date_end.year }}{% endif %})
                             {% endfor %}
                         </td>
                         <td>{{ d.expensed|format_currency }}</td>
