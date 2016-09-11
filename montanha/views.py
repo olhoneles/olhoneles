@@ -479,6 +479,10 @@ def data_tables_query(request, filter_spec, columns, filter_function=None, model
             if col_type == 'd':
                 continue
 
+            # Deal with properties that have a formatted "view".
+            if name.endswith('_with_mask'):
+                name = name.replace('_with_mask', '')
+
             actual_search_string = format_for_column_type(col_type, search_string)
             exp = Q(**{name.replace('.', '__') + '__icontains': actual_search_string})
             if filter_expression:
