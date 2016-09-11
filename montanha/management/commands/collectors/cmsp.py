@@ -57,7 +57,7 @@ class CMSP(BaseCollector):
         return names_map.get(siglum, siglum)
 
     def retrieve_expenses(self, month, year):
-        uri = 'http://www2.camara.sp.gov.br/SAEG/%s%s.xml' % (year, month)
+        uri = 'http://www.camara.sp.gov.br/wp-content/uploads/transparencia/saeg/%s%s.XML' % (year, month)
         return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
     def retrieve_legislators(self):
@@ -261,7 +261,7 @@ class CMSP(BaseCollector):
         return legislature
 
     def process_all_expenses(self):
-        for year in xrange(2007, 2014):
+        for year in xrange(2013, 2017):
             legislature = self.get_legislature(year)
             collection_run = self.create_collection_run(legislature)
             for m in xrange(1, 13):
@@ -290,7 +290,7 @@ class CMSP(BaseCollector):
                     pass
 
             row = line.split('#')
-            if len(row) > 1:
+            if len(row) > 2:
                 name = row[1]
                 nickname = row[2]
 
