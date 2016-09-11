@@ -55,10 +55,14 @@ $(document).ready(function(){
         },
     }); // dataTable
     table.on('search.dt', function () {
+        var currentSearch = table.DataTable().search();
         var u = new Url();
-        console.log(u.toString());
-        u.query.searchTerm = table.DataTable().search();
-        console.log(u.toString());
+
+        if (currentSearch == "")
+            delete u.query['searchTerm']
+        else
+            u.query['searchTerm'] = currentSearch;
+
         history.pushState(null, null, u.toString());
     });
 }); // document.ready
