@@ -63,7 +63,7 @@ $(document).ready(function(){
         else
             u.query['searchTerm'] = currentSearch;
 
-        history.pushState(null, null, u.toString());
+        history.pushState(null, null, decodeURIComponent(u.toString()));
     });
 }); // document.ready
 </script>
