@@ -57,6 +57,10 @@ class CMSP(BaseCollector):
         return names_map.get(siglum, siglum)
 
     def retrieve_expenses(self, month, year):
+        uri = 'http://www2.camara.sp.gov.br/sisgv/Arquivos/%s%s.XML' % (year, month)
+        return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
+
+    def retrieve_expenses_obsolete(self, month, year):
         uri = 'http://www.camara.sp.gov.br/wp-content/uploads/transparencia/saeg/%s%s.XML' % (year, month)
         return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
@@ -149,7 +153,87 @@ class CMSP(BaseCollector):
                 self.debug('Updating legislator party: %s' % party_siglum)
 
     def process_expenses(self, month, year, legislature, collection_run):
+        if year < 2015:
+            return self.process_expenses_obsolete(month, year, legislature, collection_run)
+
         data = self.retrieve_expenses(month, year)
+        if not data:
+            return
+
+        for x in data.findAll('tabelaportalitemreembolso'):
+            name = x.find('vereador').getText().capitalize()
+            legislator = self.add_legislator(name)
+
+            try:
+                mandate = Mandate.objects.get(
+                    legislator=legislator,
+                    date_start=legislature.date_start,
+                    legislature=legislature)
+                self.debug(u'Found existing Mandate: %s' % mandate)
+            except Mandate.DoesNotExist:
+                mandate = Mandate(
+                    legislator=legislator,
+                    date_start=legislature.date_start,
+                    legislature=legislature)
+                mandate.save()
+                self.debug(u'New Mandate found: %s' % mandate)
+
+            nature_text = x.find('despesa').getText()
+
+            try:
+                nature_text = nature_text.split('-', 1)[1].strip()
+            except IndexError:
+                pass
+
+            nature_text = nature_text.capitalize()
+
+            nature, nature_created = ExpenseNature.objects.get_or_create(
+                name=nature_text)
+
+            if nature_created:
+                self.debug(u'New ExpenseNature found: %s' % nature)
+            else:
+                self.debug(u'Found existing ExpenseNature: %s' % nature)
+
+            m_month = x.find('mes').getText()
+            m_year = x.find('ano').getText()
+            date = parse_cmsp_date(m_month, m_year)
+
+            supplier_name = x.find('fornecedor').getText()
+            supplier_name = supplier_name.capitalize()
+            cnpj = self.normalize_cnpj_or_cpf(x.find('cnpj').getText())
+
+            if not cnpj and not supplier_name:
+                continue
+
+            try:
+                supplier = Supplier.objects.get(identifier=cnpj)
+                supplier_created = False
+            except Supplier.DoesNotExist:
+                supplier = Supplier(identifier=cnpj, name=supplier_name)
+                supplier.save()
+                supplier_created = True
+
+            if supplier_created:
+                self.debug(u'New Supplier found: %s' % supplier)
+            else:
+                self.debug(u'Found existing supplier: %s' % supplier)
+
+            expensed = float(x.find('valor').getText())
+
+            expense = ArchivedExpense(number='None',
+                                      nature=nature,
+                                      date=date,
+                                      expensed=expensed,
+                                      mandate=mandate,
+                                      supplier=supplier,
+                                      collection_run=collection_run)
+            expense.save()
+
+            self.debug(u'New expense found: %s' % expense)
+
+    def process_expenses_obsolete(self, month, year, legislature, collection_run):
+        data = self.retrieve_expenses_obsolete(month, year)
         if not data:
             return
 
