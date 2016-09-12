@@ -261,9 +261,9 @@ class CMSP(BaseCollector):
         return legislature
 
     def process_all_expenses(self):
-        for year in xrange(2013, 2017):
-            legislature = self.get_legislature(year)
-            collection_run = self.create_collection_run(legislature)
+        legislature = self.get_legislature(2013)
+        collection_run = self.create_collection_run(legislature)
+        for year in xrange(legislature.date_start.year, legislature.date_end.year + 1):
             for m in xrange(1, 13):
                 month = '%02d' % m
                 self.debug('Adding expenses from %s/%s' % (month, year))
