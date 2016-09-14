@@ -156,6 +156,14 @@ class CMSP(BaseCollector):
         if year < 2015:
             return self.process_expenses_obsolete(month, year, legislature, collection_run)
 
+        # CMSP now puts all data year to date on each file, so we need to get only the
+        # last one for a given year - otherwise we duplicate data.
+        today = datetime.now()
+        if year == today.year and month < today.month:
+            return
+        elif year < today.year and month < 12:
+            return
+
         data = self.retrieve_expenses(month, year)
         if not data:
             return
