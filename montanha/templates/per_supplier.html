@@ -39,7 +39,7 @@
         </div>
     </div>
     <div class="row span12">
-      {% bootstrap_pagination data always_show_first=True always_show_last=True show_prev_and_next=True align="center" url='?'|add:request.GET.urlencode %}
+      {% bootstrap_pagination data url='?'|add:request.GET.urlencode %}
     </div>
 
 
