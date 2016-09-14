@@ -57,10 +57,12 @@ class CMSP(BaseCollector):
         return names_map.get(siglum, siglum)
 
     def retrieve_expenses(self, month, year):
+        month = '%02d' % month
         uri = 'http://www2.camara.sp.gov.br/sisgv/Arquivos/%s%s.XML' % (year, month)
         return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
     def retrieve_expenses_obsolete(self, month, year):
+        month = '%02d' % month
         uri = 'http://www.camara.sp.gov.br/wp-content/uploads/transparencia/saeg/%s%s.XML' % (year, month)
         return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
@@ -356,8 +358,7 @@ class CMSP(BaseCollector):
         legislature = self.get_legislature(2013)
         collection_run = self.create_collection_run(legislature)
         for year in xrange(legislature.date_start.year, legislature.date_end.year + 1):
-            for m in xrange(1, 13):
-                month = '%02d' % m
+            for month in xrange(1, 13):
                 self.debug('Adding expenses from %s/%s' % (month, year))
                 self.process_expenses(month, year, legislature, collection_run)
 
