@@ -45,7 +45,7 @@ legislators
         'requests>=2.6.0,<2.7.0',
         'chardet>=2.2.1,<2.3.0',
         'pandas>=0.13.1,<0.14.0',
-        'derpconf>=0.4.9,<0.5.0',
+        'derpconf>=0.8.0,<0.9.0',
         'django-recaptcha>=1.0.5,<1.1.0',
         'raven>=5.31.0,<=5.32.0',
     ],
