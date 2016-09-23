@@ -16,21 +16,24 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import locale
 import json
-from colorsys import hsv_to_rgb
+import locale
 from datetime import date
+from colorsys import hsv_to_rgb
+
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render as original_render
 from django.db.models import Sum, Q
 from django.http import HttpResponse, Http404
 from django.core.mail import send_mail
 from django.conf import settings
+
 from montanha.models import *
 from montanha.forms import *
 from montanha.util import (
     filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
 )
+
 
 locale.setlocale(locale.LC_MONETARY, "pt_BR.UTF-8")
 locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
@@ -135,16 +138,16 @@ def show_per_nature(request, filter_spec):
 
     time_series = []
     for d in data:
-        l = []
+        aux = []
         cummulative = .0
-        time_series.append(dict(label=d.nature.name, data=l))
+        time_series.append(dict(label=d.nature.name, data=aux))
 
         per_year_data = PerNatureByYear.objects.filter(institution=institution).filter(nature=d.nature)
         per_year_data = per_year_data.filter(year__gte=date_ranges['cdf'].year)
         per_year_data = per_year_data.filter(year__lte=date_ranges['cdt'].year)
         for item in per_year_data:
             cummulative = cummulative + float(item.expensed)
-            l.append([int(date(item.year, 1, 1).strftime("%s000")), cummulative])
+            aux.append([int(date(item.year, 1, 1).strftime("%s000")), cummulative])
 
     # mbm_years = list of years (3, right now - 2011, 2012, 2013) with 12 months inside
     # each month in turn carries a dict with month name and value or null.

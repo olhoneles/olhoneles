@@ -18,16 +18,17 @@
 import signal
 import sys
 
-# This hack makes django less memory hungry (it caches queries when running
-# with debug enabled.
 from django.conf import settings
-settings.DEBUG = False
-
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
+
 from montanha.models import Expense
 
+
+# This hack makes django less memory hungry (it caches queries when running
+# with debug enabled.
+settings.DEBUG = False
 
 debug_enabled = False
 

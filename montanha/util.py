@@ -17,6 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
+
 from montanha.models import Institution, Legislature
 
 

@@ -52,7 +52,7 @@ urlpatterns = [
 
     # Robots.txt
     url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt',
-                                            content_type='text/plain')),
+                                               content_type='text/plain')),
 
     # What is expenses?
     url(r'^o-que-e-verba-indenizatoria/?$', what_is_expenses, name='what-is-expenses'),

@@ -19,6 +19,7 @@
 
 import urllib2
 from BeautifulSoup import BeautifulSoup
+
 from montanha.models import *
 
 

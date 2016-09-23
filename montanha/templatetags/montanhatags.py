@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import locale
+
 from django import template
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe

@@ -48,5 +48,4 @@ class ContactUsForm(forms.Form):
                    "class": "span5",
                    'rows': 5}))
 
-    captcha = ReCaptchaField(attrs={'theme' : 'clean'})
-
+    captcha = ReCaptchaField(attrs={'theme': 'clean'})

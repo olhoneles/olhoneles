@@ -18,3 +18,6 @@ clean:
 
 publish:
 	@python setup.py sdist upload
+
+lint:
+	@pycodestyle
