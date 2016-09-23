@@ -4,7 +4,7 @@ run:
 	@python manage.py runserver 0.0.0.0:8000
 
 data:
-	@python manage.py syncdb --migrate
+	@python manage.py migrate
 
 setup:
 	@pip install -U -e .\[tests\]

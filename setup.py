@@ -37,18 +37,17 @@ legislators
     include_package_data=True,
     install_requires=[
         'BeautifulSoup>=3.2.1,<3.3.0',
-        'Django>=1.6.1,<1.7.0',
+        'Django>=1.10.1,<1.11.0',
         'Pillow>=2.3.1,<2.4.0',
-        'South>=0.8.4,<0.9.0',
         'django-parsley>=0.4,<0.5.0',
         'django-bootstrap-toolkit==2.14',
-        'easy-thumbnails>=2.2.0,<2.3.0',
-        'requests>=2.2.1,<2.3.0',
+        'easy-thumbnails>=2.3,<2.4',
+        'requests>=2.6.0,<2.7.0',
         'chardet>=2.2.1,<2.3.0',
         'pandas>=0.13.1,<0.14.0',
         'derpconf>=0.4.9,<0.5.0',
-        'django-recaptcha>=0.0.9,<0.1.0',
-        'raven>=5.26.0,<=5.27.0',
+        'django-recaptcha>=1.0.5,<1.1.0',
+        'raven>=5.31.0,<=5.32.0',
     ],
     dependency_links = [
         'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14'
