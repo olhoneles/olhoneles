@@ -56,7 +56,7 @@ class ALMG(BaseCollector):
 
     def update_legislators(self):
         for situation in ['em_exercicio', 'que_exerceram_mandato']:
-            legislators = self.retrieve_uri("http://dadosabertos.almg.gov.br/ws/deputados/%s?formato=json" % situation)["list"]
+            legislators = self.retrieve_uri("http://dadosabertos.almg.gov.br/ws/deputados/%s?formato=json" % situation, force_encoding='utf-8')["list"]
             for entry in legislators:
                 try:
                     party = PoliticalParty.objects.get(siglum=entry["partido"])
