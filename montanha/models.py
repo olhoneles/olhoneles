@@ -286,7 +286,8 @@ class Expense(AbstractExpense):
         verbose_name_plural = _("Expenses")
 
     def save(self, *args, **kwargs):
-        if settings.expense_locked_for_collection:
+        if hasattr(settings, 'expense_locked_for_collection') and \
+           settings.expense_locked_for_collection:
             raise RuntimeError("You should not touch Expense while collecting, use ArchivedExpense instead.")
         super(Expense, self).save(*args, **kwargs)
 
