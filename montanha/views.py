@@ -49,6 +49,7 @@ def new_render(request, filter_spec, template, context):
     context['institution'] = None
     context['legislature'] = None
     context['filter_spec'] = None
+    context['request'] = request
     if filter_spec:
         institution, legislature = parse_filter(filter_spec)
         context['institution'] = institution
