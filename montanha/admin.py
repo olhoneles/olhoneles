@@ -19,7 +19,12 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
-from montanha.models import *
+
+from montanha.models import (
+    Legislator, Mandate, Supplier, SupplierSituation, SupplierJuridicalNature,
+    SupplierActivity, ExpenseNature, Expense, PoliticalParty, Institution,
+    Legislature
+)
 
 
 class HasWikipediaListFilter(admin.SimpleListFilter):
@@ -64,9 +69,19 @@ class LegislatorAdmin(admin.ModelAdmin):
     show_picture.short_description = _('Picture')
 
 
+class SupplierAdmin(admin.ModelAdmin):
+    ordering = ['name']
+    search_fields = ['name']
+    list_filter = ['situation', 'state']
+    filter_horizontal = ('secondary_activities',)
+
+
 admin.site.register(Legislator, LegislatorAdmin)
 admin.site.register(Mandate)
-admin.site.register(Supplier)
+admin.site.register(Supplier, SupplierAdmin)
+admin.site.register(SupplierSituation)
+admin.site.register(SupplierJuridicalNature)
+admin.site.register(SupplierActivity)
 admin.site.register(ExpenseNature)
 admin.site.register(Expense)
 admin.site.register(PoliticalParty, PoliticalPartyAdmin)

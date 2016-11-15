@@ -15,18 +15,65 @@
     </div>
     <div class="row">
         <div class="span12">
+            {% if total_expensed %}
+            <table class="alert alert-success table-condensed">
+                <tr>
+                    <th class="pull-right">Total recebido:</th><td><strong>{{ total_expensed|format_currency }}</strong></td>
+                </tr>
+            </table>
+            {% endif %}
             <table class="alert alert-info table-condensed">
                 <tr>
-                    <th class="pull-right">{{ supplier.identifier_label }}:</th>
+                    <th class="pull-right">CNPJ:</th>
                     <td>{{ supplier.identifier_with_mask }}</td>
                 </tr>
+                {% if supplier.trade_name %}
                 <tr>
-                    <th class="pull-right">Total recebido:</th><td>{{ total_expensed|format_currency  }}</td>
+                    <th class="pull-right">Nome fantasia:</th>
+                    <td>{{ supplier.trade_name }}</td>
                 </tr>
+                {% endif %}
+                {% if supplier.enterprise_type %}
+                <tr>
+                    <th class="pull-right">Tipo:</th>
+                    <td>{{ supplier.enterprise_type }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.main_activity %}
+                <tr>
+                    <th class="pull-right">Atividade Principal:</th>
+                    <td>{{ supplier.main_activity }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.secondary_activities.all %}
+                <tr>
+                    <th class="pull-right">Atividades secundárias:</th>
+                    <td>{% for x in supplier.secondary_activities.all %}{{ x.name }}.{% if not forloop.last %}<br/>{% endif %}{% endfor %}</td>
+                </tr>
+                {% endif %}
+
                 {% if supplier.address %}
                 <tr>
                     <th class="pull-right">Endereço:</th>
-                    <td>{{ supplier.address }}</td>
+                    <td>{{ supplier.address }}, {{ supplier.address_number }}, {% if supplier.address_complement %}{{ supplier.address_complement }},{% endif %} {% if supplier.neighborhood %}{{ supplier.neighborhood }},{% endif %} {% if supplier.city %}{{ supplier.city }}/{% endif %}{{ supplier.state }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.postal_code %}
+                <tr>
+                    <th class="pull-right">CEP:</th>
+                    <td>{{ supplier.postal_code }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.phone %}
+                <tr>
+                    <th class="pull-right">Telefone:</th>
+                    <td>{{ supplier.phone }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.email %}
+                <tr>
+                    <th class="pull-right">Email:</th>
+                    <td>{{ supplier.email }}</td>
                 </tr>
                 {% endif %}
                 {% if supplier.date_opened %}
@@ -35,14 +82,37 @@
                     <td>{{ supplier.date_opened|date:"d/m/Y" }}</td>
                 </tr>
                 {% endif %}
-                {% if supplier.status %}
+                {% if supplier.situation.name %}
                 <tr>
-                    <th class="pull-right">Status:</th>
-                    <td>{{ supplier.status|yesno:"Ativa, Não ativa" }}</td>
+                    <th class="pull-right">Situação:</th>
+                    <td>{{ supplier.situation.name }}</td>
                 </tr>
                 {% endif %}
-            </table>
-        </div>
+                {% if supplier.situation_date %}
+                <tr>
+                    <th class="pull-right">Situação data:</th>
+                    <td>{{ supplier.situation_date|date:"d/m/Y" }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.situation_reason %}
+                <tr>
+                    <th class="pull-right">Motivo situação:</th>
+                    <td>{{ supplier.situation_reason }}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.last_update %}
+                <tr>
+                    <th class="pull-right">Última atualização:</th>
+                    <td>{{ supplier.last_update|date:"d/m/Y"}}</td>
+                </tr>
+                {% endif %}
+                {% if supplier.juridical_nature %}
+                <tr>
+                    <th class="pull-right">Natureza jurídica:</th>
+                    <td>{{ supplier.juridical_nature }}</td>
+                </tr>
+                {% endif %}
+            </table>       </div>
     </div>
     <div class="row">
         <div class="span12">

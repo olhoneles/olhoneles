@@ -18,6 +18,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext as _
+from localflavor.br.br_states import STATE_CHOICES
 from easy_thumbnails.fields import ThumbnailerImageField
 
 from montanha.cpf import Cpf
@@ -304,6 +305,46 @@ class ArchivedExpense(AbstractExpense):
     collection_run = models.ForeignKey("CollectionRun")
 
 
+class SupplierActivity(models.Model):
+
+    class Meta:
+        verbose_name = _('Supplier Activity')
+        verbose_name_plural = _('Supplier Activities')
+
+    name = models.CharField(max_length=248, verbose_name=_('Name'))
+
+    code = models.CharField(max_length=10, verbose_name=_('Code'), unique=True)
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(self.name, self.code)
+
+
+class SupplierJuridicalNature(models.Model):
+
+    class Meta:
+        verbose_name = _('Supplier Juridical Nature')
+        verbose_name_plural = _('Supplier Juridical Nature')
+
+    name = models.CharField(max_length=248, verbose_name=_('Name'))
+
+    code = models.CharField(max_length=10, verbose_name=_('Code'), unique=True)
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(self.name, self.code)
+
+
+class SupplierSituation(models.Model):
+
+    class Meta:
+        verbose_name = _('Supplier Situation')
+        verbose_name_plural = _('Supplier Situations')
+
+    name = models.CharField(verbose_name=_('Name'), max_length=200)
+
+    def __unicode__(self):
+        return u'{0}'.format(self.name)
+
+
 class Supplier(models.Model):
 
     class Meta:
@@ -327,33 +368,155 @@ class Supplier(models.Model):
         blank=True,
         null=True)
 
-    address = models.TextField(
-        verbose_name=_("Address"),
+    status = models.CharField(
+        verbose_name=_('Status'),
+        max_length=10,
         blank=True,
         null=True)
 
-    juridical_nature = models.CharField(
-        verbose_name=_("Juridical Nature"),
+    situation = models.ForeignKey(
+        'SupplierSituation',
+        verbose_name=_('Situation'),
+        blank=True,
+        null=True,
+    )
+
+    situation_date = models.DateField(
+        verbose_name=_('Situation Date'),
+        blank=True,
+        null=True,
+    )
+
+    situation_reason = models.CharField(
+        verbose_name=_('Situation Reason'),
         max_length=200,
         blank=True,
-        null=True)
+        null=True,
+    )
 
-    status = models.NullBooleanField(
-        verbose_name=_("Status"),
-        blank=True,
-        null=True)
-
-    main_economic_activity = models.CharField(
-        verbose_name=_("Main Economic Activity"),
+    special_situation = models.CharField(
+        verbose_name=_('Special Situation'),
         max_length=200,
         blank=True,
-        null=True)
+        null=True,
+    )
+
+    special_situation_date = models.DateField(
+        verbose_name=_('Special Situation Date'),
+        blank=True,
+        null=True,
+    )
+
+    enterprise_type = models.CharField(
+        verbose_name=_('Enterprise Type'),
+        max_length=6,
+        blank=True,
+        null=True,
+    )
+
+    federative_officer = models.CharField(
+        verbose_name=_('Federative Officer'),
+        max_length=200,
+        blank=True,
+        null=True,
+    )
 
     last_change = models.DateTimeField(
         verbose_name=_('Last Change'),
         auto_now=True,
         blank=True,
-        null=True)
+        null=True,
+    )
+
+    last_update = models.DateTimeField(
+        verbose_name=_('Last Update'),
+        blank=True,
+        null=True,
+    )
+
+    email = models.EmailField(
+        verbose_name=_('Email'),
+        blank=True,
+        null=True,
+    )
+
+    juridical_nature = models.ForeignKey(
+        'SupplierJuridicalNature',
+        verbose_name=_('Juridical Nature'),
+        blank=True,
+        null=True,
+    )
+
+    address = models.CharField(
+        verbose_name=_('Address'),
+        max_length=200,
+        blank=True,
+        null=True,
+    )
+
+    address_number = models.CharField(
+        verbose_name=_('Address Number'),
+        max_length=10,
+        null=True,
+        blank=True,
+    )
+
+    address_complement = models.CharField(
+        verbose_name=_('Address Complement'),
+        max_length=200,
+        blank=True,
+        null=True,
+    )
+
+    postal_code = models.CharField(
+        verbose_name=_('CEP'),
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
+    state = models.CharField(
+        verbose_name=_('State'),
+        max_length=2,
+        choices=STATE_CHOICES,
+        blank=True,
+        null=True,
+    )
+
+    city = models.CharField(
+        verbose_name=_('City'),
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
+    neighborhood = models.CharField(
+        verbose_name=_('Neighborhood'),
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
+    phone = models.CharField(
+        verbose_name=_('Phone'),
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
+    main_activity = models.ForeignKey(
+        'SupplierActivity',
+        verbose_name=_('Main Activity'),
+        blank=True,
+        null=True,
+    )
+
+    secondary_activities = models.ManyToManyField(
+        'SupplierActivity',
+        verbose_name=_('Secondary Activities'),
+        related_name='secondary_activities',
+        blank=True,
+    )
 
     @property
     def identifier_with_mask(self):
