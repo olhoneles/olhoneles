@@ -21,3 +21,6 @@ publish:
 
 lint:
 	@pycodestyle
+
+static:
+	@python manage.py collectstatic --noinput
