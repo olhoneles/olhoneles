@@ -34,8 +34,16 @@ debug_enabled = False
 
 
 class Command(BaseCommand):
-    args = "<source> [debug]"
     help = "Collects data for a number of sources"
+
+    def add_arguments(self, parser):
+        parser.add_argument('house', type=str, nargs='+')
+        parser.add_argument(
+            '--debug',
+            action='store_true',
+            dest='debug',
+            default=False,
+        )
 
     def handle(self, *args, **options):
         global debug_enabled
@@ -45,12 +53,12 @@ class Command(BaseCommand):
         collection_runs = []
 
         debug_enabled = False
-        if "debug" in args:
+        if options.get('debug'):
             debug_enabled = True
 
         houses_to_consolidate = []
 
-        if "almg" in args:
+        if 'almg' in options.get('house'):
             from collectors.almg import ALMG
             almg = ALMG(collection_runs, debug_enabled)
             almg.update_legislators()
@@ -58,14 +66,14 @@ class Command(BaseCommand):
             almg.update_legislators_data()
             houses_to_consolidate.append("almg")
 
-        if "algo" in args:
+        if 'algo' in options.get('house'):
             from collectors.algo import ALGO
             almg = ALGO(collection_runs, debug_enabled)
             almg.update_legislators()
             almg.update_data()
             houses_to_consolidate.append("algo")
 
-        if "senado" in args:
+        if 'senado' in options.get('house'):
             from collectors.senado import Senado
             senado = Senado(collection_runs, debug_enabled)
             senado.update_legislators()
@@ -73,20 +81,20 @@ class Command(BaseCommand):
             senado.update_legislators_extra_data()
             houses_to_consolidate.append("senado")
 
-        if "cmbh" in args:
+        if 'cmbh' in options.get('house'):
             from collectors.cmbh import CMBH
             cmbh = CMBH(collection_runs, debug_enabled)
             cmbh.update_legislators()
             cmbh.update_data()
             houses_to_consolidate.append("cmbh")
 
-        if "cmsp" in args:
+        if 'cmsp' in options.get('house'):
             from collectors.cmsp import CMSP
             cmsp = CMSP(collection_runs, debug_enabled)
             cmsp.update_data()
             houses_to_consolidate.append("cmsp")
 
-        if "cdep" in args:
+        if 'cdep' in options.get('house'):
             from collectors.cdep import CamaraDosDeputados
             cdep = CamaraDosDeputados(collection_runs, debug_enabled)
             cdep.update_legislators()

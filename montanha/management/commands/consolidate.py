@@ -44,27 +44,35 @@ sys.stderr = codecs.getwriter("utf-8")(sys.stderr)
 
 
 class Command(BaseCommand):
-    args = u"<source> [source2] … [sourcen]"
     help = "Collects data for a number of sources"
+
+    def add_arguments(self, parser):
+        parser.add_argument('house', type=str, nargs='+')
+        parser.add_argument(
+            '--agnostic',
+            action='store_true',
+            dest='agnostic',
+            default=False,
+        )
 
     def handle(self, *args, **options):
         institutions = []
-        if "almg" in args:
+        if 'almg' in options.get('house'):
             institutions.append(Institution.objects.get(siglum='ALMG'))
 
-        if "algo" in args:
+        if 'algo' in options.get('house'):
             institutions.append(Institution.objects.get(siglum='ALGO'))
 
-        if "senado" in args:
+        if 'senado' in options.get('house'):
             institutions.append(Institution.objects.get(siglum='Senado'))
 
-        if "cmbh" in args:
+        if 'cmbh' in options.get('house'):
             institutions.append(Institution.objects.get(siglum='CMBH'))
 
-        if "cmsp" in args:
+        if 'cmsp' in options.get('house'):
             institutions.append(Institution.objects.get(siglum='CMSP'))
 
-        if "cdep" in args:
+        if 'cdep' in options.get('house'):
             institutions.append(Institution.objects.get(siglum='CDF'))
 
         for institution in institutions:
@@ -224,7 +232,7 @@ class Command(BaseCommand):
                 per_legislators_to_create.append(p)
             PerLegislator.objects.bulk_create(per_legislators_to_create)
 
-        if 'agnostic' in args:
+        if options.get('agnostic'):
             # Institution-agnostic consolidations - biggest suppliers
             print u'Consolidating institution-agnostic totals…'
 

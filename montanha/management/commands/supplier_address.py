@@ -27,8 +27,21 @@ from montanha.models import Supplier
 
 
 class Command(BaseCommand):
-    args = "<source> [debug]"
     help = "Update supplier data"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--debug',
+            action='store_true',
+            dest='debug',
+            default=False,
+        )
+        parser.add_argument(
+            '--only-empty',
+            action='store_true',
+            dest='only-empty',
+            default=False,
+        )
 
     def post_process_uri(self, contents):
         return BeautifulSoup(
@@ -58,10 +71,10 @@ class Command(BaseCommand):
         self.debug_enabled = False
         self.only_empty = False
 
-        if "debug" in args:
+        if options.get('debug'):
             self.debug_enabled = True
 
-        if "only-empty" in args:
+        if options.get('only-empty'):
             self.only_empty = True
 
         suppliers = Supplier.objects.all()

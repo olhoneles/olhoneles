@@ -19,17 +19,25 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    args = "<source> [debug]"
     help = "Collects data for a number of sources"
+
+    def add_arguments(self, parser):
+        parser.add_argument('house', type=str, nargs='+')
+        parser.add_argument(
+            '--debug',
+            action='store_true',
+            dest='debug',
+            default=False,
+        )
 
     def handle(self, *args, **options):
         collection_runs = []
         debug_enabled = False
 
-        if "debug" in args:
+        if options.get('debug'):
             debug_enabled = True
 
-        if "algo" in args:
+        if 'algo' in options.get('house'):
             from collectors.algo import ALGO
             algo = ALGO(collection_runs, debug_enabled)
             algo.update_images()
