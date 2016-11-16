@@ -39,7 +39,7 @@ legislators
     install_requires=[
         'BeautifulSoup>=3.2.1,<3.3.0',
         'Django>=1.10.1,<1.11.0',
-        'Pillow>=2.3.1,<2.4.0',
+        'Pillow>=3.4.2,<3.5.0',
         'django-parsley>=0.4,<0.5.0',
         'django-bootstrap-toolkit==2.14',
         'easy-thumbnails>=2.3,<2.4',
