@@ -3,15 +3,16 @@
 {% load montanhatags %}
 {% load bootstrap_toolkit %}
 
-{% block title %}{{ legislator.name }} ({{ legislator.party.siglum }}{% endblock %}
+{% block title %}{{ legislator.name }} ({{ legislator.party }}){% endblock %}
 
 {% block content %}
 
     <div class="row">
-        <div class="span12">
-            <h1>{{ legislator.name }} ({% if legislator.party %}{{ legislator.party }}{% else %}Partido não informado{% endif %})</h1>
-        </div>
+        {% with legislator.name|add:" ("|add:legislator.party|add:")" as legislator_name %}
+        <div class="span12">{% share legislator_name %}</div>
+        {% endwith %}
     </div>
+
     <div class="row">
         <div class="span12">
             <ul class="nav nav-tabs">

@@ -8,6 +8,9 @@
 {% block content %}
 
 <div class="row">
+    <div class="row">
+        <div class="span12">{% share "Todos os gastos" %}</div>
+    </div>
     <div class="span12">
         {% expenses_table "Tipo de gasto" "Parlamentar" "Empresa/Pessoa" "CNPJ/CPF" "N° Doc." "Data" "Valor" %}
     </div>
