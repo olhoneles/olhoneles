@@ -26,32 +26,29 @@ function toggle_details()
         <div class="span12">{% share "Por Partido" %}</div>
     </div>
     <div class="row">
-        <div class="span12">
-                <div class="span5">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Partido</th>
-                                <th>Média <a id="toggle-details-link" href="javascript:toggle_details()">(Ver detalhes)</a></th>
-                                <th class="details" style="display: none;">Parlamentares</th>
-                                <th class="details" style="display: none;">Valor ressarcido</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for d in data %}
-                            <tr>
-                                <td>{% if d.mandate__party__logo %}<img src="{{ d.mandate__party__logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %} {{ d.mandate__party__siglum }}</td>
-                                <td>{{ d.expensed_average|format_currency }}</td>
-                                <td class="details" style="display: none;">{{ d.n_legislators }}</td>
-                                <td class="details" style="display: none;">{{ d.expensed|format_currency }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div id="placeholder" class="span6"></div>
-            </div>
+        <div class="span5">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Partido</th>
+                        <th>Média <a id="toggle-details-link" href="javascript:toggle_details()">(Ver detalhes)</a></th>
+                        <th class="details" style="display: none;">Parlamentares</th>
+                        <th class="details" style="display: none;">Valor ressarcido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in data %}
+                    <tr>
+                        <td>{% if d.mandate__party__logo %}<img src="{{ d.mandate__party__logo|thumbnail_url:'mini' }}" title="{{ d.mandate__party__name }}" alt="{{ d.mandate__party__name }}">{% endif %} {{ d.mandate__party__siglum }}</td>
+                        <td>{{ d.expensed_average|format_currency }}</td>
+                        <td class="details" style="display: none;">{{ d.n_legislators }}</td>
+                        <td class="details" style="display: none;">{{ d.expensed|format_currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+        <div id="placeholder" class="span6"></div>
     </div>
 
 {% endblock %}
