@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.views.generic import TemplateView
-from django.conf.urls import url, include
+from django.conf.urls import url
 from django.views.defaults import page_not_found
 
 from montanha.views import (
