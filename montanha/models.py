@@ -114,7 +114,7 @@ class Legislator(models.Model):
     @property
     def party(self):
         party = self.mandate_set.order_by("-date_start")[0].party
-        if party.siglum:
+        if party and party.siglum:
             return party.siglum
         return u"Partido não informado"
 
