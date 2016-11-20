@@ -4,6 +4,8 @@
 {% load montanhatags %}
 {% load bootstrap_toolkit %}
 
+{% block title %}{{ supplier.name }} ({{ supplier.identifier_with_mask }}){% endblock %}
+
 {% block content %}
 
     <div class="row">

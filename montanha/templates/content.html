@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
-    {% include 'base_header.html' %}
-    {% block head-extra %}{% endblock %}
+        <title>Olho neles! {% block title %}{% endblock %}</title>
+        {% include 'base_header.html' %}
+        {% block head-extra %}{% endblock %}
     </head>
     <body>
         <div class="container">
