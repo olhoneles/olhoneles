@@ -50,6 +50,7 @@ legislators
         'django-recaptcha>=1.0.5,<1.1.0',
         'raven>=5.31.0,<=5.32.0',
         'django-localflavor>=1.3,<1.4.0',
+        'django-cacheops>=3.1.1,<3.2.0',
     ],
     dependency_links=[
         'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14'

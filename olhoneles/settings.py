@@ -151,6 +151,7 @@ DEFAULT_INSTALLED_APPS = (
     'cms',
     'captcha',
     'raven.contrib.django.raven_compat',
+    'cacheops',
 )
 
 INSTALLED_APPS = conf.get('INSTALLED_APPS', DEFAULT_INSTALLED_APPS)
@@ -210,12 +211,36 @@ THUMBNAIL_ALIASES = {
 
 DEFAULT_CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': INSTANCE('../cache'),
-    }
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'TIMEOUT': 60
+    },
 }
-
 CACHES = conf.get('CACHES', DEFAULT_CACHES)
+
+DEFAULT_CACHEOPS_REDIS = {
+    'host': 'localhost',
+    'port': 6379,
+    'db': 1,
+    'socket_timeout': 3,
+}
+CACHEOPS_REDIS = conf.get('CACHEOPS_REDIS', DEFAULT_CACHEOPS_REDIS)
+
+DEFAULT_CACHEOPS_DEFAULTS = {
+    'timeout': 60*60
+}
+CACHEOPS_DEFAULTS = conf.get('CACHEOPS_DEFAULTS', DEFAULT_CACHEOPS_DEFAULTS)
+
+DEFAULT_CACHEOPS = {
+    'auth.user': {'ops': 'get', 'timeout': 60*15},
+    'auth.*': {'ops': ('fetch', 'get')},
+    'auth.permission': {'ops': 'all'},
+    'montanha.*': {'ops': 'all'},
+    'cms.*': {'ops': 'all'},
+    '*.*': {},
+}
+CACHEOPS = conf.get('CACHEOPS', DEFAULT_CACHEOPS)
+
+CACHEOPS_DEGRADE_ON_FAILURE = True
 
 DEFAULT_FROM_EMAIL = conf.get('DEFAULT_FROM_EMAIL', 'montanha-dev@listas.olhoneles.org')
 
