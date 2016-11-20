@@ -112,6 +112,7 @@ def supplier_with_mask(value):
     except:
         return value
 
+
 @register.inclusion_tag('share.html')
 def share(title):
     return {'title': title}
