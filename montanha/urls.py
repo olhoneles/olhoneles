@@ -15,9 +15,10 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.views.generic import TemplateView
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.conf.urls import url
-from django.views.defaults import page_not_found
+from django.views.generic.base import RedirectView
+from django.views.generic import TemplateView
 
 from montanha.views import (
     query_all, query_biggest_suppliers, query_supplier_all,
@@ -48,7 +49,13 @@ urlpatterns = [
     url(r'^([^/]+)?/?detail-supplier/(\d+)/?$', show_supplier_detail, name='show-supplier-detail'),
 
     # favicon
-    url(r'^favicon.ico$', page_not_found, name='page-not-found'),
+    url(
+        r'^favicon.ico$',
+        RedirectView.as_view(
+            url=staticfiles_storage.url('favicon.ico'),
+            permanent=True),
+        name='favicon'
+    ),
 
     # Robots.txt
     url(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt',
