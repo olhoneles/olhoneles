@@ -228,7 +228,11 @@ def show_legislator_detail(request, filter_spec, legislator_id):
 
     data, date_ranges = get_basic_objects_for_model(filter_spec)
 
-    legislator = Legislator.objects.get(pk=legislator_id)
+    try:
+        legislator = Legislator.objects.get(pk=legislator_id)
+    except Legislator.DoesNotExist:
+        raise Http404
+
     data = data.filter(mandate__legislator=legislator)
 
     top_suppliers = data.values('supplier__id',
