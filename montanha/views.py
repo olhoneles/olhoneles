@@ -28,8 +28,12 @@ from django.http import HttpResponse, Http404
 from django.core.mail import send_mail
 from django.conf import settings
 
-from montanha.models import *
-from montanha.forms import *
+from montanha.models import (
+    Expense, Institution, PerNature, PerNatureByYear, ExpenseNature,
+    PerNatureByMonth, PerLegislator, Legislator, PoliticalParty, Mandate,
+    Supplier, BiggestSupplierForYear
+)
+from montanha.forms import ContactUsForm
 from montanha.util import (
     filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
 )

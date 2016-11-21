@@ -19,7 +19,10 @@
 import base64
 from basecollector import BaseCollector
 from datetime import datetime, date
-from montanha.models import *
+from montanha.models import (
+    Institution, Legislature, ExpenseNature, Legislator, Supplier,
+    ArchivedExpense
+)
 
 
 def parse_money(string):

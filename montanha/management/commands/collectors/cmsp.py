@@ -22,7 +22,10 @@ from datetime import datetime
 from django.core.files import File
 
 from basecollector import BaseCollector
-from montanha.models import *
+from montanha.models import (
+    Institution, Legislator, Mandate, PoliticalParty, ExpenseNature, Supplier,
+    ArchivedExpense, Legislature
+)
 
 
 def parse_money(string):

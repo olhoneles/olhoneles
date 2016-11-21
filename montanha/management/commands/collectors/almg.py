@@ -22,7 +22,10 @@ import re
 import datetime
 from basecollector import BaseCollector
 from datetime import datetime
-from montanha.models import *
+from montanha.models import (
+    Institution, Legislature, Legislator, PoliticalParty, ExpenseNature,
+    Supplier, ArchivedExpense
+)
 
 
 class ALMG(BaseCollector):

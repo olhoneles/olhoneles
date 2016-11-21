@@ -27,7 +27,10 @@ from basecollector import BaseCollector
 from django.core.files import File
 from datetime import datetime
 
-from montanha.models import *
+from montanha.models import (
+    Institution, Legislature, PoliticalParty, Legislator, ExpenseNature,
+    Supplier, ArchivedExpense, Mandate
+)
 
 
 class ALGO(BaseCollector):

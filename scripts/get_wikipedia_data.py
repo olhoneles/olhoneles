@@ -20,7 +20,7 @@
 import urllib2
 from BeautifulSoup import BeautifulSoup
 
-from montanha.models import *
+from montanha.models import PoliticalParty
 
 
 SITE_URL = "http://pt.wikipedia.org"
