@@ -31,7 +31,7 @@ from django.conf import settings
 from montanha.models import (
     Expense, Institution, PerNature, PerNatureByYear, ExpenseNature,
     PerNatureByMonth, PerLegislator, Legislator, PoliticalParty, Mandate,
-    Supplier, BiggestSupplierForYear
+    Supplier, BiggestSupplierForYear, Legislature
 )
 from montanha.forms import ContactUsForm
 from montanha.util import (
@@ -97,7 +97,7 @@ def parse_filter(filter_spec):
 
     try:
         legislature = institution.legislature_set.get(date_start__year=parts[1])
-    except ValueError:
+    except (ValueError, Legislature.DoesNotExist):
         raise Http404
 
     return institution, legislature
