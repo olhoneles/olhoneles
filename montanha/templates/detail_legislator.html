@@ -13,6 +13,14 @@
         {% endwith %}
     </div>
 
+    {% if legislator.about %}
+    <div class="row">
+        <div class="span12">
+            <p class="alert alert-info">{{ legislator.about }}</p>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="row">
         <div class="span12">
             <ul class="nav nav-tabs">
