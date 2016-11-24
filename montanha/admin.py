@@ -61,6 +61,7 @@ class LegislatorAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'show_picture']
     ordering = ['name']
     search_fields = ['name']
+    filter_horizontal = ['alternative_names']
 
     def show_picture(self, obj):
         if obj.picture:
