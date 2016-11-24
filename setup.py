@@ -52,9 +52,12 @@ legislators
         'django-localflavor>=1.3,<1.4.0',
         'django-cacheops>=3.1.1,<3.2.0',
         'python-dateutil>=2.6.0,<2.7.0',
+        'django-tastypie>=0.13.3,<0.14.0',
+        'django-tastypie-swagger==0.1.4-django1.10',
     ],
     dependency_links=[
-        'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14'
+        'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14',
+        'https://github.com/olhoneles/django-tastypie-swagger/archive/fix-compatibility-django-1.10.zip#egg=django-tastypie-swagger-0.1.4-django1.10',
     ],
     extras_require={
         'tests': tests_require,

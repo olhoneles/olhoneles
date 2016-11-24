@@ -152,6 +152,8 @@ DEFAULT_INSTALLED_APPS = (
     'captcha',
     'raven.contrib.django.raven_compat',
     'cacheops',
+    'tastypie',
+    'tastypie_swagger',
 )
 
 INSTALLED_APPS = conf.get('INSTALLED_APPS', DEFAULT_INSTALLED_APPS)
@@ -252,3 +254,8 @@ RECAPTCHA_PUBLIC_KEY = conf.get('RECAPTCHA_PUBLIC_KEY', '')
 RECAPTCHA_PRIVATE_KEY = conf.get('RECAPTCHA_PRIVATE_KEY', '')
 
 RAVEN_CONFIG = conf.get('RAVEN_CONFIG', {'dsn': ''})
+
+# API
+TASTYPIE_DEFAULT_FORMATS = conf.get('TASTYPIE_DEFAULT_FORMATS', ['json'])
+RESOURCE_CACHE_TIMEOUT = conf.get('RESOURCE_CACHE_TIMEOUT', 60)
+RESOURCE_MAX_REQUESTS = conf.get('RESOURCE_MAX_REQUESTS', 500)

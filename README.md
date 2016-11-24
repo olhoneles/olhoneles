@@ -57,6 +57,14 @@ the expenses are not added to the main Expense table while the collection
 is running, so you will not see partial data in the site while collecting.
 
 
+## API
+
+Yes, we have an API. The [Olho Neles API](http://olhoneles.org/api/v0/) lets
+you build tools using all data we have collected from legislative houses.
+All endpoints, parameters and error messages available to the Olho Neles API
+are docummented.
+
+
 ## Contribute
 
 Join us at the [dev-mailing list](http://listas.olhoneles.org/cgi-bin/mailman/listinfo/montanha-dev) and at

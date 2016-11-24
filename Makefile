@@ -7,7 +7,7 @@ data:
 	@python manage.py migrate
 
 setup:
-	@pip install -U -e .\[tests\]
+	@pip install -U --process-dependency-links -e .\[tests\]
 
 tests:
 	@coverage run --source='.' manage.py test

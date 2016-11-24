@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
 

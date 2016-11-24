@@ -21,12 +21,25 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.contrib import admin
 
+from montanha.api import __version__
+
 
 admin.autodiscover()
+
 
 urlpatterns = [
     # Admin
     url(r'^admin/', include(admin.site.urls)),
+
+    # API
+    url(r'api/v0/',
+        include('tastypie_swagger.urls', namespace='olhoneles-v0'),
+        kwargs={
+            'namespace': 'olhoneles-v0',
+            'tastypie_api_module': 'montanha.api.urls.api',
+            'version': __version__,
+        }),
+    url(r'^api/', include('montanha.api.urls')),
 
     # Montanha
     url(r'^', include('montanha.urls',
