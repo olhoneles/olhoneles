@@ -23,7 +23,8 @@ from django.utils.translation import ugettext as _
 from montanha.models import (
     Legislator, Mandate, Supplier, SupplierSituation, SupplierJuridicalNature,
     SupplierActivity, ExpenseNature, Expense, PoliticalParty, Institution,
-    Legislature
+    Legislature, PerNature, PerNatureByYear, PerNatureByMonth, PerLegislator,
+    BiggestSupplierForYear
 )
 
 
@@ -88,3 +89,8 @@ admin.site.register(Expense)
 admin.site.register(PoliticalParty, PoliticalPartyAdmin)
 admin.site.register(Institution)
 admin.site.register(Legislature)
+admin.site.register(PerNature)
+admin.site.register(PerNatureByYear)
+admin.site.register(PerNatureByMonth)
+admin.site.register(PerLegislator)
+admin.site.register(BiggestSupplierForYear)

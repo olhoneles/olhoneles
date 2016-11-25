@@ -554,6 +554,13 @@ class PerNature(models.Model):
     nature = models.ForeignKey("ExpenseNature")
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
+    class Meta:
+        verbose_name = _("Per Nature")
+        verbose_name_plural = _("Per Nature")
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(self.nature, self.expensed)
+
 
 class PerNatureByYear(models.Model):
     institution = models.ForeignKey("Institution")
@@ -561,12 +568,26 @@ class PerNatureByYear(models.Model):
     nature = models.ForeignKey("ExpenseNature")
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
+    class Meta:
+        verbose_name = _("Per Nature By Year")
+        verbose_name_plural = _("Per Nature By Year")
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(self.nature, self.expensed)
+
 
 class PerNatureByMonth(models.Model):
     institution = models.ForeignKey("Institution")
     date = models.DateField()
     nature = models.ForeignKey("ExpenseNature")
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
+
+    class Meta:
+        verbose_name = _("Per Nature By Month")
+        verbose_name_plural = _("Per Nature By Month")
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(self.nature, self.expensed)
 
 
 class PerLegislator(models.Model):
@@ -579,8 +600,22 @@ class PerLegislator(models.Model):
     date_end = models.DateField()
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
+    class Meta:
+        verbose_name = _("Per Legislator")
+        verbose_name_plural = _("Per Legislator")
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(self.legislator, self.expensed)
+
 
 class BiggestSupplierForYear(models.Model):
     supplier = models.ForeignKey("Supplier")
     year = models.IntegerField()
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
+
+    class Meta:
+        verbose_name = _("Biggest Supplier For Year")
+        verbose_name_plural = _("Biggest Supplier For Year")
+
+    def __unicode__(self):
+        return u'{0} ({1})'.format(self.supplier, self.expensed)
