@@ -5,28 +5,41 @@ Tool to monitor Brazilian legislators expenses while in the exercise of their ma
 
 ## Install
 
-1.  Clone the repository:
+1. Clone the repository:
 
-        git clone https://github.com/olhoneles/olhoneles.git
+    ```
+    git clone https://github.com/olhoneles/olhoneles.git
+    ```
 
-1.  Create a [*virtualenv*](http://virtualenvwrapper.readthedocs.org/en/latest/install.html):
+2. Create a [*virtualenv*](http://virtualenvwrapper.readthedocs.org/en/latest/install.html):
 
-        cd olhoneles
-        mkvirtualenv olhoneles
+    ```
+    cd olhoneles
+    mkvirtualenv olhoneles
+    ```
 
-1.  Install dependencies:
+3. Install dependencies:
 
-        make setup
+    ```
+    make setup
+    ```
 
-1.  Create your database:
+4. Create your database:
 
-        make data
+    ```
+    make data
+    ```
 
-1.  Run it:
+5. Run it:
 
-        make run
+    ```
+    make run
+    ```
 
-1.  If you would like to override some settings.py variables, like SECRET_KEY, DATABASES, ALLOWED_HOSTS, please create the `olhoneles/local.config` file.
+6. Change default configs:
+
+    If you would like to override some settings.py variables, like SECRET_KEY,
+    DATABASES, ALLOWED_HOSTS, please create the `olhoneles/local.config` file.
 
 
 ## Collecting the data
@@ -34,7 +47,9 @@ Tool to monitor Brazilian legislators expenses while in the exercise of their ma
 After setting up, you can collect one of the supported legislative houses
 (cmbh, almg, cmsp, senado) by using the collect command like this:
 
-        ./manage.py collect <house>
+```
+./manage.py collect <house>
+```
 
 You can add `--debug` after the name of the house to get a more verbose
 output. Note that the collection process happens in a transaction and that
