@@ -208,6 +208,7 @@ LOGGING = {
 THUMBNAIL_ALIASES = {
     '': {
         'mini': {'size': (20, 20), 'crop': False},
+        'legislator': {'size': (120, 120), 'crop': False},
     },
 }
 

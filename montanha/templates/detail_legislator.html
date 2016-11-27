@@ -2,6 +2,7 @@
 {% load staticfiles %}
 {% load montanhatags %}
 {% load bootstrap_toolkit %}
+{% load thumbnail %}
 
 {% block title %}{{ legislator.name }} ({{ legislator.party }}){% endblock %}
 
@@ -13,10 +14,33 @@
         {% endwith %}
     </div>
 
-    {% if legislator.about %}
+
+    {% if legislator.about or legislator.email or legislator.site or legislator.picture %}
     <div class="row">
         <div class="span12">
-            <p class="alert alert-info">{{ legislator.about }}</p>
+            {% if legislator.picture %}
+            <img src="{{ legislator.picture|thumbnail_url:'legislator' }}" class="pull-left legislator-picture" />
+            {% endif %}
+            <table class="alert alert-info table-condensed">
+                {% if legislator.site %}
+                <tr>
+                    <th class="pull-right"%>Site:</th>
+                    <td>{{ legislator.site|cut:"http://"|cut:"//"|urlize|url_target_blank }}</td>
+                </tr>
+                {% endif %}
+                {% if legislator.email %}
+                <tr>
+                    <th class="pull-right">Email:</th>
+                    <td>{{ legislator.email|urlize|url_target_blank }}</td>
+                </tr>
+                {% endif %}
+                {% if legislator.about %}
+                <tr>
+                    <th class="pull-right">Sobre:</th>
+                    <td>{{ legislator.about}}</td>
+                </tr>
+                {% endif %}
+            </table>
         </div>
     </div>
     {% endif %}

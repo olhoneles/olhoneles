@@ -21,6 +21,10 @@
     display: inline-block;
 }
 
+.legislator-picture {
+    padding: 0 30px 30px 0;
+}
+
 .share-text {
     text-align: center;
     vertical-align: middle;
