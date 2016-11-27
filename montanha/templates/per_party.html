@@ -2,7 +2,7 @@
 {% load montanhatags %}
 {% load thumbnail %}
 
-{% block title %}Por Partido{% endblock %}
+{% block title %}{{ filter_spec|default:'' }} Por Partido{% endblock %}
 
 {% block content %}
 

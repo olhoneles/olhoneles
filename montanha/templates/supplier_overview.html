@@ -4,7 +4,7 @@
 {% load montanhatags %}
 {% load bootstrap_toolkit %}
 
-{% block title %}{{ supplier.name }} ({{ supplier.identifier_with_mask }}){% endblock %}
+{% block title %}{{ filter_spec|default:'' }} {{ supplier.name }} ({{ supplier.identifier_with_mask }}){% endblock %}
 
 {% block content %}
 

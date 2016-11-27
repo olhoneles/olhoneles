@@ -3,7 +3,7 @@
 {% load montanhatags %}
 {% load thumbnail %}
 
-{% block title %}Por Parlamentar{% endblock %}
+{% block title %} {{ filter_spec|default:'' }} Por Parlamentar {% endblock %}
 
 {% block content %}
 

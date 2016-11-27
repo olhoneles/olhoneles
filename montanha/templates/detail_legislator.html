@@ -4,7 +4,7 @@
 {% load bootstrap_toolkit %}
 {% load thumbnail %}
 
-{% block title %}{{ legislator.name }} ({{ legislator.party }}){% endblock %}
+{% block title %}{{ filter_spec|default:'' }} {{ legislator.name }} ({{ legislator.party }}){% endblock %}
 
 {% block content %}
 

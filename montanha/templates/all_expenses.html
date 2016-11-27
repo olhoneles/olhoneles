@@ -3,7 +3,7 @@
 {% load montanhatags %}
 {% load bootstrap_toolkit %}
 
-{% block title %}Todos os gastos{% endblock %}
+{% block title %}{{ filter_spec|default:'' }} Todos os gastos{% endblock %}
 
 {% block content %}
 

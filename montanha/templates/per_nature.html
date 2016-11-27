@@ -2,7 +2,7 @@
 {% load staticfiles %}
 {% load montanhatags %}
 
-{% block title %}Por Tipo de Gasto{% endblock %}
+{% block title %}{{ filter_spec|default:'' }} Por Tipo de Gasto{% endblock %}
 
 {% block content %}
 
