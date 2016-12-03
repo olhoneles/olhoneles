@@ -509,6 +509,9 @@ def data_tables_query(request, filter_spec, columns, filter_function=None, model
     sort_col = int(request.GET.get('iSortCol_0', len(columns) - 1))
     order_by_field = columns[sort_col][0].replace('.', '__')
 
+    if order_by_field.endswith('_with_mask'):
+        order_by_field = order_by_field.replace('_with_mask', '')
+
     sort_direction = request.GET.get('sSortDir_0', 'asc')
     if sort_direction == 'desc':
         order_by_field = '-' + order_by_field
