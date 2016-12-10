@@ -245,6 +245,11 @@ CACHEOPS = conf.get('CACHEOPS', DEFAULT_CACHEOPS)
 
 CACHEOPS_DEGRADE_ON_FAILURE = True
 
+EMAIL_HOST = conf.get("EMAIL_HOST", "localhost")
+DEFAULT_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = conf.get('EMAIL_BACKEND', DEFAULT_EMAIL_BACKEND)
+
 DEFAULT_FROM_EMAIL = conf.get('DEFAULT_FROM_EMAIL', 'montanha-dev@listas.olhoneles.org')
 
 CONTACT_US_EMAIL = conf.get('CONTACT_US_EMAIL', 'montanha@olhoneles.org')
