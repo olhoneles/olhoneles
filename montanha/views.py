@@ -642,13 +642,13 @@ def contact_us(request):
     if request.POST and contact_us_form.is_valid():
         subject = '[Olho Neles]: Fale Conosco'
 
-        message = ('Nome: %s\nEmail: %s\nIP: %s\nMensagem:\n\n%s') % (
+        message = (u'Nome: %s\nEmail: %s\nIP: %s\nMensagem:\n\n%s') % (
             contact_us_form.cleaned_data['name'],
             contact_us_form.cleaned_data['email'],
             request.META['REMOTE_ADDR'],
             contact_us_form.cleaned_data['message'])
 
-        from_field = '%s <%s>' % (contact_us_form.cleaned_data['name'],
+        from_field = u'%s <%s>' % (contact_us_form.cleaned_data['name'],
                                   contact_us_form.cleaned_data['email'])
 
         send_mail(subject, message, from_field, [settings.CONTACT_US_EMAIL])
