@@ -67,7 +67,9 @@ class Command(BaseCommand):
         try:
             data = response.json()
         except ValueError as e:
-            self.debug(u'Error on loads Json for: {}'.format(supplier, str(e)))
+            self.debug(
+                u'Error on loads Json for {0}: {1}'.format(supplier, str(e))
+            )
             return
 
         supplier.enterprise_type = data.get('tipo')
