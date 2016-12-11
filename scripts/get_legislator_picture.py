@@ -52,6 +52,6 @@ for item in ul.findAll("li"):
         result = urllib.urlretrieve(picture_url)
         leg.picture.save(os.path.basename(picture_url), File(open(result[0])))
         leg.save()
-        print "%s => %s" (legislator_name, picture_url)
+        print "{0} => {1}".format(legislator_name, picture_url)
     except Legislator.DoesNotExist:
         pass
