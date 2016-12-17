@@ -17,7 +17,7 @@ unit:
 
 
 focus:
-	@python manage.py test --with-focus
+	@python manage.py test --with-focus -s
 
 clean:
 	@rm -f *.log
