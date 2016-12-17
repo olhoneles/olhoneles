@@ -1,0 +1,15 @@
+language: python
+
+python:
+    - "2.7"
+
+env:
+  matrix:
+    - TEST_TYPE=unit
+    - TEST_TYPE=lint
+
+install:
+    - make setup
+
+script:
+  - make $TEST_TYPE
