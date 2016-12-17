@@ -64,7 +64,7 @@ class BaseCollector(object):
         return mandate
 
     def update_legislators(self):
-        raise Exception("Not implemented.")
+        raise Exception("Not implemented.")  # pragma: no cover
 
     def update_data_for_year(self, mandate, year):
         self.debug("Updating data for year %d" % year)
@@ -72,7 +72,7 @@ class BaseCollector(object):
             self.update_data_for_month(mandate, year, month)
 
     def update_data_for_month(self, mandate, year, month):
-        raise Exception("Not implemented.")
+        raise Exception("Not implemented.")  # pragma: no cover
 
     def create_collection_run(self, legislature):
         collection_run, created = CollectionRun.objects.get_or_create(date=date.today(),

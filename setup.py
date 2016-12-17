@@ -10,6 +10,7 @@ tests_require = [
     'coverage',
     'factory_boy',
     'pycodestyle',
+    'mock',
 ]
 
 setup(
