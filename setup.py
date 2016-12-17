@@ -6,6 +6,7 @@ from olhoneles import __version__
 
 tests_require = [
     'nose',
+    'nose-focus',
     'coverage',
     'factory_boy',
     'pycodestyle',
@@ -54,6 +55,7 @@ legislators
         'python-dateutil>=2.6.0,<2.7.0',
         'django-tastypie>=0.13.3,<0.14.0',
         'django-tastypie-swagger==0.1.4-django1.10',
+        'django-nose>=1.4.4,<1.5.0',
     ],
     dependency_links=[
         'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14',

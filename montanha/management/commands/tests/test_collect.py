@@ -15,8 +15,7 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from StringIO import StringIO
-
+from django.core.management.base import CommandError
 from django.core.management import call_command
 from django.test import TestCase
 
@@ -24,6 +23,5 @@ from django.test import TestCase
 class CollectCommandsTestCase(TestCase):
 
     def test_command_collect_without_instituiton(self):
-        out = StringIO()
-        call_command('collect', stdout=out)
-        self.assertEqual(out.getvalue(), '')
+        with self.assertRaises(CommandError):
+            call_command('collect')

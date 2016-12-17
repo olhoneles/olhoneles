@@ -9,9 +9,13 @@ data:
 setup:
 	@pip install -U --process-dependency-links -e .\[tests\]
 
-tests:
+test:
 	@coverage run --source='.' manage.py test
 	@coverage report -m
+
+
+focus:
+	@python manage.py test --with-focus
 
 clean:
 	@rm -f *.log

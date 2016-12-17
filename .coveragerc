@@ -1,0 +1,11 @@
+[run]
+omit = *tests*,*settings*,*migrations*,*admin*,*wsgi*,*cnpj*,*cpf*
+branch = True
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    except ImportError:

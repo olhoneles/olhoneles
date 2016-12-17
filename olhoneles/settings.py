@@ -154,6 +154,7 @@ DEFAULT_INSTALLED_APPS = (
     'cacheops',
     'tastypie',
     'tastypie_swagger',
+    'django_nose',
 )
 
 INSTALLED_APPS = conf.get('INSTALLED_APPS', DEFAULT_INSTALLED_APPS)
@@ -265,3 +266,12 @@ RAVEN_CONFIG = conf.get('RAVEN_CONFIG', {'dsn': ''})
 TASTYPIE_DEFAULT_FORMATS = conf.get('TASTYPIE_DEFAULT_FORMATS', ['json'])
 RESOURCE_CACHE_TIMEOUT = conf.get('RESOURCE_CACHE_TIMEOUT', 60)
 RESOURCE_MAX_REQUESTS = conf.get('RESOURCE_MAX_REQUESTS', 500)
+
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'foo' and 'bar' apps
+# NOSE_ARGS = [
+#     '--with-coverage',
+#     '--cover-package=foo,bar',
+# ]

@@ -20,8 +20,9 @@ import factory
 from montanha.models import Institution
 
 
-class InstitutionFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Institution
+class InstitutionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Institution
 
     name = factory.Sequence(lambda t: 'name-{0}'.format(t))
     siglum = factory.Sequence(lambda t: 'siglum-{0}'.format(t))
