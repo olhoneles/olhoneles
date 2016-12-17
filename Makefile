@@ -9,7 +9,9 @@ data:
 setup:
 	@pip install -U --process-dependency-links -e .\[tests\]
 
-test:
+test: lint unit
+
+unit:
 	@coverage run --source='.' manage.py test
 	@coverage report -m
 

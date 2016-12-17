@@ -649,7 +649,7 @@ def contact_us(request):
             contact_us_form.cleaned_data['message'])
 
         from_field = u'%s <%s>' % (contact_us_form.cleaned_data['name'],
-                                  contact_us_form.cleaned_data['email'])
+                                   contact_us_form.cleaned_data['email'])
 
         send_mail(subject, message, from_field, [settings.CONTACT_US_EMAIL])
 
