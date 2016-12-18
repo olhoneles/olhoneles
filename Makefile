@@ -12,7 +12,7 @@ setup:
 test: lint unit
 
 unit:
-	@coverage run --source='.' manage.py test
+	@coverage run --source='.' manage.py test -s
 	@coverage report -m
 
 
