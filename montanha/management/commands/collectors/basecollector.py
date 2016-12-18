@@ -34,6 +34,8 @@ class BaseCollector(object):
         self.max_tries = 10
         self.try_again_timer = 10
 
+        self.legislature = None
+
     def debug(self, message):
         message = message.encode('utf-8')
 
