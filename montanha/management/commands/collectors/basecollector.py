@@ -64,6 +64,14 @@ class BaseCollector(object):
     def update_legislators(self):
         raise Exception("Not implemented.")
 
+    def update_data_for_year(self, mandate, year):
+        self.debug("Updating data for year %d" % year)
+        for month in range(1, 13):
+            self.update_data_for_month(mandate, year, month)
+
+    def update_data_for_month(self, mandate, year, month):
+        raise Exception("Not implemented.")
+
     def create_collection_run(self, legislature):
         collection_run, created = CollectionRun.objects.get_or_create(date=date.today(),
                                                                       legislature=legislature)

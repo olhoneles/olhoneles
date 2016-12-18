@@ -115,11 +115,6 @@ class ALMG(BaseCollector):
 
             mandate.legislator.save()
 
-    def update_data_for_year(self, mandate, year):
-        self.debug("Updating data for year %d" % year)
-        for month in range(1, 13):
-            self.update_data_for_month(mandate, year, month)
-
     def update_data_for_month(self, mandate, year, month):
         self.debug("Updating data for %d-%d - %s" % (year, month, unicode(mandate)))
         uri = "http://dadosabertos.almg.gov.br/ws/prestacao_contas/verbas_indenizatorias/deputados/%s/%d/%d?formato=json" % (mandate.original_id, year, month)

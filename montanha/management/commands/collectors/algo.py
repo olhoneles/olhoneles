@@ -109,11 +109,6 @@ class ALGO(BaseCollector):
 
             mandate = self.mandate_for_legislator(legislator, party, original_id=entry["id"])
 
-    def update_data_for_year(self, mandate, year):
-        self.debug("Updating data for year %d" % year)
-        for month in range(1, 13):
-            self.update_data_for_month(mandate, year, month)
-
     @classmethod
     def parse_title(self, title):
         if '-' in title:
