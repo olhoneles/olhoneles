@@ -32,6 +32,7 @@ debug_enabled = False
 
 class Command(BaseCommand):
     help = "Collects data for a number of sources"
+    collection_runs = []
 
     def add_arguments(self, parser):
         parser.add_argument('house', type=str, nargs='+')
@@ -47,8 +48,6 @@ class Command(BaseCommand):
 
         settings.expense_locked_for_collection = True
 
-        collection_runs = []
-
         debug_enabled = False
         if options.get('debug'):
             debug_enabled = True
@@ -57,7 +56,7 @@ class Command(BaseCommand):
 
         if 'almg' in options.get('house'):
             from collectors.almg import ALMG
-            almg = ALMG(collection_runs, debug_enabled)
+            almg = ALMG(self.collection_runs, debug_enabled)
             almg.update_legislators()
             almg.update_data()
             almg.update_legislators_data()
@@ -65,14 +64,14 @@ class Command(BaseCommand):
 
         if 'algo' in options.get('house'):
             from collectors.algo import ALGO
-            almg = ALGO(collection_runs, debug_enabled)
+            almg = ALGO(self.collection_runs, debug_enabled)
             almg.update_legislators()
             almg.update_data()
             houses_to_consolidate.append("algo")
 
         if 'senado' in options.get('house'):
             from collectors.senado import Senado
-            senado = Senado(collection_runs, debug_enabled)
+            senado = Senado(self.collection_runs, debug_enabled)
             senado.update_legislators()
             senado.update_data()
             senado.update_legislators_extra_data()
@@ -80,27 +79,27 @@ class Command(BaseCommand):
 
         if 'cmbh' in options.get('house'):
             from collectors.cmbh import CMBH
-            cmbh = CMBH(collection_runs, debug_enabled)
+            cmbh = CMBH(self.collection_runs, debug_enabled)
             cmbh.update_legislators()
             cmbh.update_data()
             houses_to_consolidate.append("cmbh")
 
         if 'cmsp' in options.get('house'):
             from collectors.cmsp import CMSP
-            cmsp = CMSP(collection_runs, debug_enabled)
+            cmsp = CMSP(self.collection_runs, debug_enabled)
             cmsp.update_data()
             houses_to_consolidate.append("cmsp")
 
         if 'cdep' in options.get('house'):
             from collectors.cdep import CamaraDosDeputados
-            cdep = CamaraDosDeputados(collection_runs, debug_enabled)
+            cdep = CamaraDosDeputados(self.collection_runs, debug_enabled)
             cdep.update_legislators()
             cdep.update_data()
             houses_to_consolidate.append("cdep")
 
         settings.expense_locked_for_collection = False
 
-        for run in collection_runs:
+        for run in self.collection_runs:
             legislature = run.legislature
             Expense.objects.filter(mandate__legislature=legislature).delete()
 
