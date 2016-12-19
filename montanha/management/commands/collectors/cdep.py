@@ -84,7 +84,7 @@ class CamaraDosDeputados(BaseCollector):
             legislator.email = l.find('email').text
             legislator.save()
 
-            party_name = self._normalize_party_name(l.find('partido').text)
+            party_name = self.normalize_party_name(l.find('partido').text)
             party, _ = PoliticalParty.objects.get_or_create(siglum=party_name)
 
             state = l.find('uf').text
@@ -214,7 +214,7 @@ class CamaraDosDeputados(BaseCollector):
 
                 party = party_name = elem.find('sgPartido')
                 if party_name is not None:
-                    party_name = self._normalize_party_name(party_name.text)
+                    party_name = self.normalize_party_name(party_name.text)
                     party, _ = PoliticalParty.objects.get_or_create(siglum=party_name)
 
                 state = elem.find('sgUF').text.strip()

@@ -127,7 +127,7 @@ class BaseCollector(object):
 
         raise RuntimeError("Error: Unable to retrieve %s; Tried %d times." % (uri, self.max_tries))
 
-    def _normalize_party_name(self, name):
+    def normalize_party_name(self, name):
         names_map = {
             'PCdoB': 'PC do B',
         }
