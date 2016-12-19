@@ -259,9 +259,3 @@ class CamaraDosDeputados(BaseCollector):
             ArchivedExpense.objects.bulk_create(archived_expense_list)
 
         os.unlink('cdep-collection-run')
-
-    def _normalize_name(self, name):
-        names_map = {
-            'Gim': 'Gim Argello',
-        }
-        return names_map.get(name, name)

@@ -133,6 +133,13 @@ class BaseCollector(object):
         }
         return names_map.get(name, name)
 
+    def _normalize_name(self, name):
+        names_map = {
+            'Gim': 'Gim Argello',
+            'Wellington Goncalves de Magalh?es': 'Wellington Goncalves de Magalhães',
+        }
+        return names_map.get(name, name)
+
     def post_process_uri(self, contents):
         return BeautifulSoup(contents, convertEntities=BeautifulStoneSoup.ALL_ENTITIES)
 
