@@ -77,8 +77,9 @@ class BaseCollectorRetrieveUriTestCase(BaseCollectorTestCase):
     def test_with_status_not_found(self, mock_get):
         mock_get.return_value.status_code = 404
 
-        data = self.base_collector.retrieve_uri('http://olhoneles.org')
-        self.assertEqual(data, False)
+        with self.assertRaises(Exception) as e:
+            data = self.base_collector.retrieve_uri('http://olhoneles.org')
+            self.assertEqual(data, None)
 
     @patch('requests.get')
     def test_with_connection_error(self, mock_get):

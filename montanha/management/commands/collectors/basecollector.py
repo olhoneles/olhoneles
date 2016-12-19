@@ -119,7 +119,7 @@ class BaseCollector(object):
                 else:
                     return r.text
 
-            except requests.ConnectionError:
+            except requests.exceptions.RequestException:
                 retries += 1
                 print "Unable to retrieve %s try(%d) - will try again in %d seconds." % (uri, retries, self.try_again_timer)
 
