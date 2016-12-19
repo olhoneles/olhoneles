@@ -46,7 +46,7 @@ locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
 def generate_colors(n=7, sat=1.0, val=1.0):
     '''Generates an array of n colors from red to violet, considering
     saturation sat and value val'''
-    return ['#%02X%02X%02X' % t for t in [tuple([int(round(c * 255)) for c in t]) for t in [hsv_to_rgb(x/float(n), sat, val) for x in xrange(0, n)]]]
+    return ['#%02X%02X%02X' % t for t in [tuple([int(round(c * 255)) for c in t]) for t in [hsv_to_rgb(x / float(n), sat, val) for x in xrange(0, n)]]]
 
 
 def new_render(request, filter_spec, template, context):

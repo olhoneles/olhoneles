@@ -18,17 +18,20 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import requests
-import subprocess
 from datetime import date, datetime
+from zipfile import ZipFile
+
+import requests
 from django.db import reset_queries
 from email.utils import formatdate as http_date
-from basecollector import BaseCollector
 from lxml.etree import iterparse
-from montanha.models import (ArchivedExpense, Institution, Legislature,
-                             Legislator, AlternativeLegislatorName, Mandate,
-                             ExpenseNature, Supplier, PoliticalParty, CollectionRun)
-from zipfile import ZipFile
+
+from basecollector import BaseCollector
+from montanha.models import (
+    ArchivedExpense, Institution, Legislature, Legislator,
+    AlternativeLegislatorName, ExpenseNature, Supplier, PoliticalParty,
+    CollectionRun
+)
 
 
 OBJECT_LIST_MAXIMUM_COUNTER = 1000
@@ -91,8 +94,7 @@ class CamaraDosDeputados(BaseCollector):
 
             original_id = l.find('ideCadastro')
 
-            mandate = self.mandate_for_legislator(legislator, party,
-                                                  state=state, original_id=original_id)
+            self.mandate_for_legislator(legislator, party, state=state, original_id=original_id)
 
     def update_data(self):
         if os.path.exists('cdep-collection-run'):

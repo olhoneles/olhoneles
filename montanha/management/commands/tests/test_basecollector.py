@@ -40,7 +40,7 @@ class BaseCollectorTestCase(TestCase):
         self.base_collector.try_again_timer = 0.001
 
         date_start = datetime.now()
-        date_end = date_start + timedelta(days=365*4)
+        date_end = date_start + timedelta(days=365 * 4)
         self.legislature = LegislatureFactory.create(
             date_start=date_start, date_end=date_end
         )
@@ -77,7 +77,7 @@ class BaseCollectorRetrieveUriTestCase(BaseCollectorTestCase):
     def test_with_status_not_found(self, mock_get):
         mock_get.return_value.status_code = 404
 
-        with self.assertRaises(Exception) as e:
+        with self.assertRaises(Exception):
             data = self.base_collector.retrieve_uri('http://olhoneles.org')
             self.assertEqual(data, None)
 
@@ -197,7 +197,7 @@ class BaseCollectorMandateForLegislatorTestCase(BaseCollectorTestCase):
         political_party = PoliticalPartyFactory.create()
 
         date_start = datetime.now()
-        date_end = date_start + timedelta(days=365*4)
+        date_end = date_start + timedelta(days=365 * 4)
 
         self.mandate = MandateFactory.create(
             legislature=self.legislature,

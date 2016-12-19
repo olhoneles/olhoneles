@@ -26,7 +26,7 @@ publish:
 	@python setup.py sdist upload
 
 lint:
-	@pycodestyle
+	@flake8
 
 static:
 	@python manage.py collectstatic --noinput

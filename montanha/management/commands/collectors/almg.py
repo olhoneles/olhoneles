@@ -19,7 +19,6 @@
 
 import json
 import re
-import datetime
 from basecollector import BaseCollector
 from datetime import datetime
 from montanha.models import (
@@ -78,7 +77,7 @@ class ALMG(BaseCollector):
                 else:
                     self.debug("Found existing legislator: %s" % unicode(legislator))
 
-                mandate = self.mandate_for_legislator(legislator, party, original_id=entry["id"])
+                self.mandate_for_legislator(legislator, party, original_id=entry["id"])
 
     def update_legislators_data(self):
 

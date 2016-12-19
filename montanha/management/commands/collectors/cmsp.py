@@ -146,7 +146,7 @@ class CMSP(BaseCollector):
 
             party_name = party_name.parent.parent.find('font', size='2')
             party_name = party_name.getText()
-            party_siglum = party_name[party_name.find('(')+1:party_name.find(')')]
+            party_siglum = party_name[party_name.find('(') + 1:party_name.find(')')]
 
             if 'Vereadores Licenciados' not in party_siglum:
                 party_siglum = self._normalize_party_siglum(party_siglum)
@@ -404,7 +404,6 @@ class CMSP(BaseCollector):
                 try:
                     date_start_re = re.search('\^\i([^\^|%]*)(\^|%)', row[7])
                     start_year = int(date_start_re.group(1).split('/')[2])
-                    date_start = datetime(start_year, 1, 1)
                 except IndexError:
                     continue
 

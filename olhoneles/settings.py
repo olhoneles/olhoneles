@@ -230,12 +230,12 @@ DEFAULT_CACHEOPS_REDIS = {
 CACHEOPS_REDIS = conf.get('CACHEOPS_REDIS', DEFAULT_CACHEOPS_REDIS)
 
 DEFAULT_CACHEOPS_DEFAULTS = {
-    'timeout': 60*60
+    'timeout': 60 * 60
 }
 CACHEOPS_DEFAULTS = conf.get('CACHEOPS_DEFAULTS', DEFAULT_CACHEOPS_DEFAULTS)
 
 DEFAULT_CACHEOPS = {
-    'auth.user': {'ops': 'get', 'timeout': 60*15},
+    'auth.user': {'ops': 'get', 'timeout': 60 * 15},
     'auth.*': {'ops': ('fetch', 'get')},
     'auth.permission': {'ops': 'all'},
     'montanha.*': {'ops': 'all'},

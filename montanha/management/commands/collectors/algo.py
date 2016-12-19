@@ -107,7 +107,7 @@ class ALGO(BaseCollector):
             else:
                 self.debug("Found existing legislator: %s" % unicode(legislator))
 
-            mandate = self.mandate_for_legislator(legislator, party, original_id=entry["id"])
+            self.mandate_for_legislator(legislator, party, original_id=entry["id"])
 
     @classmethod
     def parse_title(self, title):

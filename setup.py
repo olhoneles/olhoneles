@@ -9,7 +9,7 @@ tests_require = [
     'nose-focus',
     'coverage',
     'factory_boy',
-    'pycodestyle',
+    'flake8',
     'mock',
 ]
 

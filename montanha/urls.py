@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.conf.urls import url, include
+from django.conf.urls import url
 from django.views.generic.base import RedirectView
 from django.views.generic import TemplateView
 
@@ -33,8 +33,8 @@ urlpatterns = [
     # JSON queries
     url(r'^([^/]+)?/?q/all/?$', query_all, name='query-all'),
     url(r'^([^/]+)?/?q/biggest_suppliers/?$', query_biggest_suppliers, name='query-biggest-suppliers'),
-    url(r'^([^/]+)?/?q/supplier_all/?$',  query_supplier_all, name='query-supplier-all'),
-    url(r'^([^/]+)?/?q/legislator_all/?$',  query_legislator_all, name='query-legislator-all'),
+    url(r'^([^/]+)?/?q/supplier_all/?$', query_supplier_all, name='query-supplier-all'),
+    url(r'^([^/]+)?/?q/legislator_all/?$', query_legislator_all, name='query-legislator-all'),
 
     url(r'^([^/]+)?/?all/?$', show_all, name='show-all'),
 

@@ -16,11 +16,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64
 import threading
 import time
-from basecollector import BaseCollector
 from datetime import datetime, date
+
+from basecollector import BaseCollector
 from montanha.models import (
     Institution, Legislature, ExpenseNature, Legislator, Supplier,
     ArchivedExpense
