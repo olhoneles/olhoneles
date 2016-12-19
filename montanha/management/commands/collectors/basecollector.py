@@ -111,7 +111,7 @@ class BaseCollector(object):
                 if force_encoding:
                     r.encoding = force_encoding
                 if r.status_code == requests.codes.not_found:
-                    return False
+                    raise
                 if post_process:
                     return self.post_process_uri(r.text)
                 elif return_content:
