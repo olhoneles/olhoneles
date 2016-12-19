@@ -36,12 +36,6 @@ def parse_date(string):
     return datetime.strptime(string, '%d/%m/%Y').date()
 
 
-def parse_cmbh_date(date_string):
-    day = '01'
-    month, year = date_string.split('/')
-    return parse_date(day + '/' + month + '/' + year)
-
-
 class CMBH(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
         super(CMBH, self).__init__(collection_runs, debug_enabled)
@@ -60,45 +54,21 @@ class CMBH(BaseCollector):
                                            date_end=datetime(2016, 12, 31))
             self.legislature.save()
 
-    def retrieve_months(self):
-        uri = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/lista_meses.php'
-        data = {'tipo': 'd'}
+    def retrieve_month(self, month, year):
+        uri = 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria'
+        data = {'codVereadorVI': '', 'mes': '{:0>2}'.format(month), 'ano': year}
         headers = {
-            'Referer': 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/index.php',
             'Origin': 'http://www.cmbh.mg.gov.br',
+            'Referer': 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria',
         }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
 
-    def retrieve_legislators(self, month):
-        uri = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_vereadores.php'
-        data = {'mes': month}
+    def retrieve_actual_data(self, code, month, year):
+        uri = 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria'
+        data = {'codVereadorVI': '', 'mes': '{:0>2}'.format(month), 'ano': year, 'vereador': code}
         headers = {
-            'Referer': 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/index.php',
             'Origin': 'http://www.cmbh.mg.gov.br',
-        }
-        return BaseCollector.retrieve_uri(self, uri, data, headers)
-
-    def retrieve_expense_types(self, month, legislator, code):
-        uri = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_tipodespesa.php'
-        data = {'mes': month, 'vereador': legislator, 'cod': code}
-        headers = {
-            'Referer': 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_vereadores.php',
-            'Origin': 'http://www.cmbh.mg.gov.br',
-        }
-        return BaseCollector.retrieve_uri(self, uri, data, headers)
-
-    def retrieve_actual_data(self, code, seq, legislator, nature, month):
-        uri = 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_valordespesa.php'
-        data = {
-            'cod': code,
-            'seq': seq,
-            'vereador': legislator,
-            'tipodespesa': nature,
-            'mes': month
-        }
-        headers = {
-            'Referer': 'http://www.cmbh.mg.gov.br/extras/verba_indenizatoria_nota_fiscal/oracle_lista_tipodespesa.php',
-            'Origin': 'http://www.cmbh.mg.gov.br',
+            'Referer': 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria',
         }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
 
@@ -131,59 +101,32 @@ class CMBH(BaseCollector):
 
         return self.nature_map.get(nature, nature)
 
-    def update_data_for_legislator(self, month, legislator, code):
-        expense_types = self.retrieve_expense_types(month, legislator, code)
+    def update_data_for_legislator(self, code, month, year):
+        data = self.retrieve_actual_data(code, month, year)
+        data = data.find('div', {'class': 'row'})
 
-        if not expense_types:
-            return
+        legislator = data.find('h2').findChildren()[0].next
+        legislator = self._normalize_name(legislator)
+        legislator, created = Legislator.objects.get_or_create(name=legislator)
 
-        # Ignore the last one, which is the total.
-        expense_types = expense_types.find('ul').findAll('a')[:-1]
+        if created:
+            self.debug("New legislator: %s" % unicode(legislator))
+        else:
+            self.debug("Found existing legislator: %s" % unicode(legislator))
 
-        parameters_list = []
-        for etype in expense_types:
-            parts = etype['onclick'].split("'")
-            legislator = parts[1]
-            code = parts[3]
-            nature = parts[5]
-            seq = parts[7]
-            month = parts[9]
+        mandate = self.mandate_for_legislator(legislator, party=None, original_id=code)
 
-            data = self.retrieve_actual_data(code, seq, legislator, nature, month)
-
-            if not data:
-                print 'No data...'
-                continue
-
-            # Get the lines of data, ignoring the first one, which
-            # contains the titles, and the last one, which contains
-            # the total.
-            data = data.find('div', 'texto_valores1').findAll('tr')[1:-1]
-
-            if not data:
-                continue
-
-            legislator = base64.decodestring(legislator).strip().decode('utf-8')
-            date = parse_cmbh_date(base64.decodestring(month).strip().decode('utf-8'))
-
-            nature = base64.decodestring(nature).strip().decode('utf-8')
-            nature = self._normalize_nature(nature)
+        natures = data.findAll('h3')
+        for data in natures:
+            nature = self._normalize_nature(data.text)
             try:
                 nature = ExpenseNature.objects.get(name=nature)
             except ExpenseNature.DoesNotExist:
                 nature = ExpenseNature(name=nature)
                 nature.save()
 
-            legislator, created = Legislator.objects.get_or_create(name=legislator)
-
-            if created:
-                self.debug("New legislator: %s" % unicode(legislator))
-            else:
-                self.debug("Found existing legislator: %s" % unicode(legislator))
-
-            mandate = self.mandate_for_legislator(legislator, party=None, original_id=code)
-
-            for row in data:
+            rows = data.findNext().findAll('tr')[1:-1]
+            for row in rows:
                 columns = row.findAll('td')
 
                 if not len(columns) == 5:
@@ -210,7 +153,7 @@ class CMBH(BaseCollector):
 
                 expense = ArchivedExpense(number=docnumber,
                                           nature=nature,
-                                          date=date,
+                                          date=date(year, month, 1),
                                           expensed=expensed,
                                           mandate=mandate,
                                           supplier=supplier,
@@ -225,23 +168,11 @@ class CMBH(BaseCollector):
             self.update_data_for_year(year)
 
     def update_data_for_year(self, year=datetime.now().year):
-        self.debug("Updating data for year %d" % year)
-        months = self.retrieve_months().findAll('div', 'arquivo_meses')
-
-        date_list = []
-        for month in months:
-            anchor = month.find('a')
-            if not anchor.text.endswith('- %d' % year):
-                continue
-            parts = anchor['onclick'].split("'")
-            date_list.append(parts[1])
-
-        for date in date_list:
-            leg_list = self.retrieve_legislators(date)
-            anchors = leg_list.find('ul').findAll('a')
+        for month in range(1, 13):
+            data = self.retrieve_month(month, year)
+            data = data.find('table')
+            anchors = data.findAll('a')
             for anchor in anchors:
                 parts = anchor['onclick'].split("'")
-                legislator = parts[1]
                 code = parts[3]
-                month = parts[5]
-                self.update_data_for_legislator(month, legislator, code)
+                self.update_data_for_legislator(code, month, year)
