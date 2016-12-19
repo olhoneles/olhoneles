@@ -17,6 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
+import threading
 from basecollector import BaseCollector
 from datetime import datetime, date
 from montanha.models import (
@@ -36,6 +37,9 @@ def parse_date(string):
     return datetime.strptime(string, '%d/%m/%Y').date()
 
 
+NUM_THREADS = 12
+
+
 class CMBH(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
         super(CMBH, self).__init__(collection_runs, debug_enabled)
@@ -53,6 +57,39 @@ class CMBH(BaseCollector):
                                            date_start=datetime(2013, 1, 1),
                                            date_end=datetime(2016, 12, 31))
             self.legislature.save()
+
+        self.download_threads = []
+        for x in range(NUM_THREADS):
+            thread = threading.Thread(target=self._download_thread)
+            thread.daemon = True
+            self.download_threads.append(thread)
+
+        self.download_queue = []
+        self.download_lock = threading.Lock()
+
+        self.processing_queue = []
+        self.processing_condition = threading.Condition()
+
+    def _download_thread(self):
+        while True:
+            args = []
+            with self.download_lock:
+                if not self.download_queue:
+                    break
+                args += self.download_queue.pop(0)
+            assert len(args) == 3
+
+            data = self.retrieve_actual_data(*args)
+
+            with self.processing_condition:
+                self.processing_queue.append([data] + args)
+                self.processing_condition.notify()
+
+    def _is_done_downloading(self):
+        for thread in self.download_threads:
+            if thread.is_alive():
+                return False
+        return True
 
     def retrieve_month(self, month, year):
         uri = 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria'
@@ -101,8 +138,10 @@ class CMBH(BaseCollector):
 
         return self.nature_map.get(nature, nature)
 
-    def update_data_for_legislator(self, code, month, year):
-        data = self.retrieve_actual_data(code, month, year)
+    def download_data(self, code, month, year):
+        self.download_queue.append([code, month, year])
+
+    def update_data_for_legislator(self, data, code, month, year):
         data = data.find('div', {'class': 'row'})
 
         legislator = data.find('h2').findChildren()[0].next
@@ -167,6 +206,32 @@ class CMBH(BaseCollector):
         for year in range(self.legislature.date_start.year, datetime.now().year + 1):
             self.update_data_for_year(year)
 
+        for thread in self.download_threads:
+            thread.start()
+
+        while True:
+            args = []
+
+            done_downloading = self._is_done_downloading()
+            with self.processing_condition:
+                self.debug("Left to process: %d Done downloading?: %d" % (len(self.processing_queue), done_downloading))
+                if not self.processing_queue:
+                    if done_downloading:
+                        break
+                    self.processing_condition.wait(0.1)
+                    continue
+                args += self.processing_queue.pop(0)
+
+            if not args:
+                continue
+
+            assert len(args) == 4
+            self.update_data_for_legislator(*args)
+
+        for thread in self.download_threads:
+            thread.join()
+        self.download_threads = []
+
     def update_data_for_year(self, year=datetime.now().year):
         for month in range(1, 13):
             data = self.retrieve_month(month, year)
@@ -175,4 +240,4 @@ class CMBH(BaseCollector):
             for anchor in anchors:
                 parts = anchor['onclick'].split("'")
                 code = parts[3]
-                self.update_data_for_legislator(code, month, year)
+                self.download_data(code, month, year)
