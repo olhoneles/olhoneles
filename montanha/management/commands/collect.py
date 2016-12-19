@@ -105,12 +105,14 @@ class Command(BaseCommand):
             Expense.objects.filter(mandate__legislature=legislature).delete()
 
             columns = "number, nature_id, date, value, expensed, mandate_id, supplier_id"
-
-            cursor = connection.cursor()
-            cursor.execute("insert into montanha_expense (%s) select %s from montanha_archivedexpense where collection_run_id=%d" % (columns, columns, run.id))
-            cursor.close()
-
-            transaction.commit_unless_managed()
+            with transaction.atomic():
+                cursor = connection.cursor()
+                cursor.execute(
+                    "insert into montanha_expense (%s) select %s from montanha_archivedexpense where collection_run_id=%d" % (
+                        columns, columns, run.id
+                    )
+                )
+                cursor.close()
 
             run.committed = True
             run.save()
