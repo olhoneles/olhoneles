@@ -18,6 +18,7 @@
 
 import base64
 import threading
+import time
 from basecollector import BaseCollector
 from datetime import datetime, date
 from montanha.models import (
@@ -37,7 +38,8 @@ def parse_date(string):
     return datetime.strptime(string, '%d/%m/%Y').date()
 
 
-NUM_THREADS = 12
+NUM_THREADS = 6
+MAX_PENDING = 100
 
 
 class CMBH(BaseCollector):
@@ -71,12 +73,20 @@ class CMBH(BaseCollector):
         self.processing_condition = threading.Condition()
 
     def _download_thread(self):
+        throttle = False
         while True:
             args = []
+
+            if throttle:
+                throttle = False
+                time.sleep(15)
+
             with self.download_lock:
                 if not self.download_queue:
                     break
+
                 args += self.download_queue.pop(0)
+
             assert len(args) == 3
 
             data = self.retrieve_actual_data(*args)
@@ -84,6 +94,9 @@ class CMBH(BaseCollector):
             with self.processing_condition:
                 self.processing_queue.append([data] + args)
                 self.processing_condition.notify()
+
+                if len(self.processing_queue) > MAX_PENDING:
+                    throttle = True
 
     def _is_done_downloading(self):
         for thread in self.download_threads:
