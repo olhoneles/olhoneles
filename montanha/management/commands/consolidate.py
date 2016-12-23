@@ -27,11 +27,8 @@ from django.core.management.base import BaseCommand
 from django.db.models import Sum
 
 from montanha.models import (
-    Institution, Expense, ExpenseNature, Legislator, Supplier
-)
-from montanha.models import (
-    PerNature, PerNatureByYear, PerNatureByMonth, PerLegislator,
-    BiggestSupplierForYear
+    Institution, Expense, ExpenseNature, Legislator, Supplier, PerNature,
+    PerNatureByYear, PerNatureByMonth, PerLegislator, BiggestSupplierForYear
 )
 from montanha.util import (
     filter_for_institution, get_date_ranges_from_data, ensure_years_in_range
