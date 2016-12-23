@@ -44,7 +44,7 @@ class Command(BaseCommand):
     help = "Collects data for a number of sources"
 
     def add_arguments(self, parser):
-        parser.add_argument('house', type=str, nargs='+')
+        parser.add_argument('house', type=str, nargs='*', default='')
         parser.add_argument(
             '--agnostic',
             action='store_true',
