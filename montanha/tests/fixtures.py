@@ -22,8 +22,9 @@ from random import randint
 import factory
 
 from montanha.models import (
-    Institution, Legislature, ArchivedExpense, CollectionRun,
-    ExpenseNature, Mandate, Supplier, PoliticalParty, Legislator
+    Institution, Legislature, ArchivedExpense, CollectionRun, Expense,
+    ExpenseNature, Mandate, Supplier, PoliticalParty, Legislator, PerNature,
+    PerNatureByYear, PerNatureByMonth, PerLegislator, BiggestSupplierForYear
 )
 
 
@@ -100,6 +101,73 @@ class ArchivedExpenseFactory(factory.django.DjangoModelFactory):
         model = ArchivedExpense
 
     collection_run = factory.SubFactory(CollectionRunFactory)
+    original_id = factory.Sequence(lambda t: 'id-{0}'.format(t))
+    number = factory.Sequence(lambda t: 'number-{0}'.format(t))
+    date = factory.LazyFunction(datetime.now().date)
+    nature = factory.SubFactory(ExpenseNatureFactory)
+    mandate = factory.SubFactory(MandateFactory)
+    supplier = factory.SubFactory(SupplierFactory)
+    value = factory.LazyAttribute(lambda o: Decimal(randint(5, 100)))
+    expensed = factory.LazyAttribute(lambda o: Decimal(randint(5, 100)))
+
+
+class PerNatureFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PerNature
+
+    institution = factory.SubFactory(InstitutionFactory)
+    legislature = factory.SubFactory(LegislatureFactory)
+    date_start = factory.LazyFunction(datetime.now().date)
+    date_end = factory.LazyFunction(datetime.now().date)
+    nature = factory.SubFactory(ExpenseNatureFactory)
+    expensed = factory.LazyAttribute(lambda o: Decimal(randint(5, 100)))
+
+
+class PerNatureByYearFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PerNatureByYear
+
+    institution = factory.SubFactory(InstitutionFactory)
+    nature = factory.SubFactory(ExpenseNatureFactory)
+    expensed = factory.LazyAttribute(lambda o: Decimal(randint(5, 100)))
+    year = factory.LazyAttribute(lambda o: datetime.now().year)
+
+
+class PerNatureByMonthFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PerNatureByMonth
+
+    institution = factory.SubFactory(InstitutionFactory)
+    date = factory.LazyFunction(datetime.now().date)
+    nature = factory.SubFactory(ExpenseNatureFactory)
+    expensed = factory.LazyAttribute(lambda o: Decimal(randint(5, 100)))
+
+
+class PerLegislatorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PerLegislator
+
+    institution = factory.SubFactory(InstitutionFactory)
+    legislature = factory.SubFactory(LegislatureFactory)
+    legislator = factory.SubFactory(LegislatorFactory)
+    date_start = factory.LazyFunction(datetime.now().date)
+    date_end = factory.LazyFunction(datetime.now().date)
+    expensed = factory.LazyAttribute(lambda o: Decimal(randint(5, 100)))
+
+
+class BiggestSupplierForYearFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BiggestSupplierForYear
+
+    supplier = factory.SubFactory(SupplierFactory)
+    year = factory.LazyAttribute(lambda o: datetime.now().year)
+    expensed = factory.LazyAttribute(lambda o: Decimal(randint(5, 100)))
+
+
+class ExpenseFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Expense
+
     original_id = factory.Sequence(lambda t: 'id-{0}'.format(t))
     number = factory.Sequence(lambda t: 'number-{0}'.format(t))
     date = factory.LazyFunction(datetime.now().date)
