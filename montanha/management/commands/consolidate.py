@@ -43,7 +43,6 @@ sys.stderr = codecs.getwriter("utf-8")(sys.stderr)
 
 class Command(BaseCommand):
     help = "Collects data for a number of sources"
-    institutions = []
 
     def add_arguments(self, parser):
         parser.add_argument('house', type=str, nargs='*', default='')
@@ -55,28 +54,14 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if 'almg' in options.get('house'):
-            self.institutions.append(Institution.objects.get(siglum='ALMG'))
-
-        if 'algo' in options.get('house'):
-            self.institutions.append(Institution.objects.get(siglum='ALGO'))
-
-        if 'senado' in options.get('house'):
-            self.institutions.append(Institution.objects.get(siglum='Senado'))
-
-        if 'cmbh' in options.get('house'):
-            self.institutions.append(Institution.objects.get(siglum='CMBH'))
-
-        if 'cmsp' in options.get('house'):
-            self.institutions.append(Institution.objects.get(siglum='CMSP'))
-
-        if 'cdep' in options.get('house'):
-            self.institutions.append(Institution.objects.get(siglum='CDEP'))
-
-        for institution in self.institutions:
-            print u'Consolidating data for %s' % (institution.name)
-            self.per_nature(institution)
-            self.per_legislator(institution)
+        for house in options.get('house'):
+            try:
+                institution = Institution.objects.get(siglum__iexact=house)
+                print u'Consolidating data for %s' % (institution.name)
+                self.per_nature(institution)
+                self.per_legislator(institution)
+            except Institution.DoesNotExist:
+                print u'Institution %s does not exist' % house
 
         if options.get('agnostic'):
             self.agnostic()
