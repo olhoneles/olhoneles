@@ -71,7 +71,7 @@ class Command(BaseCommand):
             self.institutions.append(Institution.objects.get(siglum='CMSP'))
 
         if 'cdep' in options.get('house'):
-            self.institutions.append(Institution.objects.get(siglum='CDF'))
+            self.institutions.append(Institution.objects.get(siglum='CDEP'))
 
         for institution in self.institutions:
             print u'Consolidating data for %s' % (institution.name)

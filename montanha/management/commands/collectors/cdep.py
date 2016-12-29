@@ -41,7 +41,7 @@ class CamaraDosDeputados(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
         super(CamaraDosDeputados, self).__init__(collection_runs, debug_enabled)
 
-        institution, _ = Institution.objects.get_or_create(siglum='CDF', name=u'Câmara dos Deputados Federais')
+        institution, _ = Institution.objects.get_or_create(siglum='CDDEP', name=u'Câmara dos Deputados Federais')
         self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
                                                                 date_start=datetime(2015, 1, 1),
                                                                 date_end=datetime(2018, 12, 31))
