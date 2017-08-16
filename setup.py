@@ -5,12 +5,12 @@ from setuptools import setup, find_packages
 from olhoneles import __version__
 
 tests_require = [
-    'nose',
-    'nose-focus',
     'coverage',
     'factory_boy',
     'flake8',
     'mock',
+    'nose',
+    'nose-focus',
 ]
 
 setup(
@@ -40,24 +40,24 @@ legislators
     include_package_data=True,
     install_requires=[
         'BeautifulSoup>=3.2.1,<3.3.0',
-        'Django>=1.10.1,<1.11.0',
-        'Pillow>=3.4.2,<3.5.0',
-        'django-parsley>=0.4,<0.5.0',
-        'django-bootstrap-toolkit==2.14',
-        'easy-thumbnails>=2.3,<2.4',
-        'requests>=2.6.0,<2.7.0',
         'chardet>=2.2.1,<2.3.0',
-        'pandas>=0.13.1,<0.14.0',
         'derpconf>=0.8.0,<0.9.0',
-        'django-recaptcha>=1.0.5,<1.1.0',
-        'raven>=5.31.0,<=5.32.0',
-        'django-localflavor>=1.3,<1.4.0',
+        'django-bootstrap-toolkit==2.14',
         'django-cacheops>=3.1.1,<3.2.0',
-        'python-dateutil>=2.6.0,<2.7.0',
-        'django-tastypie>=0.13.3,<0.14.0',
-        'django-tastypie-swagger==0.1.4-django1.10',
+        'django-localflavor>=1.3,<1.4.0',
         'django-nose>=1.4.4,<1.5.0',
+        'django-parsley>=0.4,<0.5.0',
+        'django-recaptcha>=1.0.5,<1.1.0',
+        'django-tastypie-swagger==0.1.4-django1.10',
+        'django-tastypie>=0.13.3,<0.14.0',
+        'Django>=1.10.1,<1.11.0',
+        'easy-thumbnails>=2.3,<2.4',
         'lxml>=3.7.0,<3.8',
+        'pandas>=0.13.1,<0.14.0',
+        'Pillow>=3.4.2,<3.5.0',
+        'python-dateutil>=2.6.0,<2.7.0',
+        'raven>=5.31.0,<=5.32.0',
+        'requests>=2.6.0,<2.7.0',
     ],
     dependency_links=[
         'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14',
