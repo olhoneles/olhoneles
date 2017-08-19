@@ -31,6 +31,10 @@ class ALMG(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
         super(ALMG, self).__init__(collection_runs, debug_enabled)
 
+        self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36'
+        self.headers = {'user-agent': self.user_agent}
+        self.almg_url = 'http://dadosabertos.almg.gov.br/ws'
+
         try:
             institution = Institution.objects.get(siglum='ALMG')
         except Institution.DoesNotExist:
@@ -58,7 +62,8 @@ class ALMG(BaseCollector):
 
     def update_legislators(self):
         for situation in ['em_exercicio', 'que_exerceram_mandato']:
-            legislators = self.retrieve_uri("http://dadosabertos.almg.gov.br/ws/deputados/%s?formato=json" % situation, force_encoding='utf-8')["list"]
+            uri = "%s/deputados/%s?formato=json" % (self.almg_url, situation)
+            legislators = self.retrieve_uri(uri, force_encoding='utf-8', headers=self.headers)["list"]
             for entry in legislators:
                 try:
                     party = PoliticalParty.objects.get(siglum=entry["partido"])
@@ -84,8 +89,8 @@ class ALMG(BaseCollector):
         mandates = self.legislature.mandate_set.all()
         for mandate in mandates:
             original_id = mandate.original_id
-            uri = "http://dadosabertos.almg.gov.br/ws/deputados/%s?formato=json" % original_id
-            entry = self.retrieve_uri(uri)["deputado"]
+            uri = "%s/deputados/%s?formato=json" % (self.almg_url, original_id)
+            entry = self.retrieve_uri(uri, headers=self.headers)["deputado"]
 
             self.debug("Legislator %s" % unicode(mandate.legislator))
 
@@ -116,8 +121,10 @@ class ALMG(BaseCollector):
 
     def update_data_for_month(self, mandate, year, month):
         self.debug("Updating data for %d-%d - %s" % (year, month, unicode(mandate)))
-        uri = "http://dadosabertos.almg.gov.br/ws/prestacao_contas/verbas_indenizatorias/deputados/%s/%d/%d?formato=json" % (mandate.original_id, year, month)
-        for entry in self.retrieve_uri(uri)["list"]:
+        uri = "%s/prestacao_contas/verbas_indenizatorias/deputados/%s/%d/%d?formato=json" % (self.almg_url,
+                                                                                             mandate.original_id,
+                                                                                             year, month)
+        for entry in self.retrieve_uri(uri, headers=self.headers)["list"]:
             try:
                 nature = ExpenseNature.objects.get(original_id=entry["codTipoDespesa"])
             except ExpenseNature.DoesNotExist:
