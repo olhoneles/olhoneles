@@ -56,7 +56,7 @@ legislators
         'pandas>=0.13.1,<0.14.0',
         'Pillow>=3.4.2,<3.5.0',
         'python-dateutil>=2.6.0,<2.7.0',
-        'raven>=5.31.0,<=5.32.0',
+        'raven>=6.1.0,<6.2.0',
         'requests>=2.6.0,<2.7.0',
     ],
     dependency_links=[
