@@ -60,8 +60,8 @@ legislators
         'requests>=2.6.0,<2.7.0',
     ],
     dependency_links=[
-        'https://github.com/gnoronha/django-bootstrap-toolkit/archive/0f0ff43eeab8e19ee8d8021460f1a4abf8303bde.zip#egg=django-bootstrap-toolkit-2.14',
-        'https://github.com/olhoneles/django-tastypie-swagger/archive/fix-compatibility-django-1.10.zip#egg=django-tastypie-swagger-0.1.4-django1.10',
+        'git+https://git@github.com/kov/django-bootstrap-toolkit.git@0f0ff43eeab8e19ee8d8021460f1a4abf8303bde#egg=django-bootstrap-toolkit-2.14',
+        'git+https://git@github.com/olhoneles/django-tastypie-swagger.git@fix-compatibility-django-1.10#egg=django-tastypie-swagger-0.1.4-django1.10',
     ],
     extras_require={
         'tests': tests_require,
