@@ -70,15 +70,14 @@ class CMSP(BaseCollector):
         return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
 
     def retrieve_legislators(self):
-        uri = 'http://www1.camara.sp.gov.br/vereadores_joomla.asp'
-        return BaseCollector.retrieve_uri(self, uri)
-
-    def retrieve_legislator(self, link):
-        uri = 'http://www1.camara.sp.gov.br/%s' % link
+        uri = 'http://www.camara.sp.gov.br/vereadores/'
         return BaseCollector.retrieve_uri(self, uri)
 
     def add_legislator(self, name):
-        legislator, created = Legislator.objects.get_or_create(name=name)
+        try:
+            legislator, created = Legislator.objects.get_or_create(name__iexact=name)
+        except:
+            return None
 
         if created:
             self.debug(u'New legislator found: %s' % legislator)
@@ -94,33 +93,32 @@ class CMSP(BaseCollector):
 
         links = legislators.findAll(
             'a',
-            href=re.compile('^vereador_joomla2.asp\?vereador='))
+            href=re.compile('^http://www.camara.sp.gov.br/vereador/'))
 
         for link in links:
             href = link.get('href')
-            html_legislator = self.retrieve_legislator(href)
+            html_legislator = BaseCollector.retrieve_uri(self, href)
             if not html_legislator:
                 continue
 
-            url, code = href.split('=', 1)
-            name = html_legislator.find(id='nome_vereador').getText()
+            name = html_legislator.find('h2', {'class': 'wrap icon-connected-large-red'}).getText()
+
+            if not name:
+                continue
 
             legislator = self.add_legislator(name)
 
-            legislator_img = html_legislator.find(
-                'img',
-                src=re.compile('imgs/fotos/'))
+            legislator_img = html_legislator \
+                .find('h1', {'class': 'vereador-picture'}) \
+                .find('img', src=re.compile('http://www.camara.sp.gov.br/wp-content/uploads'))
 
             if legislator_img:
-                legislator_img_src = legislator_img.get('src')
-
-                legislator_img_url = 'http://www1.camara.sp.gov.br/%s' % (
-                    legislator_img_src)
+                legislator_img_url = legislator_img.get('src')
 
                 result = urllib.urlretrieve(legislator_img_url)
 
                 legislator.picture.save(
-                    os.path.basename(legislator_img_url), File(open(result[0])))
+                    os.path.basename(legislator_img_url.rsplit('/', 1)[-1]), File(open(result[0])))
 
                 legislator.save()
 
@@ -140,13 +138,17 @@ class CMSP(BaseCollector):
                 mandate.save()
                 self.debug(u'New Mandate found: %s' % mandate)
 
-            party_name = html_legislator.find(
-                'img',
-                src=re.compile('imgs/Partidos'))
+            # party_name = html_legislator.find(
+            #     'img',
+            #     src=re.compile('imgs/Partidos'))
 
-            party_name = party_name.parent.parent.find('font', size='2')
-            party_name = party_name.getText()
-            party_siglum = party_name[party_name.find('(') + 1:party_name.find(')')]
+            # party_name = party_name.parent.parent.find('font', size='2')
+            # party_name = party_name.getText()
+            # party_siglum = party_name[party_name.find('(') + 1:party_name.find(')')]
+
+            party_siglum = html_legislator \
+                .find('h3', {'class': 'vereador-party'}) \
+                .find('img').get('title')
 
             if 'Vereadores Licenciados' not in party_siglum:
                 party_siglum = self._normalize_party_siglum(party_siglum)
@@ -201,7 +203,7 @@ class CMSP(BaseCollector):
             nature_text = nature_text.capitalize()
 
             nature, nature_created = ExpenseNature.objects.get_or_create(
-                name=nature_text)
+                name__iexact=nature_text)
 
             if nature_created:
                 self.debug(u'New ExpenseNature found: %s' % nature)
@@ -371,7 +373,7 @@ class CMSP(BaseCollector):
 
     def process_all_legislators(self):
         import urllib2
-        uri = 'http://www2.camara.sp.gov.br/Dados_abertos/vereador/vereador.txt'
+        uri = 'http://static.camara.sp.gov.br/dados_abertos/vereador/vereador.txt'
 
         contents = urllib2.urlopen(uri)
 
@@ -392,8 +394,11 @@ class CMSP(BaseCollector):
 
                 if nickname:
                     legislator = self.add_legislator(nickname)
-                else:
+                elif name:
                     legislator = self.add_legislator(name)
+                else:
+                    self.debug(u'Legislator not found: "%s" or "%s"' % (nickname, name))
+                    continue
 
                 aa = re.search('\^\p([^\^|%]*)(\^|%)', row[7])
                 if aa:
@@ -405,6 +410,9 @@ class CMSP(BaseCollector):
                     date_start_re = re.search('\^\i([^\^|%]*)(\^|%)', row[7])
                     start_year = int(date_start_re.group(1).split('/')[2])
                 except IndexError:
+                    continue
+                except AttributeError:
+                    self.debug(u'Not found start year: %s' % row)
                     continue
 
                 legislature = self.get_legislature(start_year)
@@ -428,6 +436,6 @@ class CMSP(BaseCollector):
                     self.debug('Updating legislator party: %s' % party)
 
     def update_data(self):
-        self.process_all_legislators()
+        # self.process_all_legislators()
         self.process_current_legislators()
-        self.process_all_expenses()
+        # self.process_all_expenses()
