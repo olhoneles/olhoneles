@@ -72,9 +72,7 @@ class Command(BaseCommand):
         if 'senado' in options.get('house'):
             from collectors.senado import Senado
             senado = Senado(self.collection_runs, debug_enabled)
-            senado.update_legislators()
             senado.update_data()
-            senado.update_legislators_extra_data()
             houses_to_consolidate.append("senado")
 
         if 'cmbh' in options.get('house'):

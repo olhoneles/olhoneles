@@ -53,11 +53,11 @@ legislators
         'Django>=1.10.1,<1.11.0',
         'easy-thumbnails>=2.3,<2.4',
         'lxml>=3.7.0,<3.8',
-        'pandas>=0.13.1,<0.14.0',
         'Pillow>=3.4.2,<3.5.0',
         'python-dateutil>=2.6.0,<2.7.0',
         'raven>=6.2.1,<6.3.0',
         'requests>=2.6.0,<2.7.0',
+        'rows>=0.3.1,<0.4.0',
     ],
     dependency_links=[
         'git+https://git@github.com/kov/django-bootstrap-toolkit.git@0f0ff43eeab8e19ee8d8021460f1a4abf8303bde#egg=django-bootstrap-toolkit-2.14',

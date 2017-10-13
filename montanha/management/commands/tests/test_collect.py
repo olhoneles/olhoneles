@@ -93,9 +93,7 @@ class CollectCommandsTestCase(TestCase):
 
         call_command('collect', 'senado')
 
-        self.assertIn(call().update_legislators(), mock_institution.mock_calls)
         self.assertIn(call().update_data(), mock_institution.mock_calls)
-        self.assertIn(call().update_legislators_extra_data(), mock_institution.mock_calls)
         self.assertEqual(
             mock_call_command.mock_calls, [call('consolidate', 'senado')]
         )

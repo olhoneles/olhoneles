@@ -53,7 +53,7 @@ class BaseCollector(object):
             mandate = Mandate.objects.get(legislator=legislator, date_start=self.legislature.date_start)
         except Mandate.DoesNotExist:
             mandate = Mandate(legislator=legislator, date_start=self.legislature.date_start, party=party,
-                              legislature=self.legislature)
+                              legislature=self.legislature, state=state)
             mandate.save()
             self.debug("Mandate starting on %s did not exist, created." % self.legislature.date_start.strftime("%F"))
 

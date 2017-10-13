@@ -3,6 +3,7 @@
 # Copyright (©) 2010-2013 Estêvão Samuel Procópio
 # Copyright (©) 2010-2013 Gustavo Noronha Silva
 # Copyright (©) 2014 Lúcio Flávio Corrêa
+# Copyright (©) 2017, Marcelo Jorge Vieira
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -17,221 +18,258 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-import pandas as pd
 from datetime import datetime
-from StringIO import StringIO
+from io import BytesIO
+
+import rows
 from django.db import reset_queries
+
 from basecollector import BaseCollector
-from montanha.models import (ArchivedExpense, Institution, Legislature,
-                             Legislator, Mandate, ExpenseNature, Supplier, PoliticalParty)
+from montanha.models import (
+    ArchivedExpense, Institution, Legislature,
+    Legislator, Mandate, ExpenseNature, Supplier, PoliticalParty
+)
+
 
 OBJECT_LIST_MAXIMUM_COUNTER = 1000
+
+
+extract_text = rows.plugins.html.extract_text
+extract_links = rows.plugins.html.extract_links
 
 
 class Senado(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
         super(Senado, self).__init__(collection_runs, debug_enabled)
 
-        institution, _ = Institution.objects.get_or_create(siglum='Senado', name=u'Senado Federal')
-        self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
-                                                                date_start=datetime(2015, 1, 1),
-                                                                date_end=datetime(2018, 12, 31))
+        self.institution, _ = Institution.objects.get_or_create(
+            siglum='Senado', name=u'Senado Federal'
+        )
+        self.legislature = None
+        transparencia_url = 'http://www25.senado.leg.br/web/transparencia/sen'
+        self.legislature_data = [
+            {
+                'start': 2007,
+                'end': 2010,
+                'legislators': '{0}/outras-legislaturas/-/a/53/por-nome'.format(transparencia_url),
+            },
+            {
+                'start': 2011,
+                'end': 2014,
+                'legislators': '{0}/outras-legislaturas/-/a/54/por-nome'.format(transparencia_url),
+            },
+            {
+                'start': 2015,
+                'end': 2018,
+                'legislators': '{0}/em-exercicio/-/e/por-nome'.format(transparencia_url),
+                'away_legislators': '{0}/fora-do-exercicio/-/f/por-nome'.format(transparencia_url),
+            },
+        ]
 
-    def retrieve_legislators(self):
-        uri = 'http://www25.senado.leg.br/web/transparencia/sen/'
-        return BaseCollector.retrieve_uri(self, uri, force_encoding='utf-8')
+    def get_legislature(self, data):
+        legislature, created = Legislature.objects.get_or_create(
+            institution=self.institution,
+            date_start=datetime(data.get('start'), 1, 1),
+            date_end=datetime(data.get('end'), 12, 31))
+
+        if created:
+            self.debug(u'New Legislature found: {0}'.format(legislature))
+        else:
+            self.debug(u'Found existing legislature: {0}'.format(legislature))
+
+        return legislature
+
+    def retrieve_legislators(self, url):
+        html = BaseCollector.retrieve_uri(self, url, post_process=False, force_encoding='utf-8')
+        return rows.import_from_html(BytesIO(html.encode('utf-8')), preserve_html=True)
 
     def retrieve_data_for_year(self, year):
-        uri = 'http://www.senado.gov.br/transparencia/LAI/verba/%d.csv' % year
+        uri = 'http://www.senado.gov.br/transparencia/LAI/verba/{0}.csv'.format(year)
+        self.debug(u'Downloading {0}'.format(uri))
 
-        self.debug("Downloading %s" % uri)
-
-        return BaseCollector.retrieve_uri(self, uri, force_encoding='windows-1252', post_process=False)
+        return BaseCollector.retrieve_uri(
+            self, uri, force_encoding='windows-1252', post_process=False
+        )
 
     def try_name_disambiguation(self, name):
         if name.title() == 'Luiz Henrique':
-            return Legislator.objects.get(id=246), False
-
+            mandates = Mandate.objects.filter(
+                legislator__name=name.title(),
+                legislature__date_start=self.legislature.date_start,
+                legislature__institution=self.institution,
+            )
+            if mandates:
+                return mandates[0].legislator, False
         return None, False
 
-    def update_legislators(self):
-        page = self.retrieve_legislators()
+    def _get_or_create_legislator(self, name):
+        legislator, created = self.try_name_disambiguation(name)
+        if not legislator:
+            legislator, created = Legislator.objects.get_or_create(name=name)
+        if created:
+            self.debug(u'New legislator: {0}'.format(legislator))
+        else:
+            self.debug(u'Found existing legislator: {0}'.format(legislator))
+        return legislator
 
-        # We ignore the first one because it is a placeholder.
-        options = page(attrs={'name': 'frmConsulta1'})[0].findAll('option')[1:]
+    def _update_legislators(self, legislators):
+        for data in legislators:
+            # Legislator
+            name = extract_text(data.nome).replace('*', '').strip()
+            legislator = self._get_or_create_legislator(name)
+            email = None
+            if hasattr(data, 'correio_eletronico'):
+                email = data.correio_eletronico
+                legislator.email = email
+            site = extract_links(data.nome)[0]
+            if site:
+                legislator.site = site
+            if site or email:
+                legislator.save()
+            self.debug(u'Updated legislator data: {0}'.format(legislator))
 
-        # Turn the soup objects into a list of dictionaries
-        legislators = []
-        for item in options:
-            name = ' '.join([x.title() for x in item.getText().split()])
-            original_id = int(item.get('value'))
-            legislators.append(dict(name=name, original_id=original_id))
+            # Mandate
+            original_id = site.split('/')[-1]
+            party, _ = PoliticalParty.objects.get_or_create(siglum=data.partido)
+            mandate = self.mandate_for_legislator(
+                legislator, party, data.uf, original_id
+            )
+            mandate.state = data.uf
+            mandate.save()
+            self.debug(u'Updated mandate data: {0}'.format(mandate))
 
-        # Add legislators that do not exist yet
-        for l in legislators:
-            mandate = Mandate.objects.filter(legislature=self.legislature).filter(original_id=l['original_id'])
-            if mandate.count():
-                assert(mandate.count() == 1)
-                mandate = mandate[0]
-                legislator = mandate.legislator
-                self.debug("Found existing legislator: %s" % unicode(legislator))
-            else:
-                legislator, created = self.try_name_disambiguation(l['name'])
-                if not legislator:
-                    legislator, created = Legislator.objects.get_or_create(name=l['name'])
-
-                if created:
-                    self.debug("New legislator: %s" % unicode(legislator))
-                else:
-                    self.debug("Found existing legislator: %s" % unicode(legislator))
-
-                mandate = self.mandate_for_legislator(legislator, party=None, original_id=l['original_id'])
+    def update_legislators(self, data):
+        legislators = self.retrieve_legislators(data.get('legislators'))
+        self._update_legislators(legislators)
+        if data.get('away_legislators'):
+            away_legislators = self.retrieve_legislators(data.get('away_legislators'))
+            self._update_legislators(away_legislators)
 
     def update_data(self):
-        self.collection_run = self.create_collection_run(self.legislature)
-        for year in range(self.legislature.date_start.year, datetime.now().year + 1):
-            self.update_data_for_year(year)
+        for data in self.legislature_data:
+            self.legislature = self.get_legislature(data)
+            self.update_legislators(data)
+            self.collection_run = self.create_collection_run(self.legislature)
+            for year in range(self.legislature.date_start.year, self.legislature.date_end.year + 1):
+                self.update_data_for_year(year)
 
-    def update_data_for_year(self, year=datetime.now().year):
-        self.debug("Updating data for year %d" % year)
+    def update_data_for_year(self, year):
+        self.debug(u'Updating data for year {0}'.format(year))
 
-        csv_data = self.retrieve_data_for_year(year).replace('\r\n', '\n')
+        try:
+            csv_data = self.retrieve_data_for_year(year).replace('\r\n', '\n')
+        except:
+            print u'Not found data for year {0}'.format(year)
+            return
 
-        # FIXME: data containing quote-like characters (like ¨) break pandas parsing as well
-        csv_data = csv_data.replace(u'¨', '')
+        # Skip first line
+        head, tail = csv_data.split('\n', 1)
+        self.debug(u'Reading file...')
+        data = rows.import_from_csv(BytesIO(tail.encode('utf-8')))
 
-        csv_data = re.sub(r'([^;\n])""+([^;\n])', r'\1"\2', csv_data)
-        csv_data = re.sub(r'([^;\n])"([^;\n])', r'\1\2', csv_data)
-        data = StringIO(csv_data)
+        if not data:
+            self.debug(u'Error downloading file for year {0}'.format(year))
+            return
 
-        if data:
-            df = pd.read_csv(data, skiprows=1, delimiter=";",
-                             parse_dates=[7], decimal=',',
-                             error_bad_lines=False,
-                             encoding='utf-8').dropna(how='all')
+        expected_header = [
+            u'ano',
+            u'mes',
+            u'senador',
+            u'tipo_despesa',
+            u'cnpj_cpf',
+            u'fornecedor',
+            u'documento',
+            u'data',
+            u'detalhamento',
+            u'valor_reembolsado',
+        ]
 
-            expected_header = [u'ANO',
-                               u'MES',
-                               u'SENADOR',
-                               u'TIPO_DESPESA',
-                               u'CNPJ_CPF',
-                               u'FORNECEDOR',
-                               u'DOCUMENTO',
-                               u'DATA',
-                               u'DETALHAMENTO',
-                               u'VALOR_REEMBOLSADO']
+        actual_header = data.fields.keys()
 
-            actual_header = df.columns.values.tolist()
+        if actual_header != expected_header:
+            # FIXME
+            print u'Bad CSV: expected header {0}, got {1}'.format(
+                expected_header, actual_header
+            )
+            return
 
-            if actual_header != expected_header:
-                print u'Bad CSV: expected header %s, got %s' % (expected_header, actual_header)
-                return
+        archived_expense_list = []
+        objects_counter = 0
+        archived_expense_list_counter = len(data)
 
-            archived_expense_list = []
-            objects_counter = 0
-            archived_expense_list_counter = len(df.index)
+        legislators = {}
+        mandates = {}
+        natures = {}
 
-            for idx, row in df.iterrows():
-                name = row["SENADOR"]
-                nature = row["TIPO_DESPESA"]
-                cpf_cnpj = self.normalize_cnpj_or_cpf(row["CNPJ_CPF"])
-                supplier_name = row["FORNECEDOR"]
-                docnumber = row["DOCUMENTO"]
-                expense_date = row["DATA"]
-                expensed = row['VALOR_REEMBOLSADO']
-
-                # FIXME: WTF?
-                if isinstance(expensed, unicode):
-                    expensed = float(expensed.replace(',', '.').replace('\r\n', ''))
-
-                nature, _ = ExpenseNature.objects.get_or_create(name=nature)
-
-                try:
-                    supplier = Supplier.objects.get(identifier=cpf_cnpj)
-                except Supplier.DoesNotExist:
-                    supplier = Supplier(identifier=cpf_cnpj, name=supplier_name)
-                    supplier.save()
-
-                legislator, _ = self.try_name_disambiguation(name)
-                if not legislator:
-                    legislator = Legislator.objects.get(name__iexact=name)
-                mandate = self.mandate_for_legislator(legislator, None)
-                expense = ArchivedExpense(number=docnumber,
-                                          nature=nature,
-                                          date=expense_date,
-                                          expensed=expensed,
-                                          mandate=mandate,
-                                          supplier=supplier,
-                                          collection_run=self.collection_run)
-                archived_expense_list.append(expense)
-                self.debug("New expense found: %s" % unicode(expense))
-
-                objects_counter += 1
-                archived_expense_list_counter -= 1
-
-                # We create a list with up to OBJECT_LIST_MAXIMUM_COUNTER.
-                # If that lists is equal to the maximum object count allowed
-                # or if there are no more objects in archived_expense_list,
-                # we bulk_create() them and clear the list.
-
-                if objects_counter == OBJECT_LIST_MAXIMUM_COUNTER or archived_expense_list_counter == 0:
-                    ArchivedExpense.objects.bulk_create(archived_expense_list)
-                    archived_expense_list[:] = []
-                    objects_counter = 0
-                    reset_queries()
-        else:
-            self.debug("Error downloading file for year %d" % year)
-
-    def _normalize_name(self, name):
-        names_map = {
-            'Gim': 'Gim Argello',
-        }
-        return names_map.get(name, name)
-
-    def update_legislators_extra_data(self):
-        # Disabled for now, page got redesigned
-        return
-        data = self.retrieve_uri('http://www.senado.gov.br/senadores/')
-        table = data.find(id='senadores')
-        for row in table.findAll('tr'):
-            columns = row.findAll('td')
-            if not columns:
+        for row in data:
+            if not row.senador:
+                self.debug(u'Error downloading file for year {0}')
                 continue
 
-            name = self._normalize_name(columns[0].getText())
-
-            legislator = Legislator.objects.filter(name=name).filter(
-                mandate__legislature=self.legislature
-            ).order_by("-mandate__date_start")
-
-            # Check if query returned a legislator
-            if legislator.exists():
-                # Get the first row of the query result
-                legislator = legislator[0]
-
-                mandate = legislator.mandate_set.order_by("-date_start")[0]
-                if mandate.legislature != self.legislature:
-                    print 'Legislature found for %s is not the same as the one we need, ignoring.' % legislator.name
-                    continue
-
-                party = self.normalize_party_name(columns[1].getText())
-                mandate.party, _ = PoliticalParty.objects.get_or_create(siglum=party)
-                mandate.save()
-
-                href = columns[6].findChild().get('href')
-                if href:
-                    legislator.email = href.split(':')[1]
-
-                href = columns[7].findChild().get('href')
-                if href:
-                    legislator.site = href.split(':')[1]
-
-                legislator.save()
-
-                self.debug('Updated data for %s: %s, %s, %s' % (legislator.name,
-                                                                mandate.party.name,
-                                                                legislator.email,
-                                                                legislator.site))
+            if not row.data:
+                date = '01/{0}/{1}'.format(row.mes, row.ano)
+                expense_date = datetime.strptime(date, '%d/%m/%Y')
             else:
-                self.debug('Legislator found on site but not on database: %s' % name)
+                expense_date = datetime.strptime(row.data, '%d/%m/%Y')
+
+            name = self._normalize_name(row.senador)
+            nature = row.tipo_despesa
+            cpf_cnpj = self.normalize_cnpj_or_cpf(row.cnpj_cpf)
+            supplier_name = row.fornecedor
+            docnumber = row.documento
+            expensed = row.valor_reembolsado
+
+            # FIXME: WTF?
+            if isinstance(expensed, unicode):
+                expensed = float(expensed.replace(',', '.').replace('\r', '').replace('\n', ''))
+
+            # memory cache
+            expense_nature = natures.get(nature)
+            if not expense_nature:
+                expense_nature, _ = ExpenseNature.objects.get_or_create(name=nature)
+                natures[nature] = expense_nature
+
+            try:
+                supplier = Supplier.objects.get(identifier=cpf_cnpj)
+            except Supplier.DoesNotExist:
+                supplier = Supplier(identifier=cpf_cnpj, name=supplier_name)
+                supplier.save()
+                self.debug(u'New supplier found: {0}'.format(unicode(supplier)))
+
+            # memory cache
+            legislator = legislators.get(name)
+            if not legislator:
+                legislator = self._get_or_create_legislator(name)
+                legislators[name] = legislator
+
+            # memory cache
+            mandate = mandates.get(name)
+            if not mandate:
+                mandate = self.mandate_for_legislator(legislator, None)
+                mandates[name] = mandate
+
+            expense = ArchivedExpense(
+                number=docnumber,
+                nature=expense_nature,
+                date=expense_date,
+                expensed=expensed,
+                mandate=mandate,
+                supplier=supplier,
+                collection_run=self.collection_run
+            )
+            archived_expense_list.append(expense)
+            self.debug(u'New expense found: {0}'.format(unicode(expense)))
+
+            objects_counter += 1
+            archived_expense_list_counter -= 1
+
+            # We create a list with up to OBJECT_LIST_MAXIMUM_COUNTER.
+            # If that lists is equal to the maximum object count allowed
+            # or if there are no more objects in archived_expense_list,
+            # we bulk_create() them and clear the list.
+
+            if objects_counter == OBJECT_LIST_MAXIMUM_COUNTER or archived_expense_list_counter == 0:
+                ArchivedExpense.objects.bulk_create(archived_expense_list)
+                archived_expense_list[:] = []
+                objects_counter = 0
+                reset_queries()
