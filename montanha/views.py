@@ -148,8 +148,8 @@ def show_per_nature(request, filter_spec):
         time_series.append(dict(label=d.nature.name, data=aux))
 
         per_year_data = PerNatureByYear.objects.filter(institution=institution).filter(nature=d.nature)
-        per_year_data = per_year_data.filter(year__gte=date_ranges['cdf'].year)
-        per_year_data = per_year_data.filter(year__lte=date_ranges['cdt'].year)
+        per_year_data = per_year_data.filter(year__gte=legislature.date_start.year)
+        per_year_data = per_year_data.filter(year__lte=legislature.date_end.year)
         for item in per_year_data:
             cummulative = cummulative + float(item.expensed)
             aux.append([int(date(item.year, 1, 1).strftime("%s000")), cummulative])
@@ -169,8 +169,7 @@ def show_per_nature(request, filter_spec):
         expensed_by_month = PerNatureByMonth.objects.filter(institution=institution)
         expensed_by_month = expensed_by_month.filter(nature=nature)
 
-        all_years = [d.year for d in expensed_by_month.dates('date', 'year')]
-        all_years = ensure_years_in_range(date_ranges, all_years)
+        all_years = range(legislature.date_start.year, legislature.date_end.year + 1)
 
         for year in all_years:
             mbm_series = []
