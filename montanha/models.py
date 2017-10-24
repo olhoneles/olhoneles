@@ -549,8 +549,8 @@ class PerNature(models.Model):
     legislature = models.ForeignKey("Legislature",
                                     blank=True,
                                     null=True)
-    date_start = models.DateField()
-    date_end = models.DateField()
+    date_start = models.DateField(db_index=True)
+    date_end = models.DateField(db_index=True)
     nature = models.ForeignKey("ExpenseNature")
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
