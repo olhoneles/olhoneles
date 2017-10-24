@@ -527,7 +527,7 @@ class Supplier(models.Model):
                 return Cnpj().format(self.identifier)
             else:
                 return self.identifier
-        except:
+        except Exception:
             return self.identifier
 
     @property

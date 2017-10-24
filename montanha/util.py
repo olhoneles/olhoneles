@@ -43,7 +43,7 @@ def get_date_ranges_from_data(institution, data, consolidated_data=False, includ
             cdf = data.order_by('date_start')[0].date_start
         else:
             cdf = data.order_by('date')[0].date
-    except:
+    except Exception:
         cdf = date.today()
 
     try:
@@ -51,7 +51,7 @@ def get_date_ranges_from_data(institution, data, consolidated_data=False, includ
             cdt = data.order_by('-date_end')[0].date_end
         else:
             cdt = data.order_by('-date')[0].date
-    except:
+    except Exception:
         cdt = date.today()
 
     if institution:

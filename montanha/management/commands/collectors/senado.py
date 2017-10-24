@@ -158,7 +158,7 @@ class Senado(BaseCollector):
 
         try:
             csv_data = self.retrieve_data_for_year(year).replace('\r\n', '\n')
-        except:
+        except Exception:
             print u'Not found data for year {0}'.format(year)
             return
 

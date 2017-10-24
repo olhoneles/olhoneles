@@ -109,7 +109,7 @@ def supplier_with_mask(value):
             return mark_safe(Cnpj().format(value))
         else:
             return value
-    except:
+    except Exception:
         return value
 
 
