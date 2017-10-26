@@ -44,6 +44,7 @@ legislators
         'derpconf>=0.8.0,<0.9.0',
         'django-bootstrap-toolkit==2.14',
         'django-cacheops>=3.1.1,<3.2.0',
+        'django-debug-toolbar>=1.8,<1.9',
         'django-localflavor>=1.3,<1.4.0',
         'django-nose>=1.4.4,<1.5.0',
         'django-parsley>=0.4,<0.5.0',
