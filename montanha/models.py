@@ -155,11 +155,13 @@ class Legislature(models.Model):
                                    verbose_name=_("Original ID"))
 
     date_start = models.DateField(verbose_name=_("Date started"),
-                                  help_text=_("""Date in which this legislature started."""))
+                                  help_text=_("""Date in which this legislature started."""),
+                                  db_index=True)
 
     date_end = models.DateField(blank=True, null=True,
                                 verbose_name=_("Date ended"),
-                                help_text=_("""Date in which this legislature ended."""))
+                                help_text=_("""Date in which this legislature ended."""),
+                                db_index=True)
 
     def __unicode__(self):
         return u"%s's legislature starting at %s, ending at %s" % (self.institution.siglum,
@@ -182,12 +184,14 @@ class Mandate(models.Model):
     date_start = models.DateField(verbose_name=_("Date started"),
                                   help_text=_("""Date in which this mandate started; may also be """
                                               """a resumption of a mandate that was paused for taking """
-                                              """an executive-branch office, or a party change."""))
+                                              """an executive-branch office, or a party change."""),
+                                  db_index=True)
 
     date_end = models.DateField(blank=True, null=True,
                                 verbose_name=_("Date ended"),
                                 help_text=_("""Date in which this mandate ended, paused for taking an """
-                                            """executive-branch office, or affiliation change."""))
+                                            """executive-branch office, or affiliation change."""),
+                                db_index=True)
 
     party = models.ForeignKey("PoliticalParty",
                               verbose_name=_("Party"),
@@ -236,7 +240,7 @@ class CollectionRun(models.Model):
         verbose_name = _("Collection")
         verbose_name = _("Collections")
 
-    date = models.DateField(verbose_name=_("Collection date"))
+    date = models.DateField(verbose_name=_("Collection date"), db_index=True)
     legislature = models.ForeignKey("Legislature")
     committed = models.BooleanField(default=False)
 
@@ -578,7 +582,7 @@ class PerNatureByYear(models.Model):
 
 class PerNatureByMonth(models.Model):
     institution = models.ForeignKey("Institution")
-    date = models.DateField()
+    date = models.DateField(db_index=True)
     nature = models.ForeignKey("ExpenseNature")
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
@@ -596,8 +600,8 @@ class PerLegislator(models.Model):
                                     blank=True,
                                     null=True)
     legislator = models.ForeignKey("Legislator")
-    date_start = models.DateField()
-    date_end = models.DateField()
+    date_start = models.DateField(db_index=True)
+    date_end = models.DateField(db_index=True)
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
     class Meta:
@@ -610,7 +614,7 @@ class PerLegislator(models.Model):
 
 class BiggestSupplierForYear(models.Model):
     supplier = models.ForeignKey("Supplier")
-    year = models.IntegerField()
+    year = models.IntegerField(db_index=True)
     expensed = models.DecimalField(max_digits=20, decimal_places=2)
 
     class Meta:
