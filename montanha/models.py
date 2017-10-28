@@ -263,7 +263,7 @@ class AbstractExpense(models.Model):
 
     nature = models.ForeignKey('ExpenseNature')
 
-    date = models.DateField(verbose_name=_("Expense date"))
+    date = models.DateField(verbose_name=_("Expense date"), db_index=True)
 
     value = models.DecimalField(max_digits=10,
                                 decimal_places=2,
@@ -359,7 +359,8 @@ class Supplier(models.Model):
 
     identifier = models.CharField(
         max_length=256,
-        verbose_name=_("Supplier identifier"))
+        verbose_name=_("Supplier identifier"),
+        db_index=True)
 
     date_opened = models.DateField(
         verbose_name=_("Date Opened"),
