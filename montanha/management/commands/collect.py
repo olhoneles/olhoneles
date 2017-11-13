@@ -82,6 +82,12 @@ class Command(BaseCommand):
             cmbh.update_data()
             houses_to_consolidate.append("cmbh")
 
+        if 'cmbh_new' in options.get('house'):
+            from collectors.cmbh_new import CMBH
+            cmbh = CMBH(self.collection_runs, debug_enabled)
+            cmbh.update_data()
+            houses_to_consolidate.append("cmbh")
+
         if 'cmsp' in options.get('house'):
             from collectors.cmsp import CMSP
             cmsp = CMSP(self.collection_runs, debug_enabled)
