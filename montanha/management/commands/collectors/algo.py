@@ -20,7 +20,12 @@
 
 import re
 import os
+import rows
+import operator
+import json
+from io import BytesIO
 
+from cachetools import Cache, cachedmethod
 from cStringIO import StringIO
 
 from basecollector import BaseCollector
@@ -51,10 +56,11 @@ class ALGO(BaseCollector):
             self.legislature = Legislature.objects.all().filter(institution=institution).order_by('-date_start')[0]
         except IndexError:
             self.legislature = Legislature(institution=institution,
-                                           date_start=datetime(2011, 1, 1),
-                                           date_end=datetime(2014, 12, 31))
+                                           date_start=datetime(2015, 1, 1),
+                                           date_end=datetime(2018, 12, 31))
             self.legislature.save()
 
+        self.list_of_legislators_cache = Cache(1024)
         self.expenses_nature_cached = {}
 
     def _normalize_party_siglum(self, siglum):
@@ -64,42 +70,41 @@ class ALGO(BaseCollector):
         return names_map.get(siglum, siglum)
 
     def update_legislators(self):
-        headers = {
-            'Referer': self.base_url + '/deputado/',
-            'Origin': self.base_url,
+        url = self.base_url + '/deputado/'
+        html = BaseCollector.retrieve_uri(self, url, post_process=False, force_encoding='utf-8')
+
+        rows_xpath = u'//tbody/tr'
+        fields_xpath = {
+            u'nome': u'./td[position()=1]/a/text()',
+            u'url': u'./td[position()=1]/a/@href',
+            u'party': u'./td[position()=2]/text()',
+            u'telefone': u'./td[position()=3]/text()',
+            u'fax': u'./td[position()=4]/text()',
+            u'email': u'./td[position()=5]/a[position()=1]/img/@title',
         }
-        data = self.retrieve_uri(self.base_url + '/deputado/', headers=headers)
+        table = rows.import_from_xpath(BytesIO(html.encode('utf-8')), rows_xpath, fields_xpath)
 
         url_regex = re.compile(r'.*id/(\d+)')
         email_regex = re.compile(r'Email: (.*)')
 
-        for tr in data.find(id='gNome').find('tbody').findAll('tr'):
-            tds = tr.findAll('td')
+        for row in table:
+            _id = url_regex.match(row.url).group(1)
+            email = None
 
-            entry = {}
+            if row.email:
+                email = email_regex.match(row.email).group(1).strip()
 
-            entry['url'] = tds[0].find('a')['href']
-            entry['id'] = url_regex.match(entry['url']).group(1)
-            entry['nome'] = tds[0].find('a').text
-            entry['party'] = tds[1].text
-            entry['telefone'] = tds[2].text
-            entry['fax'] = tds[3].text
-            entry['email'] = tds[4].find('img').get('title')
-
-            if entry['email']:
-                entry['email'] = email_regex.match(entry['email']).group(1).strip()
-
-            party_siglum = self._normalize_party_siglum(entry["party"])
+            party_siglum = self._normalize_party_siglum(row.party)
             party, party_created = PoliticalParty.objects.get_or_create(
                 siglum=party_siglum
             )
 
             self.debug("New party: %s" % unicode(party))
 
-            legislator, created = Legislator.objects.get_or_create(name=entry['nome'])
+            legislator, created = Legislator.objects.get_or_create(name=row.nome)
 
-            legislator.site = self.base_url + entry['url']
-            legislator.email = entry['email']
+            legislator.site = self.base_url + row.url
+            legislator.email = email
             legislator.save()
 
             if created:
@@ -107,7 +112,7 @@ class ALGO(BaseCollector):
             else:
                 self.debug("Found existing legislator: %s" % unicode(legislator))
 
-            self.mandate_for_legislator(legislator, party, original_id=entry["id"])
+            self.mandate_for_legislator(legislator, party, original_id=_id)
 
     @classmethod
     def parse_title(self, title):
@@ -130,9 +135,37 @@ class ALGO(BaseCollector):
         else:
             raise ValueError('Cannot convert %s to float (money)' % value)
 
+    def get_parlamentar_id(self, year, month, name):
+        legislators = self.get_list_of_legislators(year, month)
+        legislators = [i for i in legislators if i['nome'] == name]
+
+        if not legislators:
+            return
+
+        return legislators[0]['id']
+
+    @cachedmethod(operator.attrgetter('list_of_legislators_cache'))
+    def get_list_of_legislators(self, year, month):
+        url = '%s/transparencia/verbaindenizatoria/listardeputados?ano=%d&mes=%d' % (
+            self.base_url,
+            year,
+            month,
+        )
+        data = json.loads(self.retrieve_uri(url, force_encoding='utf8').text)
+        return data['deputados']
+
     def find_data_for_month(self, mandate, year, month):
+        parlamentar_id = self.get_parlamentar_id(year, month, mandate.legislator.name)
+
+        if not parlamentar_id:
+            self.debug(
+                "Failed to discover parlamentar_id for year=%d, month=%d, legislator=%s" %
+                year, month, mandate.legislator.name,
+            )
+            raise StopIteration
+
         url = '%s/transparencia/verbaindenizatoria/exibir?ano=%d&mes=%d&parlamentar_id=%s' % (
-            self.base_url, year, month, mandate.original_id)
+            self.base_url, year, month, parlamentar_id)
         data = self.retrieve_uri(url, force_encoding='utf8')
 
         if u'parlamentar não prestou contas para o mês' in data.text:
@@ -169,23 +202,7 @@ class ALGO(BaseCollector):
                     break
 
                 elif tr_class == 'info-detalhe-verba':
-                    for detail_tr in tr.find('tbody').findAll('tr'):
-                        tds = detail_tr.findAll('td')
-
-                        data = {
-                            'budget_title': budget_title,
-                            'budget_subtitle': budget_subtitle
-                        }
-
-                        data['nome'] = tds[0].text
-                        data['cpf_cnpj'] = self.normalize_cnpj_or_cpf(tds[1].text)
-                        data['date'] = tds[2].text
-                        data['number'] = tds[3].text
-                        data['value_presented'] = self.parse_money(tds[4].text)
-                        data['value_expensed'] = self.parse_money(tds[5].text)
-
-                        self.debug(u'Generated JSON: %s' % data)
-
+                    for data in self.parse_detale_verba(tr, budget_title, budget_subtitle):
                         yield data
 
                 elif tr_class == 'subtotal':
@@ -219,6 +236,31 @@ class ALGO(BaseCollector):
                     self.debug(u'Generated JSON: %s' % data)
 
                     yield data
+
+    def parse_detale_verba(self, elem, budget_title, budget_subtitle):
+        rows_xpath = u'//tbody/tr'
+        fields_xpath = {
+            u'nome': u'./td[position()=1]/text()',
+            u'cpf_cnpj': u'./td[position()=2]/text()',
+            u'date': u'./td[position()=3]/text()',
+            u'number': u'./td[position()=4]/text()',
+            u'value_presented': u'./td[position()=5]/text()',
+            u'value_expensed': u'./td[position()=6]/text()',
+        }
+        table = rows.import_from_xpath(
+            BytesIO(str(elem)), rows_xpath, fields_xpath)
+        for row in table:
+            data = dict(row.__dict__)
+            data.update({
+                'budget_title': budget_title,
+                'budget_subtitle': budget_subtitle,
+                'cpf_cnpj': self.normalize_cnpj_or_cpf(row.cpf_cnpj),
+                'value_presented': self.parse_money(row.value_presented),
+                'value_expensed': self.parse_money(row.value_expensed),
+            })
+            self.debug(u'Generated JSON: %s' % data)
+
+            yield data
 
     def get_or_create_expense_nature(self, name):
         if name not in self.expenses_nature_cached:
@@ -254,7 +296,8 @@ class ALGO(BaseCollector):
                 expensed=data['value_expensed'],
                 mandate=mandate,
                 supplier=supplier,
-                collection_run=self.collection_run)
+                collection_run=self.collection_run,
+            )
 
             expense.save()
 
