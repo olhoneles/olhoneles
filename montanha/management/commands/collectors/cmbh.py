@@ -128,25 +128,25 @@ class CMBH(BaseCollector):
     def _normalize_nature(self, nature):
         if not hasattr(self, 'nature_map'):
             self.nature_map = {
-                'Servico ou Produto Postal': 'Serviço ou Produto Postal',
+                'Servico ou Produto Postal': u'Serviço ou Produto Postal',
                 'Periodico': 'Periódico',
-                'Material de Escritorio': 'Material de Escritório',
-                'Material de Informatica': 'Material de Informática',
-                'Servico de Escritorio': 'Serviço de Escritório',
-                'Servico de Informatica': 'Serviço de Informática',
-                'Estacionamento': 'Estacionamento',
-                'Lanche': 'Lanche',
-                'Refeic?o': 'Refeicão',
-                'Telecomunicac?o': 'Telecomunicação',
-                'Combustivel': 'Combustivel',
-                'Manutenc?o e Locac?o de Veiculo': 'Manutenção e Locação de Veiculo',
-                'Participac?o em Curso ou Seminario': 'Participação em Curso ou Seminario',
-                'Viagem a Servico': 'Viagem a Serviço',
-                'Consultoria Tecnico-Especializada': 'Consultoria Técnico-Especializada',
-                'Apoio a Promoc?o de Eventos Oficiais': 'Apoio a Promoção de Eventos Oficiais',
-                'Escritorio Representac?o Parlamentar': 'Escritorio Representação Parlamentar',
-                'Servico Grafico': 'Serviço Gráfico',
-                'Divulgac?o de Atividade Parlamentar': 'Divulgação de Atividade Parlamentar'
+                'Material de Escritorio': u'Material de Escritório',
+                'Material de Informatica': u'Material de Informática',
+                'Servico de Escritorio': u'Serviço de Escritório',
+                'Servico de Informatica': u'Serviço de Informática',
+                'Estacionamento': u'Estacionamento',
+                'Lanche': u'Lanche',
+                'Refeic?o': u'Refeição',
+                'Telecomunicac?o': u'Telecomunicação',
+                'Combustivel': u'Combustível',
+                'Manutenc?o e Locac?o de Veiculo': u'Manutenção e Locação de Veículo',
+                'Participac?o em Curso ou Seminario': u'Participação em Curso ou Seminário',
+                'Viagem a Servico': u'Viagem a Serviço',
+                'Consultoria Tecnico-Especializada': u'Consultoria Técnico-Especializada',
+                'Apoio a Promoc?o de Eventos Oficiais': u'Apoio a Promoção de Eventos Oficiais',
+                'Escritorio Representac?o Parlamentar': u'Escritório Representação Parlamentar',
+                'Servico Grafico': u'Serviço Gráfico',
+                'Divulgac?o de Atividade Parlamentar': u'Divulgação de Atividade Parlamentar'
             }
 
         return self.nature_map.get(nature, nature)
