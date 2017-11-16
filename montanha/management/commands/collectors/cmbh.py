@@ -46,19 +46,15 @@ class CMBH(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
         super(CMBH, self).__init__(collection_runs, debug_enabled)
 
-        try:
-            institution = Institution.objects.get(siglum='CMBH')
-        except Institution.DoesNotExist:
-            institution = Institution(siglum='CMBH', name=u'Câmara Municipal de Belo Horizonte')
-            institution.save()
+        self.institution, _ = Institution.objects.get_or_create(
+            siglum='CMBH', name=u'Câmara Municipal de Belo Horizonte'
+        )
 
-        try:
-            self.legislature = Legislature.objects.all().filter(institution=institution).order_by('-date_start')[0]
-        except IndexError:
-            self.legislature = Legislature(institution=institution,
-                                           date_start=datetime(2013, 1, 1),
-                                           date_end=datetime(2016, 12, 31))
-            self.legislature.save()
+        self.legislature, _ = Legislature.objects.get_or_create(
+            institution=self.institution,
+            date_start=datetime(2013, 1, 1),
+            date_end=datetime(2016, 12, 31)
+        )
 
         self.download_threads = []
         for x in range(NUM_THREADS):
@@ -105,20 +101,20 @@ class CMBH(BaseCollector):
         return True
 
     def retrieve_month(self, month, year):
-        uri = 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria'
+        uri = 'https://www.cmbh.mg.gov.br/transparencia/vereadores/verba-indenizatoria'
         data = {'codVereadorVI': '', 'mes': '{:0>2}'.format(month), 'ano': year}
         headers = {
-            'Origin': 'http://www.cmbh.mg.gov.br',
-            'Referer': 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria',
+            'Origin': 'https://www.cmbh.mg.gov.br',
+            'Referer': 'https://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria',
         }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
 
     def retrieve_actual_data(self, code, month, year):
-        uri = 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria'
+        uri = 'https://www.cmbh.mg.gov.br/transparencia/vereadores/verba-indenizatoria'
         data = {'codVereadorVI': '', 'mes': '{:0>2}'.format(month), 'ano': year, 'vereador': code}
         headers = {
-            'Origin': 'http://www.cmbh.mg.gov.br',
-            'Referer': 'http://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria',
+            'Origin': 'https://www.cmbh.mg.gov.br',
+            'Referer': 'https://www.cmbh.mg.gov.br/transparencia/verba-indenizatoria',
         }
         return BaseCollector.retrieve_uri(self, uri, data, headers)
 
@@ -155,6 +151,8 @@ class CMBH(BaseCollector):
         self.download_queue.append([code, month, year])
 
     def update_data_for_legislator(self, data, code, month, year):
+        self.debug("Updating data %s/%s for legislator: %s" % (month, year, code))
+
         data = data.find('div', {'class': 'row'})
 
         legislator = data.find('h2').findChildren()[0].next
@@ -170,13 +168,7 @@ class CMBH(BaseCollector):
 
         natures = data.findAll('h3')
         for data in natures:
-            nature = self._normalize_nature(data.text)
-            try:
-                nature = ExpenseNature.objects.get(name=nature)
-            except ExpenseNature.DoesNotExist:
-                nature = ExpenseNature(name=nature)
-                nature.save()
-
+            nature, _ = ExpenseNature.objects.get_or_create(name=self._normalize_nature(data.text))
             rows = data.findNext().findAll('tr')[1:-1]
             for row in rows:
                 columns = row.findAll('td')
@@ -216,7 +208,7 @@ class CMBH(BaseCollector):
 
     def update_data(self):
         self.collection_run = self.create_collection_run(self.legislature)
-        for year in range(self.legislature.date_start.year, datetime.now().year + 1):
+        for year in range(self.legislature.date_start.year, self.legislature.date_end.year + 1):
             self.update_data_for_year(year)
 
         for thread in self.download_threads:
@@ -227,7 +219,10 @@ class CMBH(BaseCollector):
 
             done_downloading = self._is_done_downloading()
             with self.processing_condition:
-                self.debug("Left to process: %d Done downloading?: %d" % (len(self.processing_queue), done_downloading))
+                self.debug("Left to process: %d Done downloading?: %d" % (
+                    len(self.processing_queue),
+                    done_downloading)
+                )
                 if not self.processing_queue:
                     if done_downloading:
                         break
