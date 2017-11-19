@@ -1,3 +1,5 @@
+.PHONY: all run data setup test unit focus clean publish lint static
+
 all: tests
 
 run:
@@ -14,7 +16,6 @@ test: lint unit
 unit:
 	@coverage run --source='.' manage.py test -s
 	@coverage report -m
-
 
 focus:
 	@python manage.py test --with-focus -s
