@@ -9,3 +9,4 @@ olhoneles/local.config
 .coverage
 *.egg-info
 dist/
+data

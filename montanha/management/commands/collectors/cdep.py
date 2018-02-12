@@ -105,6 +105,9 @@ class CamaraDosDeputados(BaseCollector):
         self.collection_run = self.create_collection_run(self.legislature)
 
         data_path = os.path.join(os.getcwd(), 'data', 'cdep')
+        if not os.path.isdir(data_path):
+            os.makedirs(data_path)
+            self.debug(u"Creating directory %s" % data_path)
 
         files_to_download = ['AnoAtual.zip']
         previous_years = date.today().year - self.legislature.date_start.year
