@@ -69,6 +69,13 @@ class Command(BaseCommand):
             almg.update_data()
             houses_to_consolidate.append("algo")
 
+        if 'alepe' in options.get('house'):
+            from collectors.alepe import ALEPE
+            alepe = ALEPE(self.collection_runs, debug_enabled)
+            alepe.update_legislators()
+            alepe.update_data()
+            houses_to_consolidate.append("alepe")
+
         if 'senado' in options.get('house'):
             from collectors.senado import Senado
             senado = Senado(self.collection_runs, debug_enabled)
