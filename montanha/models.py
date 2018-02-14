@@ -76,6 +76,7 @@ class Legislator(models.Model):
     picture = ThumbnailerImageField(
         verbose_name=_('Picture'),
         upload_to='legislator',
+        max_length=256,
         blank=True,
         null=True)
 
