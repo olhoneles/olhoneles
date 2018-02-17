@@ -362,7 +362,9 @@ def get_supplier_detail_data(request, supplier_id, filter_spec=''):
     institution, _ = parse_filter(filter_spec)
     data, date_ranges = get_basic_objects_for_model(filter_spec)
 
-    supplier = Supplier.objects.get(pk=supplier_id)
+    supplier = Supplier.objects.filter(
+        Q(identifier=supplier_id) | Q(pk=supplier_id)
+    ).all()[0]
     data = data.filter(supplier=supplier)
 
     # Data prepared for displaying the per-party graph
