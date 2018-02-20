@@ -18,6 +18,7 @@
 import locale
 
 from django import template
+from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
@@ -121,3 +122,9 @@ def share(title):
 @register.filter
 def url_target_blank(text):
     return mark_safe(text.replace('<a ', '<a target="_blank" '))
+
+
+@register.inclusion_tag('csv_link.html')
+def csv_link(filter_spec, module):
+    full_url = '/{0}{1}csv/'.format(filter_spec, reverse(module))
+    return {'url': full_url}

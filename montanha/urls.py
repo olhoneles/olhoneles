@@ -36,12 +36,12 @@ urlpatterns = [
     url(r'^([^/]+)?/?q/supplier_all/?$', query_supplier_all, name='query-supplier-all'),
     url(r'^([^/]+)?/?q/legislator_all/?$', query_legislator_all, name='query-legislator-all'),
 
-    url(r'^([^/]+)?/?all/?$', show_all, name='show-all'),
+    url(r'^([^/]+)?/?all/?([^/]+)?/$', show_all, name='show-all'),
 
-    url(r'^([^/]+)?/?per-nature/?$', show_per_nature, name='per-nature'),
-    url(r'^([^/]+)?/?per-legislator/?$', show_per_legislator, name='per-legislator'),
-    url(r'^([^/]+)?/?per-party/?$', show_per_party, name='per-party'),
-    url(r'^([^/]+)?/?per-supplier/?$', show_per_supplier, name='per-supplier'),
+    url(r'^([^/]+)?/?per-nature/?([^/]+)?/$', show_per_nature, name='per-nature'),
+    url(r'^([^/]+)?/?per-legislator/?([^/]+)?/$', show_per_legislator, name='per-legislator'),
+    url(r'^([^/]+)?/?per-party/?([^/]+)?/$', show_per_party, name='per-party'),
+    url(r'^([^/]+)?/?per-supplier/?([^/]+)?/$', show_per_supplier, name='per-supplier'),
 
     url(r'^detail-supplier/(\d+)/?$', show_supplier_overview, name='show-supplier-overview'),
 

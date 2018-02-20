@@ -27,6 +27,8 @@ from django.db.models import Sum, Q
 from django.http import HttpResponse, Http404
 from django.core.mail import send_mail
 from django.conf import settings
+from djqscsv import render_to_csv_response
+from slugify import slugify
 
 from montanha.models import (
     Expense, Institution, PerNature, PerNatureByYear, ExpenseNature,
@@ -134,10 +136,34 @@ def error_404(request):
     return original_render(request, '404.html', c)
 
 
-def show_per_nature(request, filter_spec):
+def _export_csv(request, data, field_header_map={}):
+    filename = slugify(request.path).replace('-csv', '.csv')
+    return render_to_csv_response(
+        data, filename=filename, field_header_map=field_header_map
+    )
+
+
+def show_per_nature(request, filter_spec, export_format=''):
 
     institution, legislature = parse_filter(filter_spec)
     data = PerNature.objects.filter(institution=institution, legislature=legislature)
+
+    if export_format:
+        data = data.values(
+            'institution__siglum',
+            'legislature__date_start',
+            'legislature__date_end',
+            'nature__name',
+            'expensed',
+        )
+        field_header_map = {
+            'institution__siglum': u'Instituição',
+            'legislature__date_start': u'Início da legislatura',
+            'legislature__date_end': u'Fim da legislatura',
+            'nature__name': u'Tipo de gasto',
+            'expensed': u'Valor',
+        }
+        return _export_csv(request, data, field_header_map)
 
     date_ranges = get_date_ranges_from_data(institution, data, consolidated_data=True)
 
@@ -208,10 +234,29 @@ def show_per_nature(request, filter_spec):
     return new_render(request, filter_spec, 'per_nature.html', c)
 
 
-def show_per_legislator(request, filter_spec):
+def show_per_legislator(request, filter_spec, export_format=''):
 
     institution, legislature = parse_filter(filter_spec)
     data = PerLegislator.objects.filter(institution=institution, legislature=legislature).order_by('-expensed')
+
+    if export_format:
+        data = data.values(
+            'institution__siglum',
+            'legislature__date_start',
+            'legislature__date_end',
+            'legislator__name',
+            'legislator__mandate__party__siglum',
+            'expensed',
+        )
+        field_header_map = {
+            'institution__siglum': u'Instituição',
+            'legislature__date_start': u'Início da legislatura',
+            'legislature__date_end': u'Fim da legislatura',
+            'legislator__name': u'Parlamentar',
+            'legislator__mandate__party__siglum': u'Partido',
+            'expensed': u'Valor',
+        }
+        return _export_csv(request, data, field_header_map)
 
     date_ranges = get_date_ranges_from_data(institution, data, consolidated_data=True)
 
@@ -305,10 +350,27 @@ def postprocess_party_data(institution, data):
     return sorted(data, key=lambda d: d['expensed_average'], reverse=True)
 
 
-def show_per_party(request, filter_spec):
+def show_per_party(request, filter_spec, export_format=''):
 
     institution, _ = parse_filter(filter_spec)
     data, date_ranges = get_basic_objects_for_model(filter_spec)
+
+    if export_format:
+        data = data.values(
+            'mandate__legislature__institution__siglum',
+            'mandate__legislature__date_start',
+            'mandate__legislature__date_end',
+            'mandate__party__siglum',
+        )
+        data = data.annotate(expensed=Sum('expensed'))
+        field_header_map = {
+            'mandate__legislature__institution__siglum': u'Instituição',
+            'mandate__legislature__date_start': u'Início da legislatura',
+            'mandate__legislature__date_end': u'Fim da legislatura',
+            'mandate__party__siglum': u'Partido',
+            'expensed': u'Valor',
+        }
+        return _export_csv(request, data, field_header_map)
 
     data = data.values('mandate__party__logo', 'mandate__party__siglum', 'mandate__party__name')
     data = data.annotate(expensed=Sum('expensed'))
@@ -333,7 +395,7 @@ def add_sorting(request, data, default='-expensed'):
     return data
 
 
-def show_per_supplier(request, filter_spec):
+def show_per_supplier(request, filter_spec, export_format=''):
 
     data, date_ranges = get_basic_objects_for_model(filter_spec)
 
@@ -341,6 +403,25 @@ def show_per_supplier(request, filter_spec):
     data = data.annotate(expensed=Sum('expensed'))
 
     data = add_sorting(request, data)
+
+    if export_format:
+        data = data.values(
+            'mandate__legislature__institution__siglum',
+            'mandate__legislature__date_start',
+            'mandate__legislature__date_end',
+            'supplier__name',
+            'supplier__identifier',
+            'expensed',
+        )
+        field_header_map = {
+            'mandate__legislature__institution__siglum': u'Instituição',
+            'mandate__legislature__date_start': u'Início da legislatura',
+            'mandate__legislature__date_end': u'Fim da legislatura',
+            'supplier__name': u'Empresa/Pessoa',
+            'supplier__identifier': u'CNPJ/CPF',
+            'expensed': u'Valor',
+        }
+        return _export_csv(request, data, field_header_map)
 
     paginator = Paginator(data, 10)
     page = request.GET.get('page')
@@ -628,11 +709,38 @@ def query_legislator_all(request, filter_spec):
     return data_tables_query(request, filter_spec, columns, filter_function)
 
 
-def show_all(request, filter_spec):
+def show_all(request, filter_spec, export_format=''):
 
     c = {}
 
-    _, date_ranges = get_basic_objects_for_model(filter_spec)
+    data, date_ranges = get_basic_objects_for_model(filter_spec)
+
+    if export_format:
+        data = data.values(
+            'mandate__legislature__institution__siglum',
+            'mandate__legislature__date_start',
+            'mandate__legislature__date_end',
+            'nature__name',
+            'mandate__legislator__name',
+            'supplier__name',
+            'supplier__identifier',
+            'original_id',
+            'date',
+            'expensed',
+        )
+        field_header_map = {
+            'mandate__legislature__institution__siglum': u'Instituição',
+            'mandate__legislature__date_start': u'Início da legislatura',
+            'mandate__legislature__date_end': u'Fim da legislatura',
+            'nature__name': u'Tipo de gasto',
+            'mandate__legislator__name': u'Parlamentar',
+            'supplier__name': u'Empresa/Pessoa',
+            'supplier__identifier': u'CNPJ/CPF',
+            'original_id': u'Num. doc',
+            'date': u'Data',
+            'expensed': u'Valor',
+        }
+        return _export_csv(request, data, field_header_map)
 
     c.update(date_ranges)
 

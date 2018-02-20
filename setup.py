@@ -49,6 +49,7 @@ legislators
         'django-localflavor>=1.3,<1.4.0',
         'django-nose>=1.4.4,<1.5.0',
         'django-parsley>=0.4,<0.5.0',
+        'django-queryset-csv>=1.0.0,<1.1.0',
         'django-recaptcha>=1.0.5,<1.1.0',
         'django-tastypie>=0.13.3,<0.14.0',
         'django-tastypie-swagger==0.1.4-django1.10',

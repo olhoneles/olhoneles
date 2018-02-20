@@ -12,6 +12,11 @@
 </div>
 <div class="row">
     <div class="span12">
+        {% csv_link filter_spec 'montanha:show-all' %}
+    </div>
+</div>
+<div class="row">
+    <div class="span12">
         {% expenses_table "Tipo de gasto" "Parlamentar" "Empresa/Pessoa" "CNPJ/CPF" "N° Doc." "Data" "Valor" %}
     </div>
 </div>
