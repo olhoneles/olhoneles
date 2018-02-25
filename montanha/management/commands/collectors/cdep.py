@@ -163,9 +163,9 @@ class CamaraDosDeputados(BaseCollector):
                     continue
 
                 # Some entries lack numLegislatura, so we fallback to numAno.
-                legislature_year = elem.find('nuLegislatura')
+                legislature_year = elem.find('nuLegislatura').text
                 if legislature_year is not None:
-                    legislature_year = int(legislature_year.text)
+                    legislature_year = int(legislature_year)
                 else:
                     legislature_year = int(elem.find('numAno').text)
                     if legislature_year < self.legislature.date_start.year or \
@@ -200,13 +200,18 @@ class CamaraDosDeputados(BaseCollector):
                 except Supplier.DoesNotExist:
                     supplier = Supplier(identifier=supplier_identifier, name=supplier_name)
                     supplier.save()
+                # FIXME
+                except Supplier.MultipleObjectsReturned:
+                    supplier = Supplier.objects.filter(identifier=supplier_identifier)[0]
 
                 docnumber = elem.find('txtNumero').text
                 if docnumber:
                     docnumber = docnumber.strip()
+                else:
+                    docnumber = ''
 
                 expense_date = elem.find('datEmissao')
-                if expense_date is not None:
+                if expense_date and expense_date.text is not None:
                     expense_date = date(*((int(x.lstrip('0')) for x in expense_date.text[:10].split('-'))))
                 else:
                     expense_year = int(elem.find('numAno').text)
@@ -224,7 +229,10 @@ class CamaraDosDeputados(BaseCollector):
 
                 state = elem.find('sgUF').text.strip()
 
-                original_id = elem.find('ideCadastro').text.strip()
+                if elem.find('ideCadastro') is None:
+                    original_id = elem.find('idecadastro').text.strip()
+                else:
+                    original_id = elem.find('ideCadastro').text.strip()
 
                 try:
                     legislator = Legislator.objects.get(name__iexact=name)
