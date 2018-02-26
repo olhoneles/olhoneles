@@ -149,6 +149,9 @@ class CamaraDosDeputados(BaseCollector):
 
         open('cdep-collection-run', 'w').write('%d' % (self.collection_run.id))
         archived_expense_list = []
+        legislators = {}
+        parties = {}
+        natures = {}
         for file_name in reversed(files_to_process):
             self.debug(u"Processing %s…" % file_name)
             objects_counter = 0
@@ -180,7 +183,7 @@ class CamaraDosDeputados(BaseCollector):
 
                 name = elem.find('txNomeParlamentar').text.title().strip()
 
-                nature = elem.find('txtDescricao').text.title().strip()
+                nature_name = elem.find('txtDescricao').text.title().strip()
 
                 supplier_name = elem.find('txtBeneficiario')
                 if supplier_name is not None:
@@ -220,12 +223,19 @@ class CamaraDosDeputados(BaseCollector):
 
                 expensed = float(elem.find('vlrLiquido').text)
 
-                nature, _ = ExpenseNature.objects.get_or_create(name=nature)
+                # memory cache
+                nature = natures.get(nature_name)
+                if not nature:
+                    nature, _ = ExpenseNature.objects.get_or_create(name=nature_name)
+                    natures[nature_name] = nature
 
-                party = party_name = elem.find('sgPartido')
-                if party_name is not None:
-                    party_name = self.normalize_party_name(party_name.text)
-                    party, _ = PoliticalParty.objects.get_or_create(siglum=party_name)
+                # memory cache
+                party_siglum = elem.find('sgPartido').text
+                party = parties.get(party_siglum)
+                if not party and party_siglum is not None:
+                    party_siglum = self.normalize_party_name(party_siglum)
+                    party, _ = PoliticalParty.objects.get_or_create(siglum=party_siglum)
+                    parties[party_siglum] = party
 
                 state = elem.find('sgUF').text.strip()
 
@@ -234,14 +244,19 @@ class CamaraDosDeputados(BaseCollector):
                 else:
                     original_id = elem.find('ideCadastro').text.strip()
 
-                try:
-                    legislator = Legislator.objects.get(name__iexact=name)
-                except Legislator.DoesNotExist:
-                    # Some legislators do are not listed in the other WS because they are not
-                    # in exercise.
-                    self.debug(u"Found legislator who's not in exercise: %s" % name)
-                    legislator = Legislator(name=name)
-                    legislator.save()
+                # memory cache
+                legislator = legislators.get(name)
+                if not legislator:
+                    try:
+                        legislator = Legislator.objects.get(name__iexact=name)
+                    except Legislator.DoesNotExist:
+                        # Some legislators do are not listed in the other WS because they are not
+                        # in exercise.
+                        self.debug(u"Found legislator who's not in exercise: %s" % name)
+                        legislator = Legislator(name=name)
+                        legislator.save()
+                    legislators[name] = legislator
+
                 mandate = self.mandate_for_legislator(legislator, party,
                                                       state=state, original_id=original_id)
                 expense = ArchivedExpense(number=docnumber,
