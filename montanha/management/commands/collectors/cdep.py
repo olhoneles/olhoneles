@@ -22,7 +22,7 @@ from datetime import date, datetime
 from zipfile import ZipFile
 
 import requests
-from django.db import reset_queries
+from django.db import reset_queries, connection
 from email.utils import formatdate as http_date
 from lxml.etree import iterparse
 
@@ -30,7 +30,6 @@ from basecollector import BaseCollector
 from montanha.models import (
     ArchivedExpense, Institution, Legislature, Legislator,
     AlternativeLegislatorName, ExpenseNature, Supplier, PoliticalParty,
-    CollectionRun
 )
 
 
@@ -99,7 +98,12 @@ class CamaraDosDeputados(BaseCollector):
     def update_data(self):
         if os.path.exists('cdep-collection-run'):
             crid = int(open('cdep-collection-run').read())
-            CollectionRun.objects.get(id=crid).delete()
+            # Avoid loading objects in memory when using delete()
+            with connection.cursor() as cursor:
+                query = 'DELETE FROM montanha_archivedexpense WHERE collection_run_id = {0}'.format(crid)
+                cursor.execute(query)
+                query = 'DELETE FROM montanha_collectionrun WHERE id = {0}'.format(crid)
+                cursor.execute(query)
             os.unlink('cdep-collection-run')
 
         self.collection_run = self.create_collection_run(self.legislature)
@@ -147,7 +151,9 @@ class CamaraDosDeputados(BaseCollector):
             zf = ZipFile(full_path, 'r')
             zf.extract(xml_file_name, data_path)
 
-        open('cdep-collection-run', 'w').write('%d' % (self.collection_run.id))
+        with open('cdep-collection-run', 'w') as fh:
+            fh.write('%d' % (self.collection_run.id))
+
         archived_expense_list = []
         legislators = {}
         parties = {}
