@@ -47,7 +47,7 @@ class Command(BaseCommand):
 
     def debug(self, text):
         if self.debug_enabled:
-            print text
+            print u'{0}'.format(text)
 
     def update_supplier(self, supplier):
         try:
