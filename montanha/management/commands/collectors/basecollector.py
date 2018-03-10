@@ -17,11 +17,13 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime, date
 import time
+from datetime import datetime, date
+
 import requests
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
-from montanha.models import Mandate, CollectionRun, ArchivedExpense
+
+from montanha.models import Mandate, CollectionRun, ArchivedExpense, Supplier
 
 
 class BaseCollector(object):
@@ -143,5 +145,19 @@ class BaseCollector(object):
     def post_process_uri(self, contents):
         return BeautifulSoup(contents, convertEntities=BeautifulStoneSoup.ALL_ENTITIES)
 
-    def normalize_cnpj_or_cpf(self, cnpj):
-        return cnpj.replace('.', '').replace('-', '').replace('/', '').strip()
+    def normalize_cnpj_or_cpf(self, identifier):
+        return identifier.replace('.', '').replace('-', '').replace('/', '').strip()
+
+    def get_or_create_supplier(self, identifier, name=None):
+        identifier = self.normalize_cnpj_or_cpf(identifier)
+        try:
+            supplier = Supplier.objects.get(identifier=identifier)
+        except Supplier.DoesNotExist:
+            supplier = Supplier(identifier=identifier, name=name)
+            supplier.save()
+            self.debug(u'New supplier found: {0}'.format(unicode(supplier)))
+        except Supplier.MultipleObjectsReturned:
+            supplier = Supplier.objects \
+                .filter(identifier=identifier) \
+                .order_by('-pk')[0]
+        return supplier

@@ -27,7 +27,7 @@ from montanha.models import ArchivedExpense
 from montanha.management.commands.collectors.basecollector import BaseCollector
 from montanha.tests.fixtures import (
     LegislatureFactory, ArchivedExpenseFactory, CollectionRunFactory,
-    MandateFactory, LegislatorFactory, PoliticalPartyFactory
+    MandateFactory, LegislatorFactory, PoliticalPartyFactory, SupplierFactory,
 )
 
 
@@ -61,6 +61,29 @@ class BaseCollectorNormalizeCnpjOrCpfTestCase(BaseCollectorTestCase):
     def test_with_cnpj(self):
         cnpj = self.base_collector.normalize_cnpj_or_cpf('01.234.567/0001-89')
         self.assertEqual(cnpj, '01234567000189')
+
+
+class BaseCollectorGetOrCreateSupplierTestCase(BaseCollectorTestCase):
+
+    def test_get_supplier(self):
+        SupplierFactory.create(identifier='01234567890')
+        supplier = self.base_collector.get_or_create_supplier('012.345.678-90')
+        self.assertEqual(supplier.identifier, '01234567890')
+
+    def test_create_supplier(self):
+        supplier = self.base_collector.get_or_create_supplier(
+            '01.234.567/0001-89', 'Test Supplier'
+        )
+        self.assertEqual(supplier.identifier, '01234567000189')
+        self.assertEqual(supplier.name, 'Test Supplier')
+
+    def test_get_with_supplier_with_same_identifier(self):
+        SupplierFactory.create(identifier='01234567890')
+        SupplierFactory.create(identifier='01234567890')
+        SupplierFactory.create(name='2', identifier='01234567890')
+        supplier = self.base_collector.get_or_create_supplier('012.345.678-90')
+        self.assertEqual(supplier.identifier, '01234567890')
+        self.assertEqual(supplier.name, '2')
 
 
 class BaseCollectorPostProcessUriTestCase(BaseCollectorTestCase):

@@ -23,7 +23,7 @@ from django.core.files import File
 
 from basecollector import BaseCollector
 from montanha.models import (
-    Institution, Legislator, Mandate, PoliticalParty, ExpenseNature, Supplier,
+    Institution, Legislator, Mandate, PoliticalParty, ExpenseNature,
     ArchivedExpense, Legislature
 )
 
@@ -214,23 +214,12 @@ class CMSP(BaseCollector):
 
             supplier_name = x.find('fornecedor').getText()
             supplier_name = supplier_name.capitalize()
-            cnpj = self.normalize_cnpj_or_cpf(x.find('cnpj').getText())
+            cnpj = x.find('cnpj').getText()
 
             if not cnpj and not supplier_name:
                 continue
 
-            try:
-                supplier = Supplier.objects.get(identifier=cnpj)
-                supplier_created = False
-            except Supplier.DoesNotExist:
-                supplier = Supplier(identifier=cnpj, name=supplier_name)
-                supplier.save()
-                supplier_created = True
-
-            if supplier_created:
-                self.debug(u'New Supplier found: %s' % supplier)
-            else:
-                self.debug(u'Found existing supplier: %s' % supplier)
+            supplier = self.get_or_create_supplier(cnpj, supplier_name)
 
             expensed = float(x.find('valor').getText())
 
@@ -299,23 +288,12 @@ class CMSP(BaseCollector):
                 for j in i.findAll('g_beneficiario'):
                     supplier_name = j.find('nm_beneficiario').getText()
                     supplier_name = supplier_name.capitalize()
-                    cnpj = self.normalize_cnpj_or_cpf(j.find('nr_cnpj').getText())
+                    cnpj = j.find('nr_cnpj').getText()
 
                     if not cnpj and not supplier_name:
                         continue
 
-                    try:
-                        supplier = Supplier.objects.get(identifier=cnpj)
-                        supplier_created = False
-                    except Supplier.DoesNotExist:
-                        supplier = Supplier(identifier=cnpj, name=supplier_name)
-                        supplier.save()
-                        supplier_created = True
-
-                    if supplier_created:
-                        self.debug(u'New Supplier found: %s' % supplier)
-                    else:
-                        self.debug(u'Found existing supplier: %s' % supplier)
+                    supplier = self.get_or_create_supplier(cnpj, supplier_name)
 
                     expensed = parse_money(j.find('vl_desp').getText())
 

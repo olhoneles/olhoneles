@@ -29,7 +29,7 @@ from lxml.etree import iterparse
 from basecollector import BaseCollector
 from montanha.models import (
     ArchivedExpense, Institution, Legislature, Legislator,
-    AlternativeLegislatorName, ExpenseNature, Supplier, PoliticalParty,
+    AlternativeLegislatorName, ExpenseNature, PoliticalParty,
 )
 
 
@@ -199,19 +199,12 @@ class CamaraDosDeputados(BaseCollector):
 
                 supplier_identifier = elem.find('txtCNPJCPF')
                 if supplier_identifier is not None and supplier_identifier.text is not None:
-                    supplier_identifier = self.normalize_cnpj_or_cpf(supplier_identifier.text)
+                    supplier_identifier = supplier_identifier.text
 
                 if not supplier_identifier:
                     supplier_identifier = u'Sem CNPJ/CPF (%s)' % supplier_name
 
-                try:
-                    supplier = Supplier.objects.get(identifier=supplier_identifier)
-                except Supplier.DoesNotExist:
-                    supplier = Supplier(identifier=supplier_identifier, name=supplier_name)
-                    supplier.save()
-                # FIXME
-                except Supplier.MultipleObjectsReturned:
-                    supplier = Supplier.objects.filter(identifier=supplier_identifier)[0]
+                supplier = self.get_or_create_supplier(supplier_identifier, supplier_name)
 
                 docnumber = elem.find('txtNumero').text
                 if docnumber:

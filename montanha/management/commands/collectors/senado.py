@@ -27,7 +27,7 @@ from django.db import reset_queries
 from basecollector import BaseCollector
 from montanha.models import (
     ArchivedExpense, Institution, Legislature,
-    Legislator, Mandate, ExpenseNature, Supplier, PoliticalParty
+    Legislator, Mandate, ExpenseNature, PoliticalParty
 )
 
 
@@ -214,7 +214,7 @@ class Senado(BaseCollector):
 
             name = self._normalize_name(row.senador)
             nature = row.tipo_despesa
-            cpf_cnpj = self.normalize_cnpj_or_cpf(row.cnpj_cpf)
+            cpf_cnpj = row.cnpj_cpf
             supplier_name = row.fornecedor
             docnumber = row.documento
             expensed = row.valor_reembolsado
@@ -229,12 +229,7 @@ class Senado(BaseCollector):
                 expense_nature, _ = ExpenseNature.objects.get_or_create(name=nature)
                 natures[nature] = expense_nature
 
-            try:
-                supplier = Supplier.objects.get(identifier=cpf_cnpj)
-            except Supplier.DoesNotExist:
-                supplier = Supplier(identifier=cpf_cnpj, name=supplier_name)
-                supplier.save()
-                self.debug(u'New supplier found: {0}'.format(unicode(supplier)))
+            supplier = self.get_or_create_supplier(cpf_cnpj, supplier_name)
 
             # memory cache
             legislator = legislators.get(name)

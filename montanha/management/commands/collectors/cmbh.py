@@ -22,8 +22,7 @@ from datetime import datetime, date
 
 from basecollector import BaseCollector
 from montanha.models import (
-    Institution, Legislature, ExpenseNature, Legislator, Supplier,
-    ArchivedExpense
+    Institution, Legislature, ExpenseNature, Legislator, ArchivedExpense
 )
 
 
@@ -186,11 +185,7 @@ class CMBH(BaseCollector):
                 except Exception:
                     pass
 
-                try:
-                    supplier = Supplier.objects.get(identifier=cnpj)
-                except Supplier.DoesNotExist:
-                    supplier = Supplier(identifier=cnpj, name=supplier_name)
-                    supplier.save()
+                supplier = self.get_or_create_supplier(cnpj, supplier_name)
 
                 docnumber = columns[2].getText()
                 expensed = parse_money(columns[3].getText())

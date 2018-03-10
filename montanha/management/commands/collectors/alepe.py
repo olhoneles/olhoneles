@@ -22,7 +22,7 @@ from slugify import slugify
 from basecollector import BaseCollector
 from montanha.models import (
     ArchivedExpense, ExpenseNature, Institution, Legislature, Legislator,
-    PoliticalParty, Supplier
+    PoliticalParty
 )
 
 
@@ -175,12 +175,7 @@ class ALEPE(BaseCollector):
                 supplier_name = tds[2].text
                 expensed = parse_money(tds[3].text)
 
-                try:
-                    supplier = Supplier.objects.get(identifier=cpf_cnpj)
-                except Supplier.DoesNotExist:
-                    supplier = Supplier(identifier=cpf_cnpj, name=supplier_name)
-                    supplier.save()
-                    self.debug(u'New supplier found: {0}'.format(unicode(supplier)))
+                supplier = self.get_or_create_supplier(cpf_cnpj, supplier_name)
 
                 expense = ArchivedExpense(
                     original_id='',

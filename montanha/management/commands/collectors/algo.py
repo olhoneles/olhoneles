@@ -33,7 +33,7 @@ from django.core.files import File
 from basecollector import BaseCollector
 from montanha.models import (
     Institution, Legislature, PoliticalParty, Legislator, ExpenseNature,
-    Supplier, ArchivedExpense, Mandate
+    ArchivedExpense, Mandate
 )
 
 
@@ -282,16 +282,9 @@ class ALGO(BaseCollector):
 
             name = data.get('nome') or 'Sem nome'
             no_identifier = u'Sem CPF/CNPJ ({0})'.format(name)
-            cpf_cnpj = self.normalize_cnpj_or_cpf(data.get('cpf_cnpj')) or no_identifier
+            cpf_cnpj = data.get('cpf_cnpj', no_identifier)
 
-            try:
-                supplier = Supplier.objects.get(identifier=cpf_cnpj)
-            except Supplier.DoesNotExist:
-                supplier = Supplier(identifier=cpf_cnpj, name=name)
-                supplier.save()
-            # FIXME
-            except Supplier.MultipleObjectsReturned:
-                supplier = Supplier.objects.filter(identifier=cpf_cnpj)[1]
+            supplier = self.get_or_create_supplier(cpf_cnpj, name)
 
             date = datetime.strptime(data['date'], '%d/%m/%Y')
             expense = ArchivedExpense(

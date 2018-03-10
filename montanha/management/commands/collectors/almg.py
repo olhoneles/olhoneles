@@ -23,7 +23,7 @@ from basecollector import BaseCollector
 from datetime import datetime
 from montanha.models import (
     Institution, Legislature, Legislator, PoliticalParty, ExpenseNature,
-    Supplier, ArchivedExpense
+    ArchivedExpense
 )
 
 
@@ -132,12 +132,9 @@ class ALMG(BaseCollector):
                 nature.save()
 
             for details in entry["listaDetalheVerba"]:
-                cnpj = self.normalize_cnpj_or_cpf(details["cpfCnpj"])
-                try:
-                    supplier = Supplier.objects.get(identifier=cnpj)
-                except Supplier.DoesNotExist:
-                    supplier = Supplier(identifier=cnpj, name=details["nomeEmitente"])
-                    supplier.save()
+                supplier = self.get_or_create_supplier(
+                    details["cpfCnpj"], details["nomeEmitente"]
+                )
 
                 if "descDocumento" in details:
                     number = details["descDocumento"]
