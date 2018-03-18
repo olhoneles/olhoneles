@@ -72,6 +72,9 @@ class Command(BaseCommand):
             )
             return
 
+        if data.get('nome'):
+            supplier.name = data.get('nome')
+
         supplier.enterprise_type = data.get('tipo')
 
         if data.get('abertura'):
