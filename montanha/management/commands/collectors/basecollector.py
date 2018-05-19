@@ -36,6 +36,7 @@ class BaseCollector(object):
         self.max_tries = 10
         self.try_again_timer = 10
 
+        self.mandates_cache = {}
         self.legislature = None
 
     def debug(self, message):
@@ -51,6 +52,10 @@ class BaseCollector(object):
         self.logfile.write('%s %s\n' % (timestamp, message))
 
     def mandate_for_legislator(self, legislator, party, state=None, original_id=None):
+        cache_key = (legislator, party, state, original_id)
+        if cache_key in self.mandates_cache:
+            return self.mandates_cache[cache_key]
+
         try:
             mandate = Mandate.objects.get(legislator=legislator, date_start=self.legislature.date_start)
         except Mandate.DoesNotExist:
@@ -62,6 +67,8 @@ class BaseCollector(object):
         if original_id:
             mandate.original_id = original_id
             mandate.save()
+
+        self.mandates_cache[cache_key] = mandate
 
         return mandate
 
