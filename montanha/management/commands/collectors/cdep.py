@@ -279,8 +279,7 @@ class CamaraDosDeputados(BaseCollector):
                 elem.clear()
                 while elem.getprevious() is not None:
                     del elem.getparent()[0]
-
-                continue
+                del elem
 
         if archived_expense_list:
             ArchivedExpense.objects.bulk_create(archived_expense_list)
