@@ -156,8 +156,4 @@ class BaseCollector(object):
             supplier = Supplier(identifier=identifier, name=name)
             supplier.save()
             self.debug(u'New supplier found: {0}'.format(unicode(supplier)))
-        except Supplier.MultipleObjectsReturned:
-            supplier = Supplier.objects \
-                .filter(identifier=identifier) \
-                .order_by('-pk')[0]
         return supplier

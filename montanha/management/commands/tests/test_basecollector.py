@@ -77,14 +77,6 @@ class BaseCollectorGetOrCreateSupplierTestCase(BaseCollectorTestCase):
         self.assertEqual(supplier.identifier, '01234567000189')
         self.assertEqual(supplier.name, 'Test Supplier')
 
-    def test_get_with_supplier_with_same_identifier(self):
-        SupplierFactory.create(identifier='01234567890')
-        SupplierFactory.create(identifier='01234567890')
-        SupplierFactory.create(name='2', identifier='01234567890')
-        supplier = self.base_collector.get_or_create_supplier('012.345.678-90')
-        self.assertEqual(supplier.identifier, '01234567890')
-        self.assertEqual(supplier.name, '2')
-
 
 class BaseCollectorPostProcessUriTestCase(BaseCollectorTestCase):
 
