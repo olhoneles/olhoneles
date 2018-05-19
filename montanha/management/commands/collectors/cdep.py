@@ -18,17 +18,18 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import requests
+import threading
 from datetime import date, datetime
 from zipfile import ZipFile
-
-import requests
+from Queue import Queue, Empty
 from django.db import reset_queries, connection
 from email.utils import formatdate as http_date
 from lxml.etree import iterparse
 
 from basecollector import BaseCollector
 from montanha.models import (
-    ArchivedExpense, Institution, Legislature, Legislator,
+    Institution, Legislature, Legislator,
     AlternativeLegislatorName, ExpenseNature, PoliticalParty,
 )
 
@@ -36,7 +37,41 @@ from montanha.models import (
 OBJECT_LIST_MAXIMUM_COUNTER = 1000
 
 
+def db_thread(cdep):
+    cursor = connection.cursor()
+    query = u'INSERT INTO `montanha_archivedexpense` '
+    query += u'(`original_id`, `number`, `nature_id`, `date`, `value`, `expensed`, `mandate_id`, `supplier_id`, `collection_run_id`) '
+    query += u'VALUES (NULL, %(number)s, %(nature)s, %(date)s, NULL, %(expensed)s, %(mandate)s, %(supplier)s, %(collection_run)s)'
+
+    data_to_insert = []
+    force_insert = False
+    while True:
+        # If empty, we want to force inserting what we already have and
+        # let the queue know we are done.
+        try:
+            data = cdep.db_queue.get(timeout=2)
+            cdep.debug(u"New expense found: %s" % unicode(data))
+            data_to_insert.append(data)
+        except Empty:
+            force_insert = True
+
+        if force_insert or len(data_to_insert) == OBJECT_LIST_MAXIMUM_COUNTER:
+            # To help with debug mode using up memory for query logs.
+            reset_queries()
+            force_insert = False
+
+            if cdep.db_queue.qsize() or data_to_insert:
+                cdep.info('Queue size: {} rows to insert: {}'.format(cdep.db_queue.qsize(), len(data_to_insert)))
+
+            cursor.executemany(query, data_to_insert)
+            for d in data_to_insert:
+                cdep.db_queue.task_done()
+            data_to_insert[:] = []
+
+
 class CamaraDosDeputados(BaseCollector):
+    db_queue = Queue(maxsize=5000)
+
     def __init__(self, collection_runs, debug_enabled=False):
         super(CamaraDosDeputados, self).__init__(collection_runs, debug_enabled)
 
@@ -154,13 +189,16 @@ class CamaraDosDeputados(BaseCollector):
         with open('cdep-collection-run', 'w') as fh:
             fh.write('%d' % (self.collection_run.id))
 
-        archived_expense_list = []
+        for i in range(2):
+            db_worker = threading.Thread(name='db-worker-{}'.format(i), target=db_thread, args=(self,))
+            db_worker.daemon = True
+            db_worker.start()
+
         legislators = {}
         parties = {}
         natures = {}
         for file_name in reversed(files_to_process):
             self.debug(u"Processing %s…" % file_name)
-            objects_counter = 0
 
             context = iterparse(file_name, events=("start", "end"))
 
@@ -258,30 +296,23 @@ class CamaraDosDeputados(BaseCollector):
 
                 mandate = self.mandate_for_legislator(legislator, party,
                                                       state=state, original_id=original_id)
-                expense = ArchivedExpense(number=docnumber,
-                                          nature=nature,
-                                          date=expense_date,
-                                          expensed=expensed,
-                                          mandate=mandate,
-                                          supplier=supplier,
-                                          collection_run=self.collection_run)
-                archived_expense_list.append(expense)
-                self.debug(u"New expense found: %s" % unicode(expense))
 
-                objects_counter += 1
-
-                if objects_counter == OBJECT_LIST_MAXIMUM_COUNTER:
-                    ArchivedExpense.objects.bulk_create(archived_expense_list)
-                    archived_expense_list[:] = []
-                    objects_counter = 0
-                    reset_queries()
+                # Model objects should not cross thread boundaries
+                self.db_queue.put(
+                    dict(
+                        number=docnumber,
+                        nature=nature.id,
+                        date=expense_date,
+                        expensed=expensed,
+                        mandate=mandate.id,
+                        supplier=supplier.id,
+                        collection_run=self.collection_run.id,
+                    )
+                )
 
                 elem.clear()
                 while elem.getprevious() is not None:
                     del elem.getparent()[0]
                 del elem
-
-        if archived_expense_list:
-            ArchivedExpense.objects.bulk_create(archived_expense_list)
 
         os.unlink('cdep-collection-run')
