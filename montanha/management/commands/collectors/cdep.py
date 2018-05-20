@@ -139,12 +139,7 @@ class CamaraDosDeputados(BaseCollector):
     def update_data(self):
         if os.path.exists('cdep-collection-run'):
             crid = int(open('cdep-collection-run').read())
-            # Avoid loading objects in memory when using delete()
-            with connection.cursor() as cursor:
-                query = 'DELETE FROM montanha_archivedexpense WHERE collection_run_id = {0}'.format(crid)
-                cursor.execute(query)
-                query = 'DELETE FROM montanha_collectionrun WHERE id = {0}'.format(crid)
-                cursor.execute(query)
+            self.remove_collection_run(crid)
             os.unlink('cdep-collection-run')
 
         self.collection_run = self.create_collection_run(self.legislature)

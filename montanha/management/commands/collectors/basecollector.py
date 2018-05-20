@@ -17,12 +17,11 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import requests
 import time
 from datetime import datetime, date
-
-import requests
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
-
+from django.db import connection
 from montanha.models import Mandate, CollectionRun, ArchivedExpense, Supplier
 
 
@@ -101,9 +100,18 @@ class BaseCollector(object):
         # before we start this one.
         if not created:
             self.debug("Collection run for %s already exists for legislature %s, clearing." % (date.today().strftime("%F"), legislature))
-            ArchivedExpense.objects.filter(collection_run=collection_run).delete()
+            self.remove_collection_run(collection_run.id, remove_run=False)
 
         return collection_run
+
+    def remove_collection_run(self, crid, remove_run=True):
+        # Avoid loading objects in memory when using delete()
+        with connection.cursor() as cursor:
+            query = 'DELETE FROM montanha_archivedexpense WHERE collection_run_id = {0}'.format(crid)
+            cursor.execute(query)
+            if remove_run:
+                query = 'DELETE FROM montanha_collectionrun WHERE id = {0}'.format(crid)
+                cursor.execute(query)
 
     def update_data(self):
         self.collection_run = self.create_collection_run(self.legislature)

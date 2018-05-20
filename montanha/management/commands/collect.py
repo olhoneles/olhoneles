@@ -119,7 +119,7 @@ class Command(BaseCommand):
                 cursor = connection.cursor()
                 for m in mandates:
                     cursor.execute(
-                        "delete from montanha_expense where mandate_id=%s", m.id
+                        "delete from montanha_expense where mandate_id=%s", (m.id,)
                     )
 
                 columns = "number, nature_id, date, value, expensed, mandate_id, supplier_id"
