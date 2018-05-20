@@ -43,10 +43,19 @@ class BaseCollector(object):
         message = message.encode('utf-8')
 
         if self.debug_enabled:
-            print message
+            self.info(message)
 
+        self.log_to_file(message)
+
+    def info(self, message):
+        print message
+
+        self.log_to_file(message)
+
+    def log_to_file(self, message):
         if not hasattr(self, 'logfile'):
-            self.logfile = open(self.__class__.__name__.lower() + '.log', 'a')
+            fname = self.legislature.institution.siglum.lower()
+            self.logfile = open(fname + '.log', 'a')
 
         timestamp = datetime.fromtimestamp(time.time()).strftime('%F:%H:%M:%S')
         self.logfile.write('%s %s\n' % (timestamp, message))
