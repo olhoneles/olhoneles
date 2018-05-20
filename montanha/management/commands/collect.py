@@ -20,7 +20,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-from montanha.models import Expense
+from montanha.models import Expense, Mandate
 
 
 # This hack makes django less memory hungry (it caches queries when running
@@ -60,13 +60,15 @@ class Command(BaseCommand):
             almg.update_legislators()
             almg.update_data()
             almg.update_legislators_data()
+            del almg
             houses_to_consolidate.append("almg")
 
         if 'algo' in options.get('house'):
             from collectors.algo import ALGO
-            almg = ALGO(self.collection_runs, debug_enabled)
-            almg.update_legislators()
-            almg.update_data()
+            algo = ALGO(self.collection_runs, debug_enabled)
+            algo.update_legislators()
+            algo.update_data()
+            del algo
             houses_to_consolidate.append("algo")
 
         if 'alepe' in options.get('house'):
@@ -74,12 +76,14 @@ class Command(BaseCommand):
             alepe = ALEPE(self.collection_runs, debug_enabled)
             alepe.update_legislators()
             alepe.update_data()
+            del alepe
             houses_to_consolidate.append("alepe")
 
         if 'senado' in options.get('house'):
             from collectors.senado import Senado
             senado = Senado(self.collection_runs, debug_enabled)
             senado.update_data()
+            del senado
             houses_to_consolidate.append("senado")
 
         if 'cmbh' in options.get('house'):
@@ -87,12 +91,14 @@ class Command(BaseCommand):
             cmbh = CMBH(self.collection_runs, debug_enabled)
             cmbh.update_legislators()
             cmbh.update_data()
+            del cmbh
             houses_to_consolidate.append("cmbh")
 
         if 'cmsp' in options.get('house'):
             from collectors.cmsp import CMSP
             cmsp = CMSP(self.collection_runs, debug_enabled)
             cmsp.update_data()
+            del cmsp
             houses_to_consolidate.append("cmsp")
 
         if 'cdep' in options.get('house'):
@@ -100,17 +106,23 @@ class Command(BaseCommand):
             cdep = CamaraDosDeputados(self.collection_runs, debug_enabled)
             cdep.update_legislators()
             cdep.update_data()
+            del cdep
             houses_to_consolidate.append("cdep")
 
         settings.expense_locked_for_collection = False
 
         for run in self.collection_runs:
             legislature = run.legislature
-            Expense.objects.filter(mandate__legislature=legislature).delete()
+            mandates = Mandate.objects.filter(legislature=legislature)
 
-            columns = "number, nature_id, date, value, expensed, mandate_id, supplier_id"
             with transaction.atomic():
                 cursor = connection.cursor()
+                for m in mandates:
+                    cursor.execute(
+                        "delete from montanha_expense where mandate_id=%s", m.id
+                    )
+
+                columns = "number, nature_id, date, value, expensed, mandate_id, supplier_id"
                 cursor.execute(
                     "insert into montanha_expense (%s) select %s from montanha_archivedexpense where collection_run_id=%d" % (
                         columns, columns, run.id
