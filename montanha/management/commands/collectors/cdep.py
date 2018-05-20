@@ -69,6 +69,12 @@ def db_thread(cdep):
             data_to_insert[:] = []
 
 
+def cleanup_element(elem):
+    elem.clear()
+    while elem.getprevious() is not None:
+        del elem.getparent()[0]
+
+
 class CamaraDosDeputados(BaseCollector):
     db_queue = Queue(maxsize=5000)
 
@@ -223,6 +229,7 @@ class CamaraDosDeputados(BaseCollector):
 
                 if legislature_year != self.legislature.date_start.year:
                     self.debug(u"Ignoring entry because it's out of the target legislature…")
+                    cleanup_element(elem)
                     continue
 
                 name = elem.find('txNomeParlamentar').text.title().strip()
@@ -310,9 +317,6 @@ class CamaraDosDeputados(BaseCollector):
                     )
                 )
 
-                elem.clear()
-                while elem.getprevious() is not None:
-                    del elem.getparent()[0]
-                del elem
+                cleanup_element(elem)
 
         os.unlink('cdep-collection-run')
