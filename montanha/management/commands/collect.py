@@ -20,7 +20,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-from montanha.models import Expense, Mandate
+from montanha.models import Mandate
 
 
 # This hack makes django less memory hungry (it caches queries when running

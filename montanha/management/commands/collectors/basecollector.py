@@ -17,12 +17,14 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import requests
 import time
 from datetime import datetime, date
-from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
+
+import requests
 from django.db import connection
-from montanha.models import Mandate, CollectionRun, ArchivedExpense, Supplier
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
+
+from montanha.models import Mandate, CollectionRun, Supplier
 
 
 class BaseCollector(object):
