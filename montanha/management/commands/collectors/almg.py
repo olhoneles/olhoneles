@@ -27,9 +27,9 @@ from montanha.models import (
 )
 
 
-class ALMG(BaseCollector):
+class Collector(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
-        super(ALMG, self).__init__(collection_runs, debug_enabled)
+        super(Collector, self).__init__(collection_runs, debug_enabled)
 
         self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36'
         self.headers = {'user-agent': self.user_agent}
@@ -44,6 +44,11 @@ class ALMG(BaseCollector):
         self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
                                                                 date_start=datetime(2015, 1, 1),
                                                                 date_end=datetime(2018, 12, 31))
+
+    def run(self):
+        self.update_legislators()
+        self.update_data()
+        self.update_legislators_data()
 
     def post_process_uri(self, contents):
         # The JSON returned by ALMG's web service uses the brazilian

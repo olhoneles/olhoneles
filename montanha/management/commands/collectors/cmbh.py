@@ -41,9 +41,9 @@ NUM_THREADS = 6
 MAX_PENDING = 100
 
 
-class CMBH(BaseCollector):
+class Collector(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
-        super(CMBH, self).__init__(collection_runs, debug_enabled)
+        super(Collector, self).__init__(collection_runs, debug_enabled)
 
         self.institution, _ = Institution.objects.get_or_create(
             siglum='CMBH', name=u'Câmara Municipal de Belo Horizonte'
@@ -66,6 +66,10 @@ class CMBH(BaseCollector):
 
         self.processing_queue = []
         self.processing_condition = threading.Condition()
+
+    def run(self):
+        self.update_legislators()
+        self.update_data()
 
     def _download_thread(self):
         throttle = False

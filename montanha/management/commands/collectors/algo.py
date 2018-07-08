@@ -37,12 +37,12 @@ from montanha.models import (
 )
 
 
-class ALGO(BaseCollector):
+class Collector(BaseCollector):
     TITLE_REGEX = re.compile(r'\d+ - (.*)')
     MONEY_RE = re.compile(r'([0-9.,]+)[,.]([0-9]{2})$')
 
     def __init__(self, *args, **kwargs):
-        super(ALGO, self).__init__(*args, **kwargs)
+        super(Collector, self).__init__(*args, **kwargs)
 
         self.base_url = 'http://al.go.leg.br'
 
@@ -58,6 +58,10 @@ class ALGO(BaseCollector):
 
         self.list_of_legislators_cache = Cache(1024)
         self.expenses_nature_cached = {}
+
+    def run(self):
+        self.update_legislators()
+        self.update_data()
 
     def _normalize_party_siglum(self, siglum):
         names_map = {

@@ -43,15 +43,18 @@ def parse_cmsp_date(month, year):
     return parse_date(day + '/' + month + '/' + year)
 
 
-class CMSP(BaseCollector):
+class Collector(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
-        super(CMSP, self).__init__(collection_runs, debug_enabled)
+        super(Collector, self).__init__(collection_runs, debug_enabled)
 
         institution, institution_created = Institution.objects.get_or_create(
             siglum='CMSP',
             name=u'Câmara Municipal de São Paulo')
 
         self.institution = institution
+
+    def run(self):
+        self.update_data()
 
     def _normalize_party_siglum(self, siglum):
         names_map = {

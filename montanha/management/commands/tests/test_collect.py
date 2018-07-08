@@ -43,7 +43,7 @@ class CollectCommandsTestCase(TestCase):
 
     @patch('montanha.management.commands.collect.Command.collection_runs')
     @patch('montanha.management.commands.collect.call_command')
-    @patch('montanha.management.commands.collectors.almg.ALMG')
+    @patch('montanha.management.commands.collectors.almg.Collector')
     def test_with_instituiton_almg(
             self, mock_institution, mock_call_command, collection_runs_mock):
 
@@ -54,16 +54,14 @@ class CollectCommandsTestCase(TestCase):
 
         call_command('collect', 'almg')
 
-        self.assertIn(call().update_legislators(), mock_institution.mock_calls)
-        self.assertIn(call().update_data(), mock_institution.mock_calls)
-        self.assertIn(call().update_legislators_data(), mock_institution.mock_calls)
+        self.assertIn(call().run(), mock_institution.mock_calls)
         self.assertEqual(
             mock_call_command.mock_calls, [call('consolidate', 'almg')]
         )
 
     @patch('montanha.management.commands.collect.Command.collection_runs')
     @patch('montanha.management.commands.collect.call_command')
-    @patch('montanha.management.commands.collectors.algo.ALGO')
+    @patch('montanha.management.commands.collectors.algo.Collector')
     def test_with_instituiton_algo(
             self, mock_institution, mock_call_command, collection_runs_mock):
 
@@ -74,15 +72,14 @@ class CollectCommandsTestCase(TestCase):
 
         call_command('collect', 'algo')
 
-        self.assertIn(call().update_legislators(), mock_institution.mock_calls)
-        self.assertIn(call().update_data(), mock_institution.mock_calls)
+        self.assertIn(call().run(), mock_institution.mock_calls)
         self.assertEqual(
             mock_call_command.mock_calls, [call('consolidate', 'algo')]
         )
 
     @patch('montanha.management.commands.collect.Command.collection_runs')
     @patch('montanha.management.commands.collect.call_command')
-    @patch('montanha.management.commands.collectors.senado.Senado')
+    @patch('montanha.management.commands.collectors.senado.Collector')
     def test_with_instituiton_senado(
             self, mock_institution, mock_call_command, collection_runs_mock):
 
@@ -93,14 +90,14 @@ class CollectCommandsTestCase(TestCase):
 
         call_command('collect', 'senado')
 
-        self.assertIn(call().update_data(), mock_institution.mock_calls)
+        self.assertIn(call().run(), mock_institution.mock_calls)
         self.assertEqual(
             mock_call_command.mock_calls, [call('consolidate', 'senado')]
         )
 
     @patch('montanha.management.commands.collect.Command.collection_runs')
     @patch('montanha.management.commands.collect.call_command')
-    @patch('montanha.management.commands.collectors.cmbh.CMBH')
+    @patch('montanha.management.commands.collectors.cmbh.Collector')
     def test_with_instituiton_cmbh(
             self, mock_institution, mock_call_command, collection_runs_mock):
 
@@ -111,15 +108,14 @@ class CollectCommandsTestCase(TestCase):
 
         call_command('collect', 'cmbh')
 
-        self.assertIn(call().update_legislators(), mock_institution.mock_calls)
-        self.assertIn(call().update_data(), mock_institution.mock_calls)
+        self.assertIn(call().run(), mock_institution.mock_calls)
         self.assertEqual(
             mock_call_command.mock_calls, [call('consolidate', 'cmbh')]
         )
 
     @patch('montanha.management.commands.collect.Command.collection_runs')
     @patch('montanha.management.commands.collect.call_command')
-    @patch('montanha.management.commands.collectors.cmsp.CMSP')
+    @patch('montanha.management.commands.collectors.cmsp.Collector')
     def test_with_instituiton_cmsp(
             self, mock_institution, mock_call_command, collection_runs_mock):
 
@@ -130,25 +126,25 @@ class CollectCommandsTestCase(TestCase):
 
         call_command('collect', 'cmsp')
 
-        self.assertIn(call().update_data(), mock_institution.mock_calls)
+        self.assertIn(call().run(), mock_institution.mock_calls)
         self.assertEqual(
             mock_call_command.mock_calls, [call('consolidate', 'cmsp')]
         )
 
     @patch('montanha.management.commands.collect.Command.collection_runs')
     @patch('montanha.management.commands.collect.call_command')
-    @patch('montanha.management.commands.collectors.cdep.CamaraDosDeputados')
+    @patch('montanha.management.commands.collectors.cdep.Collector')
     def test_with_instituiton_cdep(
             self, mock_institution, mock_call_command, collection_runs_mock):
 
-        self._create_instituiton('CamaraDosDeputados')
+        self._create_instituiton('CDEP')
 
         collection_run = CollectionRunFactory.create()
         collection_runs_mock.__iter__.return_value = [collection_run]
 
         call_command('collect', 'cdep')
 
-        self.assertIn(call().update_data(), mock_institution.mock_calls)
+        self.assertIn(call().run(), mock_institution.mock_calls)
         self.assertEqual(
             mock_call_command.mock_calls, [call('consolidate', 'cdep')]
         )

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (©) 2010-2014 Gustavo Noronha Silva
+# Copyright (©) 2018, Marcelo Jorge Vieira
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as
@@ -14,6 +15,8 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from importlib import import_module
 
 from django.conf import settings
 from django.core.management import call_command
@@ -53,61 +56,14 @@ class Command(BaseCommand):
             debug_enabled = True
 
         houses_to_consolidate = []
-
-        if 'almg' in options.get('house'):
-            from collectors.almg import ALMG
-            almg = ALMG(self.collection_runs, debug_enabled)
-            almg.update_legislators()
-            almg.update_data()
-            almg.update_legislators_data()
-            del almg
-            houses_to_consolidate.append("almg")
-
-        if 'algo' in options.get('house'):
-            from collectors.algo import ALGO
-            algo = ALGO(self.collection_runs, debug_enabled)
-            algo.update_legislators()
-            algo.update_data()
-            del algo
-            houses_to_consolidate.append("algo")
-
-        if 'alepe' in options.get('house'):
-            from collectors.alepe import ALEPE
-            alepe = ALEPE(self.collection_runs, debug_enabled)
-            alepe.update_legislators()
-            alepe.update_data()
-            del alepe
-            houses_to_consolidate.append("alepe")
-
-        if 'senado' in options.get('house'):
-            from collectors.senado import Senado
-            senado = Senado(self.collection_runs, debug_enabled)
-            senado.update_data()
-            del senado
-            houses_to_consolidate.append("senado")
-
-        if 'cmbh' in options.get('house'):
-            from collectors.cmbh import CMBH
-            cmbh = CMBH(self.collection_runs, debug_enabled)
-            cmbh.update_legislators()
-            cmbh.update_data()
-            del cmbh
-            houses_to_consolidate.append("cmbh")
-
-        if 'cmsp' in options.get('house'):
-            from collectors.cmsp import CMSP
-            cmsp = CMSP(self.collection_runs, debug_enabled)
-            cmsp.update_data()
-            del cmsp
-            houses_to_consolidate.append("cmsp")
-
-        if 'cdep' in options.get('house'):
-            from collectors.cdep import CamaraDosDeputados
-            cdep = CamaraDosDeputados(self.collection_runs, debug_enabled)
-            cdep.update_legislators()
-            cdep.update_data()
-            del cdep
-            houses_to_consolidate.append("cdep")
+        for house in options.get('house'):
+            module = import_module(
+                'montanha.management.commands.collectors.{0}'.format(house)
+            )
+            command = module.Collector(self.collection_runs, debug_enabled)
+            command.run()
+            del command
+            houses_to_consolidate.append(house)
 
         settings.expense_locked_for_collection = False
 

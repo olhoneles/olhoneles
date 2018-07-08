@@ -18,11 +18,12 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import requests
 import threading
 from datetime import date, datetime
-from zipfile import ZipFile
 from Queue import Queue, Empty
+from zipfile import ZipFile
+
+import requests
 from django.db import reset_queries, connection
 from email.utils import formatdate as http_date
 from lxml.etree import iterparse
@@ -75,16 +76,20 @@ def cleanup_element(elem):
         del elem.getparent()[0]
 
 
-class CamaraDosDeputados(BaseCollector):
+class Collector(BaseCollector):
     db_queue = Queue(maxsize=5000)
 
     def __init__(self, collection_runs, debug_enabled=False):
-        super(CamaraDosDeputados, self).__init__(collection_runs, debug_enabled)
+        super(Collector, self).__init__(collection_runs, debug_enabled)
 
         institution, _ = Institution.objects.get_or_create(siglum='CDEP', name=u'Câmara dos Deputados Federais')
         self.legislature, _ = Legislature.objects.get_or_create(institution=institution,
                                                                 date_start=datetime(2015, 1, 1),
                                                                 date_end=datetime(2018, 12, 31))
+
+    def run(self):
+        self.update_legislators()
+        self.update_data()
 
     def retrieve_legislators(self):
         uri = 'http://www.camara.gov.br/SitCamaraWS/Deputados.asmx/ObterDeputados'

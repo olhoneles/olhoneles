@@ -38,9 +38,9 @@ extract_text = rows.plugins.html.extract_text
 extract_links = rows.plugins.html.extract_links
 
 
-class Senado(BaseCollector):
+class Collector(BaseCollector):
     def __init__(self, collection_runs, debug_enabled=False):
-        super(Senado, self).__init__(collection_runs, debug_enabled)
+        super(Collector, self).__init__(collection_runs, debug_enabled)
 
         self.institution, _ = Institution.objects.get_or_create(
             siglum='Senado', name=u'Senado Federal'
@@ -65,6 +65,9 @@ class Senado(BaseCollector):
                 'away_legislators': '{0}/fora-do-exercicio/-/f/por-nome'.format(transparencia_url),
             },
         ]
+
+    def run(self):
+        self.update_data()
 
     def get_legislature(self, data):
         legislature, created = Legislature.objects.get_or_create(

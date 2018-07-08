@@ -52,10 +52,10 @@ def merge_lists(l1, l2, key):
     return [val for (_, val) in merged.items()]
 
 
-class ALEPE(BaseCollector):
+class Collector(BaseCollector):
 
     def __init__(self, collection_runs, debug_enabled=False):
-        super(ALEPE, self).__init__(collection_runs, debug_enabled)
+        super(Collector, self).__init__(collection_runs, debug_enabled)
 
         self.institution, _ = Institution.objects.get_or_create(
             siglum='ALEPE',
@@ -67,6 +67,10 @@ class ALEPE(BaseCollector):
             date_start=datetime(2015, 1, 1),
             date_end=datetime(2018, 12, 31),
         )
+
+    def run(self):
+        self.update_legislators()
+        self.update_data()
 
     def _get_options(self, tag_id, tag_value, data):
         options = data.find(id=tag_id).findAll('option')
