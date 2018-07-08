@@ -19,11 +19,7 @@
 from importlib import import_module
 
 from django.conf import settings
-from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django.db import connection, transaction
-
-from montanha.models import Mandate
 
 
 # This hack makes django less memory hungry (it caches queries when running
@@ -49,13 +45,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         global debug_enabled
 
-        settings.expense_locked_for_collection = True
-
         debug_enabled = False
         if options.get('debug'):
             debug_enabled = True
 
-        houses_to_consolidate = []
         for house in options.get('house'):
             module = import_module(
                 'montanha.management.commands.collectors.{0}'.format(house)
@@ -63,31 +56,3 @@ class Command(BaseCommand):
             command = module.Collector(self.collection_runs, debug_enabled)
             command.run()
             del command
-            houses_to_consolidate.append(house)
-
-        settings.expense_locked_for_collection = False
-
-        for run in self.collection_runs:
-            legislature = run.legislature
-            mandates = Mandate.objects.filter(legislature=legislature)
-
-            with transaction.atomic():
-                cursor = connection.cursor()
-                for m in mandates:
-                    cursor.execute(
-                        "delete from montanha_expense where mandate_id=%s", (m.id,)
-                    )
-
-                columns = "number, nature_id, date, value, expensed, mandate_id, supplier_id"
-                cursor.execute(
-                    "insert into montanha_expense (%s) select %s from montanha_archivedexpense where collection_run_id=%d" % (
-                        columns, columns, run.id
-                    )
-                )
-                cursor.close()
-
-            run.committed = True
-            run.save()
-
-        for house in houses_to_consolidate:
-            call_command("consolidate", house)
