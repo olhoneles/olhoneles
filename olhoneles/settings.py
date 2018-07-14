@@ -283,3 +283,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #     '--with-coverage',
 #     '--cover-package=foo,bar',
 # ]
+
+ES_HOST = conf.get('ES_HOST', 'localhost')
+ES_PORT = conf.get('ES_PORT', 9200)
+ES_OBJECT_LIST_MAXIMUM_COUNTER = conf.get('ES_OBJECT_LIST_MAXIMUM_COUNTER', 5000)

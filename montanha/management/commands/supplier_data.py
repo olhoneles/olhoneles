@@ -15,16 +15,19 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+from datetime import datetime
 from dateutil.parser import parse
 
 import requests
+from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import IntegrityError
-from django.db.models.functions import Length
 
-from montanha.models import (
-    Supplier, SupplierJuridicalNature, SupplierActivity, SupplierSituation
-)
+from montanha.mapping_supplier import Supplier as SupplierES
+from montanha.models import Supplier as SupplierMySQL
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -45,9 +48,13 @@ class Command(BaseCommand):
             default=False,
         )
 
-    def debug(self, text):
-        if self.debug_enabled:
-            print u'{0}'.format(text)
+        parser.add_argument(
+            '--migrate-from-mysql',
+            action='store_true',
+            dest='migrate-from-mysql',
+            default=False,
+        )
+
 
     def update_supplier(self, supplier):
         try:
@@ -55,123 +62,161 @@ class Command(BaseCommand):
             url = '{0}/{1}'.format(receitaws_api_url, supplier.identifier)
             response = requests.get(url, timeout=5)
         except Exception as e:
-            self.debug(u'Error on get {0}: {1}'.format(supplier, str(e)))
+            logger.debug(u'Error on get {0}: {1}'.format(
+                supplier.identifier, str(e))
+            )
             return
 
         if response.status_code > 399:
-            self.debug(u'Error on get {0}: {1}'.format(
-                supplier, str(response.text)
+            logger.debug(u'Error on get {0}: {1}'.format(
+                supplier.identifier, str(response.text)
             ))
             return
 
         try:
             data = response.json()
         except ValueError as e:
-            self.debug(
-                u'Error on loads Json for {0}: {1}'.format(supplier, str(e))
+            logger.debug(
+                u'Error on loads Json for {0}: {1}'.format(
+                    supplier.identifier, str(e)
+                )
             )
             return
 
-        if data.get('nome'):
-            supplier.name = data.get('nome')
-
-        supplier.enterprise_type = data.get('tipo')
-
-        if data.get('abertura'):
-            supplier.date_opened = parse(data.get('abertura'))
-
-        supplier.special_situation = data.get('situacao_especial')
-
-        if data.get('data_situacao_especial'):
-            supplier.special_situation_date = parse(
-                data.get('data_situacao_especial')
-            )
-
-        if data.get('ultima_atualizacao'):
-            supplier.last_update = parse(data.get('ultima_atualizacao'))
-
-        supplier.status = data.get('status')
-
-        if data.get('situacao'):
-            situation, _ = SupplierSituation.objects.get_or_create(
-                name=data.get('situacao')
-            )
-            supplier.situation = situation
-
-        if data.get('data_situacao'):
-            supplier.situation_date = parse(data.get('data_situacao'))
-
-        supplier.situation_reason = data.get('motivo_situacao')
-        supplier.trade_name = data.get('fantasia')
-        supplier.phone = data.get('telefone')
-        supplier.email = data.get('email')
-        supplier.address = data.get('logradouro')
+        try:
+            address_number = float(data.get('numero'))
+        except (TypeError, ValueError):
+            address_number = None
 
         try:
-            supplier.address_number = int(data.get('numero'))
-        except (TypeError, ValueError):
-            pass
+            special_situation_date= parse(data.get('data_situacao_especial'))
+        except ValueError:
+            special_situation_date = None
 
+        supplier.address = data.get('logradouro')
         supplier.address_complement = data.get('complemento')
-        supplier.postal_code = data.get('cep')
-        supplier.neighborhood = data.get('bairro')
+        supplier.address_number = address_number
         supplier.city = data.get('municipio')
-        supplier.state = data.get('uf')
+        supplier.date_opened = parse(data.get('abertura'))
+        supplier.email = data.get('email')
+        supplier.enterprise_type = data.get('tipo')
         supplier.federative_officer = data.get('efr')
-
-        juridical_nature = data.get('natureza_juridica')
-        if juridical_nature:
-            code, name = juridical_nature.split(' - ')
-            try:
-                jn, _ = SupplierJuridicalNature.objects.get_or_create(
-                    code=code.strip(),
-                    name=name.strip(),
-                )
-            except IntegrityError:
-                jn = SupplierJuridicalNature.objects.get(
-                    code=code.strip(),
-                )
-            supplier.juridical_nature = jn
-
-        main_activity = data.get('atividade_principal')
-        if main_activity:
-            try:
-                ma, _ = SupplierActivity.objects.get_or_create(
-                    name=main_activity[0].get('text').strip(),
-                    code=main_activity[0].get('code').strip(),
-                )
-            except IntegrityError:
-                ma = SupplierActivity.objects.get(
-                    code=main_activity[0].get('code').strip(),
-                )
-            supplier.main_activity = ma
-
-        secondary_activities = data.get('atividades_secundarias')
-        if secondary_activities:
-            for x in secondary_activities:
-                sa, _ = SupplierActivity.objects.get_or_create(
-                    name=x.get('text'),
-                    code=x.get('code'),
-                )
-                supplier.secondary_activities.add(sa)
+        supplier.juridical_nature = data.get('natureza_juridica')
+        supplier.last_change = datetime.utcnow()  # FIXME utc?
+        supplier.last_update = parse(data.get('ultima_atualizacao'))  # FIXME utc?
+        for activity in data.get('atividade_principal'):
+            supplier.add_main_activity(activity['text'], activity['code'])
+        supplier.name = data.get('nome')
+        supplier.neighborhood = data.get('bairro')
+        supplier.phone = data.get('telefone')
+        supplier.postal_code = data.get('cep')
+        for activity in data.get('atividades_secundarias'):
+            supplier.add_secondary_activity(activity['text'], activity['code'])
+        supplier.situation = data.get('situacao')
+        supplier.situation_date = parse(data.get('data_situacao'))
+        supplier.situation_reason = data.get('motivo_situacao')
+        supplier.special_situation = data.get('situacao_especial')
+        supplier.special_situation_date = special_situation_date
+        supplier.state = data.get('uf')
+        supplier.status = data.get('status')
+        supplier.trade_name = data.get('fantasia')
 
         supplier.save()
 
-        self.debug(u'Updated info for: {0}'.format(supplier))
+        logger.debug(u'Updated info for: {0}'.format(supplier.name))
+
+    def from_mysql_to_es(self):
+        logger.debug(u'Importing data from MySQL')
+
+        documents = []
+
+        SupplierES.init()
+
+        suppliers = SupplierMySQL.objects.all()
+        for supplier in suppliers:
+            try:
+                address_number = int(supplier.address_number)
+            except (TypeError, ValueError):
+                address_number = None
+            if supplier.situation:
+                situation = supplier.situation.name
+            else:
+                situation = ''
+            if supplier.juridical_nature:
+                juridical_nature = supplier.juridical_nature.name
+            else:
+                juridical_nature = ''
+            if supplier.main_activity:
+                main_activity = {'text': supplier.main_activity.name}
+            else:
+                main_activity = []
+            if supplier.secondary_activities.count() > 0:
+                secondary_activities = [
+                    {'text': s.name, 'code': s.code}
+                    for s in supplier.secondary_activities.all()
+                ]
+            else:
+                secondary_activities = []
+
+            supplier_es = SupplierES(
+                name = supplier.name,
+                identifier = supplier.identifier,
+                date_opened = supplier.date_opened,
+                trade_name = supplier.trade_name,
+                status = supplier.status,
+                situation = situation,
+                situation_date = supplier.situation_date,
+                situation_reason = supplier.situation_reason,
+                special_situation = supplier.special_situation,
+                special_situation_date = supplier.special_situation_date,
+                enterprise_type = supplier.enterprise_type,
+                federative_officer = supplier.federative_officer,
+                address = supplier.address,
+                address_number = address_number,
+                juridical_nature = juridical_nature,
+                address_complement = supplier.address_complement,
+                postal_code = supplier.postal_code,
+                state = supplier.state,
+                city = supplier.city,
+                neighborhood = supplier.neighborhood,
+                phone = supplier.phone,
+                main_activity = main_activity,
+                secondary_activities = secondary_activities,
+                last_change = supplier.last_change,  # FIXME utc?
+                last_update = supplier.last_update,  # FIXME utc?
+                email = supplier.email,
+            )
+            documents.append(supplier_es)
+            if len(documents) == settings.ES_OBJECT_LIST_MAXIMUM_COUNTER:
+                SupplierES.bulk_save(documents)
+                documents = []
+                logger.debug(
+                    'Added {0} items'.format(
+                        settings.ES_OBJECT_LIST_MAXIMUM_COUNTER
+                    )
+                )
+
+        if documents:
+            SupplierES.bulk_save(documents)
+            logger.debug('Added {0} items'.format(len(documents)))
+            documents = []
+
 
     def handle(self, *args, **options):
-        self.debug_enabled = True if options.get('debug') else False
+        if options.get('debug'):
+            logger.setLevel(logging.DEBUG)
 
-        # CNPJ suppliers
-        suppliers = Supplier.objects \
-            .annotate(identifier_len=Length('identifier')) \
-            .filter(identifier_len__gte=14) \
-            .exclude(status='ERROR')
+        if options.get('migrate-from-mysql'):
+            self.from_mysql_to_es()
+            return
+
+        suppliers = SupplierES.search()
+        # exclude(status='ERROR')
+        suppliers = suppliers.filter("term", identifier__length=14)
 
         if options.get('only-empty'):
-            suppliers = suppliers.filter(address__isnull=True)
-
-        self.debug(u'Total of Suppliers {0}'.format(suppliers.count()))
+            suppliers = suppliers.filter("term", address__keyword='')
 
         for supplier in suppliers:
+            logger.debug(u'Updating supplier {0}'.format(supplier.identifier))
             self.update_supplier(supplier)

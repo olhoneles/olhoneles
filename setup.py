@@ -54,6 +54,8 @@ legislators
         'django-tastypie>=0.13.3,<0.14.0',
         'django-tastypie-swagger==0.1.4-django1.10',
         'easy-thumbnails>=2.4.2,<2.5.0',
+        'elasticsearch>=6.0.0,<7.0.0',
+        'elasticsearch-dsl>=6.2.1,<6.3.0',
         'lxml>=3.7.0,<3.8',
         'Pillow>=3.4.2,<3.5.0',
         'python-dateutil>=2.6.0,<2.7.0',
