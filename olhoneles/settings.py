@@ -263,6 +263,7 @@ SERVER_EMAIL = conf.get('SERVER_EMAIL', 'montanha@olhoneles.org')
 
 RECAPTCHA_PUBLIC_KEY = conf.get('RECAPTCHA_PUBLIC_KEY', '')
 RECAPTCHA_PRIVATE_KEY = conf.get('RECAPTCHA_PRIVATE_KEY', '')
+NOCAPTCHA = conf.get('NOCAPTCHA', True)
 
 RAVEN_CONFIG = conf.get('RAVEN_CONFIG', {'dsn': ''})
 
