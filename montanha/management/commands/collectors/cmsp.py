@@ -94,7 +94,7 @@ class CMSP(BaseCollector):
 
         links = legislators.findAll(
             'a',
-            href=re.compile('^vereador_joomla2.asp\?vereador='))
+            href=re.compile(r'^vereador_joomla2.asp\?vereador='))
 
         for link in links:
             href = link.get('href')
@@ -373,14 +373,14 @@ class CMSP(BaseCollector):
                 else:
                     legislator = self.add_legislator(name)
 
-                aa = re.search('\^\p([^\^|%]*)(\^|%)', row[7])
+                aa = re.search(r'\^\p([^\^|%]*)(\^|%)', row[7])
                 if aa:
                     party_siglum = aa.group(1)
                 else:
                     pass
 
                 try:
-                    date_start_re = re.search('\^\i([^\^|%]*)(\^|%)', row[7])
+                    date_start_re = re.search(r'\^\i([^\^|%]*)(\^|%)', row[7])
                     start_year = int(date_start_re.group(1).split('/')[2])
                 except IndexError:
                     continue
