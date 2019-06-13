@@ -156,7 +156,7 @@ class Collector(BaseCollector):
                 headers['If-Modified-Since'] = http_date(full_path, usegmt=True)
 
             uri = 'http://www.camara.leg.br/cotas/{0}'.format(file_name)
-            logger.debug(u'Preparing to download {0}…'.format(uri))
+            logger.debug(u'Downloading {0}…'.format(uri))
             r = requests.get(uri, headers=headers, stream=True)
 
             if r.status_code == requests.codes.not_modified:
@@ -179,20 +179,51 @@ class Collector(BaseCollector):
 
     def _map_tags(self, tag):
         data = dict(
-            datEmissao='date',
-            ideDocumento='original_id',
-            # nuLegislatura='legislature_year_start',
-            numAno='year',
-            numMes='month',
-            sgPartido='political_party_siglum',
-            sgUF='state_siglum',
-            txNomeParlamentar='legislator',
-            txtCNPJCPF='supplier_identifier',
-            txtDescricao='nature',
-            txtFornecedor='supplier_name',
-            vlrDocumento='document_value',
-            vlrLiquido='refund_value',
+            # legislatura='legislature_year_start',
+            ano='year',
+            cnpjCPF='supplier_identifier',
+            dataEmissao='date',
+            descricao='nature',
+            fornecedor='supplier_name',
+            idDocumento='original_id',
+            mes='month',
+            nomeParlamentar='legislator',
+            numeroDeputadoID='numero_deputado_id',
+            siglaPartido='political_party_siglum',
+            siglaUF='state_siglum',
+            valorDocumento='document_value',
+            valorLiquido='refund_value',
         )
+
+        # ano
+        # cnpjCPF
+        # codigoLegislatura
+        # dataEmissao
+        # descricao
+        # descricaoEspecificacao
+        # fornecedor
+        # idDocumento
+        # legislatura
+        # lote
+        # mes
+        # nomeParlamentar
+        # numero
+        # numeroCarteiraParlamentar
+        # numeroDeputadoID
+        # numeroEspecificacaoSubCota
+        # numeroSubCota
+        # parcela
+        # passageiro
+        # ressarcimento
+        # restituicao
+        # siglaPartido
+        # siglaUF
+        # tipoDocumento
+        # trecho
+        # valorDocumento
+        # valorGlosa
+        # valorLiquido
+
         return data.get(tag)
 
     def get_legislature(self, year):
@@ -210,7 +241,7 @@ class Collector(BaseCollector):
             documents = []
             with open(file_name, 'r') as f:
                 json_data = json.loads(f.read())
-                expenses = json_data.get('DESPESA')
+                expenses = json_data.get('dados', [])
                 for json_expense in expenses:
                     expense = Expense()
                     expense.institution_siglum = self.siglum
